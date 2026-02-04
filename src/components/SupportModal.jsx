@@ -64,7 +64,7 @@ export default function SupportModal({ onClose }) {
     >
       <div 
         style={{
-          background: 'var(--color-surface)',
+          background: '#1a1a1a',
           borderRadius: '12px',
           padding: '32px',
           maxWidth: '500px',
