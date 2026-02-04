@@ -5,8 +5,7 @@ A comprehensive React dashboard for analyzing Reddit user activity, behavior pat
 ## Server Configuration
 
 ### API Endpoint
-- **Production Server**: `http://37.27.27.247:5000`
-- **SSH Access**: `ssh root@37.27.27.247` (Password: `rJXpK3tPgjVR`)
+- **Production Server**: Configure your own API server
 - **Server Files Location**: `/opt/reddit-analyzer/`
 
 ### API Endpoints
