@@ -4,6 +4,7 @@
   display: flex;
   flex-direction: column;
   padding: 0;
+  overflow: hidden;
 }
 
 .no-data-message {
@@ -34,6 +35,7 @@
   padding: 4px 0;
   flex: 1;
   justify-content: flex-start;
+  overflow: hidden;
 }
 
 .location-item-wrapper {
