@@ -4,7 +4,9 @@ let resolvedBase = null;
 let resolving = false;
 
 // Use env var, or production server as fallback (never localhost in prod)
-const API_HOST = import.meta.env.VITE_API_HOST || '37.27.27.247';
+const API_HOST = import.meta.env.VITE_API_HOST || 'api.reddituser.info';
+// Use HTTPS in production (when page is served over HTTPS), HTTP for local dev
+const API_PROTOCOL = import.meta.env.VITE_API_PROTOCOL || (typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'https' : 'http');
 
 export async function resolveApiBase(preferredHost = API_HOST) {
   if (resolvedBase) return resolvedBase;
@@ -16,9 +18,15 @@ export async function resolveApiBase(preferredHost = API_HOST) {
     return resolvedBase;
   }
   resolving = true;
-  const ports = [5000, 5001];
+  
+  // For HTTPS, try port 443 first (standard), then custom ports
+  // For HTTP, try 5000, 5001
+  const ports = API_PROTOCOL === 'https' ? [443, 5000, 5001] : [5000, 5001];
+  
   for (const port of ports) {
-    const base = `http://${preferredHost}:${port}`;
+    // For standard ports (443 for https, 80 for http), don't include port in URL
+    const portSuffix = (API_PROTOCOL === 'https' && port === 443) ? '' : `:${port}`;
+    const base = `${API_PROTOCOL}://${preferredHost}${portSuffix}`;
     try {
       const res = await fetch(base + '/health');
       if (res.ok) {
@@ -29,8 +37,8 @@ export async function resolveApiBase(preferredHost = API_HOST) {
       // ignore and try next
     }
   }
-  // fallback to first
-  if (!resolvedBase) resolvedBase = `http://${preferredHost}:5000`;
+  // fallback
+  if (!resolvedBase) resolvedBase = `${API_PROTOCOL}://${preferredHost}:5000`;
   resolving = false;
   return resolvedBase;
 }
