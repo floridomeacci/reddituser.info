@@ -3,7 +3,8 @@ import { queueRequest, fetchWithRetry } from './requestQueue';
 let resolvedBase = null;
 let resolving = false;
 
-const API_HOST = import.meta.env.VITE_API_HOST || 'localhost';
+// Use env var, or production server as fallback (never localhost in prod)
+const API_HOST = import.meta.env.VITE_API_HOST || '37.27.27.247';
 
 export async function resolveApiBase(preferredHost = API_HOST) {
   if (resolvedBase) return resolvedBase;

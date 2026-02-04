@@ -909,7 +909,7 @@ async function saveUncategorizedSubreddits(subreddits) {
     // Auto-save to file via API
     try {
       // Resolve API base (tries configured host on :5000 and :5001)
-      const API_HOST = import.meta.env.VITE_API_HOST || 'localhost';
+      const API_HOST = import.meta.env.VITE_API_HOST || '37.27.27.247';
       const ports = [5000, 5001];
       let apiBase = null;
       
