@@ -154,6 +154,13 @@ function App() {
   const [highlightedCountries, setHighlightedCountries] = useState(new Set());
   const [locationConfidence, setLocationConfidence] = useState({ location: null, timezone: null, language: null });
   const widgetRefs = useRef({});
+  
+  // Parse URL query parameter for username (e.g., ?username=XXX)
+  const urlUsername = useMemo(() => {
+    if (typeof window === 'undefined') return null;
+    const params = new URLSearchParams(window.location.search);
+    return params.get('username') || null;
+  }, []);
 
   // Check if user has any removed content
   const hasRemovedContent = useMemo(() => {
@@ -598,6 +605,8 @@ function App() {
             onUserDataChange={setUserData}
             isLoading={isLoading}
             setIsLoading={setIsLoading}
+            initialUsername={urlUsername}
+            autoSearch={!!urlUsername}
             className="no-enlarge"
           />
         </div>
@@ -629,6 +638,7 @@ function App() {
             onUserDataChange={setUserData}
             isLoading={isLoading}
             setIsLoading={setIsLoading}
+            initialUsername={urlUsername}
             style={{ gridColumn: 'span 1', gridRow: 'span 2' }}
             className="no-enlarge"
           />

@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { analyzeWithQueue } from '../lib/apiClient';
 
-export default function SearchBox({ userData, onUserDataChange, isLoading, setIsLoading, style }) {
-  const [searchUsername, setSearchUsername] = useState('');
+export default function SearchBox({ userData, onUserDataChange, isLoading, setIsLoading, style, initialUsername, autoSearch }) {
+  const [searchUsername, setSearchUsername] = useState(initialUsername || '');
   const [queueInfo, setQueueInfo] = useState(null);
+  const autoSearchTriggered = useRef(false);
   
   // Update search field when userData changes
   useEffect(() => {
@@ -12,6 +13,15 @@ export default function SearchBox({ userData, onUserDataChange, isLoading, setIs
       setSearchUsername(username);
     }
   }, [userData]);
+  
+  // Auto-search when initialUsername is provided with autoSearch flag
+  useEffect(() => {
+    if (initialUsername && autoSearch && !autoSearchTriggered.current && !userData) {
+      autoSearchTriggered.current = true;
+      // Trigger search programmatically
+      triggerSearch(initialUsername);
+    }
+  }, [initialUsername, autoSearch, userData]);
 
   // Check if current search is different from loaded user
   const isCurrentUser = () => {
@@ -20,15 +30,16 @@ export default function SearchBox({ userData, onUserDataChange, isLoading, setIs
     return currentUsername === searchUsernameClean && currentUsername !== '';
   };
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
-    if (!searchUsername.trim()) return;
+  // Shared search logic used by both form submit and auto-search
+  const triggerSearch = async (username) => {
+    const usernameToSearch = username || searchUsername.trim();
+    if (!usernameToSearch) return;
 
     setIsLoading(true);
     setQueueInfo(null);
     try {
       const payload = {
-        username: searchUsername.trim(),
+        username: usernameToSearch,
         top: 0,
         include_raw: true,
       };
@@ -69,6 +80,11 @@ export default function SearchBox({ userData, onUserDataChange, isLoading, setIs
       setIsLoading(false);
       setTimeout(() => setQueueInfo(null), 1000);
     }
+  };
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    await triggerSearch();
   };
 
   return (
