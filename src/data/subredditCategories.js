@@ -908,12 +908,13 @@ async function saveUncategorizedSubreddits(subreddits) {
     
     // Auto-save to file via API
     try {
-      // Resolve API base (tries 37.27.27.247:5000 and :5001)
+      // Resolve API base (tries configured host on :5000 and :5001)
+      const API_HOST = import.meta.env.VITE_API_HOST || 'localhost';
       const ports = [5000, 5001];
       let apiBase = null;
       
       for (const port of ports) {
-        const base = `http://37.27.27.247:${port}`;
+        const base = `http://${API_HOST}:${port}`;
         try {
           const healthCheck = await fetch(base + '/health', { method: 'GET' });
           if (healthCheck.ok) {
@@ -925,7 +926,7 @@ async function saveUncategorizedSubreddits(subreddits) {
         }
       }
       
-      if (!apiBase) apiBase = 'http://37.27.27.247:5000'; // fallback
+      if (!apiBase) apiBase = `http://${API_HOST}:5000`; // fallback
       
       const response = await fetch(apiBase + '/save-uncategorized', {
         method: 'POST',

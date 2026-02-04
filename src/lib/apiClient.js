@@ -3,7 +3,9 @@ import { queueRequest, fetchWithRetry } from './requestQueue';
 let resolvedBase = null;
 let resolving = false;
 
-export async function resolveApiBase(preferredHost = '37.27.27.247') {
+const API_HOST = import.meta.env.VITE_API_HOST || 'localhost';
+
+export async function resolveApiBase(preferredHost = API_HOST) {
   if (resolvedBase) return resolvedBase;
   if (resolving) {
     // wait until resolving finished

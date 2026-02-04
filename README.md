@@ -294,8 +294,8 @@ npm run build
 ## Server Deployment
 
 ```bash
-# SSH to server
-ssh root@37.27.27.247
+# SSH to your server
+ssh user@your-server-ip
 
 # Navigate to project
 cd /opt/reddit-analyzer
@@ -447,7 +447,7 @@ Hook your existing analysis function into `process_analyze(payload)` so the work
 Restart after changes:
 
 ```bash
-ssh root@37.27.27.247
+ssh user@your-server-ip
 cd /opt/reddit-analyzer
 pkill -f gunicorn
 nohup gunicorn -w 1 -b 0.0.0.0:5000 api_server_simple:app --timeout 120 > gunicorn.log 2>&1 &
