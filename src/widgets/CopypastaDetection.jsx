@@ -36,16 +36,34 @@ export default function CopypastaDetection({ userData, style = {} }) {
     const minWordCount = 10; // Minimum words to consider as copypasta
 
     allContent.forEach(item => {
-      const words = item.text.toLowerCase()
+      // Clean text: remove URLs, code blocks, and common technical artifacts
+      let cleanedText = item.text.toLowerCase()
+        .replace(/https?:\/\/[^\s]+/g, ' ') // Remove URLs
+        .replace(/www\.[^\s]+/g, ' ') // Remove www links
+        .replace(/[a-z0-9]+\.(com|org|net|io|dev|github|reddit)[^\s]*/gi, ' ') // Remove domain names
+        .replace(/`[^`]+`/g, ' ') // Remove inline code
+        .replace(/```[\s\S]*?```/g, ' ') // Remove code blocks
+        .replace(/\b[a-z]+\/[a-z]+\b/g, ' ') // Remove paths like r/subreddit
         .replace(/[^\w\s]/g, ' ')
+        .replace(/\b\w{1,2}\b/g, ' '); // Remove 1-2 letter words
+      
+      const words = cleanedText
         .split(/\s+/)
         .filter(w => w.length > 2);
+
+      // Skip if too few words after cleaning
+      if (words.length < minPhraseLength) return;
 
       // Extract phrases of different lengths
       for (let len = minPhraseLength; len <= Math.min(15, words.length); len++) {
         for (let i = 0; i <= words.length - len; i++) {
           const phrase = words.slice(i, i + len).join(' ');
-          if (phrase.split(' ').length >= minPhraseLength) {
+          
+          // Additional filtering: skip phrases that are too generic or technical
+          const genericTerms = ['http', 'https', 'www', 'com', 'org', 'github', 'reddit', 'edit', 'delete', 'click', 'link', 'source', 'permalink'];
+          const hasGenericTerm = genericTerms.some(term => phrase.includes(term));
+          
+          if (phrase.split(' ').length >= minPhraseLength && !hasGenericTerm) {
             if (!phraseMap.has(phrase)) {
               phraseMap.set(phrase, { count: 0, items: [], wordCount: len });
             }

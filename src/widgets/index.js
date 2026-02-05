@@ -60,3 +60,7 @@ export { default as EditTiming } from './EditTiming';
 export { default as CopypastaDetection } from './CopypastaDetection';
 export { default as InteractionReach } from './InteractionReach';
 export { default as LifetimeActivity } from './LifetimeActivity';
+export { default as FamilyTree } from './FamilyTree';
+export { default as FriendsNetwork } from './FriendsNetwork';
+export { default as RelationshipStatus } from './RelationshipStatus';
+export { default as ProfessionAnalysis } from './ProfessionAnalysis';

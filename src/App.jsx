@@ -64,6 +64,10 @@ import {
   CopypastaDetection,
   InteractionReach,
   LifetimeActivity,
+  FamilyTree,
+  FriendsNetwork,
+  RelationshipStatus,
+  ProfessionAnalysis,
 } from './widgets';
 import TopWorstContent from './widgets/TopWorstContent';
 
@@ -124,6 +128,10 @@ const WIDGET_SIZES = {
   CopypastaDetection: { cols: 2, rows: 2 },
   InteractionReach: { cols: 2, rows: 2 },
   LifetimeActivity: { cols: 4, rows: 2 },
+  FamilyTree: { cols: 1, rows: 2 },
+  FriendsNetwork: { cols: 1, rows: 2 },
+  RelationshipStatus: { cols: 1, rows: 2 },
+  ProfessionAnalysis: { cols: 1, rows: 2 },
 
 };
 
@@ -792,6 +800,12 @@ function App() {
         {shouldShowWidget('LifetimeActivity') && (
           <LifetimeActivity userData={userData} style={getSize('LifetimeActivity')} />
         )}
+        
+        {/* AI-Powered Personal Insights */}
+        <FamilyTree userData={userData} style={getSize('FamilyTree')} />
+        <FriendsNetwork userData={userData} style={getSize('FriendsNetwork')} />
+        <RelationshipStatus userData={userData} style={getSize('RelationshipStatus')} />
+        <ProfessionAnalysis userData={userData} style={getSize('ProfessionAnalysis')} />
         
         {/* Row 3: Top Subreddits (1x1) | (Personality continues) | Removed Comments (1x1) */}
         <ActivityByMonth userData={userData} style={getSize('ActivityByMonth')} />
