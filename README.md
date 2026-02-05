@@ -1,6 +1,6 @@
 # Reddit User Analyzer - Frontend
 
-A comprehensive React dashboard for analyzing Reddit user activity, behavior patterns, and content.
+A comprehensive React dashboard for analyzing Reddit user activity, behavior patterns, and content with AI-powered insights.
 
 ## Server Configuration
 
