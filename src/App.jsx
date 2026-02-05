@@ -68,6 +68,7 @@ import {
   FriendsNetwork,
   RelationshipStatus,
   ProfessionAnalysis,
+  LocationAnalysis,
 } from './widgets';
 import TopWorstContent from './widgets/TopWorstContent';
 
@@ -132,6 +133,7 @@ const WIDGET_SIZES = {
   FriendsNetwork: { cols: 1, rows: 2 },
   RelationshipStatus: { cols: 1, rows: 2 },
   ProfessionAnalysis: { cols: 1, rows: 2 },
+  LocationAnalysis: { cols: 2, rows: 2 },
 
 };
 
@@ -870,6 +872,7 @@ function App() {
           highlightedCountries={highlightedCountries}
           style={getSize('TopLocationsWidget')} 
         />
+        <LocationAnalysis userData={userData} style={getSize('LocationAnalysis')} />
         
         {/* Row: WorldMap */}
         <WorldMapWidget 

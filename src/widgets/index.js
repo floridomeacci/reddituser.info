@@ -64,3 +64,4 @@ export { default as FamilyTree } from './FamilyTree';
 export { default as FriendsNetwork } from './FriendsNetwork';
 export { default as RelationshipStatus } from './RelationshipStatus';
 export { default as ProfessionAnalysis } from './ProfessionAnalysis';
+export { default as LocationAnalysis } from './LocationAnalysis';
