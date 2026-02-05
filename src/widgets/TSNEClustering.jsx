@@ -23,7 +23,14 @@ export default function TSNEClustering({ userData, style }) {
   }, [filteredUserData, contentType]);
 
   // Use shared language analysis (cached across widgets)
-  const langAnalysis = useMemo(() => analyzeLanguages(filteredUserData), [filteredUserData]);
+  const langAnalysis = useMemo(() => {
+    try {
+      return analyzeLanguages(filteredUserData);
+    } catch (e) {
+      console.error('Language analysis error:', e);
+      return { languageData: [], dominantLanguage: 'eng', totalItems: 0, itemsWithLanguage: [] };
+    }
+  }, [filteredUserData]);
 
   const cleanText = (text) => {
     return text.toLowerCase()
@@ -300,15 +307,7 @@ export default function TSNEClustering({ userData, style }) {
     .filter(lang => lang !== 'Unknown')
     .slice(0, 6);
 
-  if (!allItems || allItems.length === 0 || !basePoints || basePoints.length === 0) {
-    return (
-      <div className="cell" style={{ gridColumn: 'span 2', gridRow: 'span 2', ...style }}>
-        <h3>t-SNE Clustering</h3>
-        <p className="stat-meta" style={{ marginBottom: '8px' }}>Dimensionality reduction</p>
-        <div style={{ color: '#999', textAlign: 'center', paddingTop: '50px' }}>Not enough data</div>
-      </div>
-    );
-  }
+  const hasData = allItems && allItems.length > 0 && basePoints && basePoints.length > 0;
 
   try {
     return (
@@ -341,6 +340,9 @@ export default function TSNEClustering({ userData, style }) {
             ))}
           </div>
         </div>
+        {!hasData ? (
+          <div style={{ color: '#999', textAlign: 'center', paddingTop: '50px' }}>Not enough data for this content type</div>
+        ) : (
         
         <div style={{ display: 'flex', height: 'calc(100% - 55px)', gap: '12px' }}>          {/* Left side - Controls */}
           <div style={{ width: '28%', display: 'flex', flexDirection: 'column', gap: '8px', minHeight: 0 }}>            {/* Time range slider */}
@@ -524,15 +526,42 @@ export default function TSNEClustering({ userData, style }) {
             </svg>
           </div>
         </div>
+        )}
       </div>
     );
   } catch (error) {
-    console.error('t-SNE error:', error);
+    console.error('t-SNE render error:', error);
     return (
-      <div className="cell" style={{ gridColumn: 'span 1', gridRow: 'span 1', ...style }}>
-        <h3>t-SNE Clustering</h3>
-        <p className="stat-meta" style={{ marginBottom: '8px' }}>Dimensionality reduction</p>
-        <div style={{ color: '#999', textAlign: 'center', paddingTop: '50px' }}>Processing...</div>
+      <div className="cell" style={{ gridColumn: 'span 2', gridRow: 'span 2', ...style }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+          <div>
+            <h3 style={{ margin: 0 }}>t-SNE Clustering</h3>
+            <p className="stat-meta" style={{ marginBottom: '0', fontSize: '10px' }}>Language patterns • Distance = similarity</p>
+          </div>
+          <div style={{ display: 'flex', gap: '4px', marginRight: '32px' }}>
+            {['both', 'comments', 'posts'].map(type => (
+              <button
+                key={type}
+                onClick={() => setContentType(type)}
+                style={{
+                  padding: '4px 8px',
+                  background: contentType === type ? COLORS.ACCENT_PRIMARY : 'rgba(255, 255, 255, 0.05)',
+                  border: 'none',
+                  borderRadius: '4px',
+                  color: contentType === type ? '#000' : '#fff',
+                  fontSize: '9px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  textTransform: 'capitalize',
+                  transition: 'all 0.2s'
+                }}
+              >
+                {type}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div style={{ color: '#999', textAlign: 'center', paddingTop: '50px' }}>Processing error — try a different content type</div>
       </div>
     );
   }
