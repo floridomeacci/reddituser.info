@@ -464,3 +464,4 @@ nohup gunicorn -w 1 -b 0.0.0.0:5000 api_server_simple:app --timeout 120 > gunico
 | `src/design-tokens.js` | Colors and style constants |
 | `src/design-system.css` | Global CSS styles |
 | `src/components/` | Shared chart components (HourlyHeatmap, WorldMap, etc.) |
+# Trigger rebuild
