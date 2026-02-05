@@ -908,27 +908,11 @@ async function saveUncategorizedSubreddits(subreddits) {
     
     // Auto-save to file via API
     try {
-      // Resolve API base (tries configured host on :5000 and :5001)
-      const API_HOST = import.meta.env.VITE_API_HOST || 'api.reddituser.info';
-      const API_PROTOCOL = import.meta.env.VITE_API_PROTOCOL || (typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'https' : 'http');
-      const ports = API_PROTOCOL === 'https' ? [443, 5000, 5001] : [5000, 5001];
-      let apiBase = null;
-      
-      for (const port of ports) {
-        const portSuffix = (API_PROTOCOL === 'https' && port === 443) ? '' : `:${port}`;
-        const base = `${API_PROTOCOL}://${API_HOST}${portSuffix}`;
-        try {
-          const healthCheck = await fetch(base + '/health', { method: 'GET' });
-          if (healthCheck.ok) {
-            apiBase = base;
-            break;
-          }
-        } catch (e) {
-          // Try next port
-        }
-      }
-      
-      if (!apiBase) apiBase = `${API_PROTOCOL}://${API_HOST}:5000`; // fallback
+      // Production: always use Cloudflare-proxied domain
+      const IS_PROD = typeof window !== 'undefined' && window.location.protocol === 'https:';
+      const apiBase = IS_PROD
+        ? 'https://api.reddituser.info'
+        : 'http://localhost:5000';
       
       const response = await fetch(apiBase + '/save-uncategorized', {
         method: 'POST',

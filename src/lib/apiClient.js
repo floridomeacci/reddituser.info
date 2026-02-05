@@ -3,42 +3,55 @@ import { queueRequest, fetchWithRetry } from './requestQueue';
 let resolvedBase = null;
 let resolving = false;
 
-// Use env var, or production server as fallback (never localhost in prod)
-const API_HOST = import.meta.env.VITE_API_HOST || 'api.reddituser.info';
-// Use HTTPS in production (when page is served over HTTPS), HTTP for local dev
-const API_PROTOCOL = import.meta.env.VITE_API_PROTOCOL || (typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'https' : 'http');
+// Production: always use https://api.reddituser.info (Cloudflare proxy handles SSL)
+// Local dev: use http://localhost:5000 or http://37.27.27.247:5000
+const IS_PRODUCTION = typeof window !== 'undefined' && window.location.protocol === 'https:';
+const PRODUCTION_API = 'https://api.reddituser.info';
 
-export async function resolveApiBase(preferredHost = API_HOST) {
+export async function resolveApiBase() {
   if (resolvedBase) return resolvedBase;
   if (resolving) {
-    // wait until resolving finished
     while (resolving) {
       await new Promise(r => setTimeout(r, 50));
     }
     return resolvedBase;
   }
   resolving = true;
-  
-  // For HTTPS, try port 443 first (standard), then custom ports
-  // For HTTP, try 5000, 5001
-  const ports = API_PROTOCOL === 'https' ? [443, 5000, 5001] : [5000, 5001];
-  
-  for (const port of ports) {
-    // For standard ports (443 for https, 80 for http), don't include port in URL
-    const portSuffix = (API_PROTOCOL === 'https' && port === 443) ? '' : `:${port}`;
-    const base = `${API_PROTOCOL}://${preferredHost}${portSuffix}`;
+
+  if (IS_PRODUCTION) {
+    // In production (HTTPS), always use Cloudflare-proxied domain
+    // No port probing needed - Cloudflare handles SSL termination on port 443
     try {
-      const res = await fetch(base + '/health');
+      const res = await fetch(PRODUCTION_API + '/health');
       if (res.ok) {
-        resolvedBase = base;
-        break;
+        resolvedBase = PRODUCTION_API;
       }
     } catch (_) {
-      // ignore and try next
+      // Even if health check fails, use it anyway - it's the only valid option on HTTPS
+      resolvedBase = PRODUCTION_API;
     }
+  } else {
+    // Local development - try localhost first, then direct IP
+    const devHosts = [
+      'http://localhost:5000',
+      'http://localhost:5001',
+      'http://37.27.27.247:5000',
+      'http://37.27.27.247:5001'
+    ];
+    for (const base of devHosts) {
+      try {
+        const res = await fetch(base + '/health');
+        if (res.ok) {
+          resolvedBase = base;
+          break;
+        }
+      } catch (_) {
+        // try next
+      }
+    }
+    if (!resolvedBase) resolvedBase = 'http://localhost:5000';
   }
-  // fallback
-  if (!resolvedBase) resolvedBase = `${API_PROTOCOL}://${preferredHost}:5000`;
+
   resolving = false;
   return resolvedBase;
 }
