@@ -596,7 +596,7 @@ function App() {
             textAlign: 'center',
             letterSpacing: '-0.5px'
           }}>
-            Reddit User Info
+            REDDITUSER.INFO
           </h1>
           <p style={{ 
             color: 'rgba(255, 255, 255, 0.6)', 
@@ -605,7 +605,7 @@ function App() {
             textAlign: 'center',
             lineHeight: '1.5'
           }}>
-            How your online footprint identifies who you are.
+            What does your reddit profile reveal about you?
           </p>
           
           <SearchBox 
