@@ -65,8 +65,15 @@ export default function RelationshipStatus({ userData, style = {} }) {
 
         if (!response.ok) throw new Error('AI query failed');
         
-        const data = await response.json();
-        setRelationshipData(data);
+        const raw = await response.json();
+        // n8n returns [{"output": "JSON string"}] - unwrap it
+        let parsed = raw;
+        if (Array.isArray(raw) && raw[0]?.output) {
+          try { parsed = JSON.parse(raw[0].output); } catch (e) { parsed = raw[0].output; }
+        } else if (typeof raw === 'string') {
+          try { parsed = JSON.parse(raw); } catch (e) { /* keep as-is */ }
+        }
+        setRelationshipData(parsed);
       } catch (err) {
         setError(err.message);
         console.error('Relationship Status AI query error:', err);
