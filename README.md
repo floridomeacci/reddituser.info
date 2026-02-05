@@ -466,3 +466,4 @@ nohup gunicorn -w 1 -b 0.0.0.0:5000 api_server_simple:app --timeout 120 > gunico
 | `src/components/` | Shared chart components (HourlyHeatmap, WorldMap, etc.) |
 # Trigger rebuild
 # Trigger fresh deployment Thu Feb  5 21:34:04 CET 2026
+# Cache invalidation 1770323964
