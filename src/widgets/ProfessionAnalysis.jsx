@@ -98,9 +98,12 @@ export default function ProfessionAnalysis({ userData, style = {} }) {
     return (
       <div className="cell" style={style}>
         <h3>Profession</h3>
-        <p className="stat-meta">No work mentions detected</p>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '120px', color: COLORS.TEXT_MUTED, fontSize: '11px' }}>
-          No profession references found
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: '12px', padding: '32px 16px' }}>
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <path d="M9 12l2 2 4-4" />
+          </svg>
+          <div style={{ color: '#4ade80', fontSize: '14px', fontWeight: 600, textAlign: 'center' }}>User keeps profession private</div>
         </div>
       </div>
     );
@@ -128,13 +131,13 @@ export default function ProfessionAnalysis({ userData, style = {} }) {
           <>
             {professionData.summary && (
               <div style={{ 
-                background: 'rgba(167, 139, 250, 0.1)', 
-                border: `1px solid rgba(167, 139, 250, 0.3)`,
+                background: 'rgba(255, 107, 107, 0.1)', 
+                border: `1px solid ${COLORS.BORDER_DEFAULT}`,
                 borderRadius: '6px',
                 padding: '8px',
                 marginBottom: '12px',
                 fontSize: '10px',
-                color: COLORS.TEXT_PRIMARY
+                color: COLORS.TEXT_LIGHT_GREY
               }}>
                 {professionData.summary}
               </div>
@@ -150,7 +153,7 @@ export default function ProfessionAnalysis({ userData, style = {} }) {
                   <div style={{ fontSize: '9px', color: COLORS.TEXT_MUTED, textTransform: 'uppercase', marginBottom: '4px' }}>
                     Industry
                   </div>
-                  <div style={{ fontWeight: '600', color: COLORS.DATA_3 }}>
+                  <div style={{ fontWeight: '600', color: COLORS.ACCENT_PRIMARY }}>
                     {professionData.industry}
                   </div>
                 </div>
@@ -165,7 +168,7 @@ export default function ProfessionAnalysis({ userData, style = {} }) {
                   <div style={{ fontSize: '9px', color: COLORS.TEXT_MUTED, textTransform: 'uppercase', marginBottom: '4px' }}>
                     Employment
                   </div>
-                  <div style={{ fontWeight: '600', color: COLORS.DATA_4, textTransform: 'capitalize' }}>
+                  <div style={{ fontWeight: '600', color: COLORS.ACCENT_PRIMARY, textTransform: 'capitalize' }}>
                     {professionData.employmentStatus}
                     {professionData.workEnvironment && ` • ${professionData.workEnvironment}`}
                   </div>
@@ -187,10 +190,10 @@ export default function ProfessionAnalysis({ userData, style = {} }) {
                         key={idx}
                         style={{
                           padding: '4px 8px',
-                          background: 'rgba(167, 139, 250, 0.2)',
+                          background: 'rgba(255, 107, 107, 0.15)',
                           borderRadius: '12px',
                           fontSize: '9px',
-                          color: '#A78BFA',
+                          color: COLORS.ACCENT_PRIMARY,
                           fontWeight: '500'
                         }}
                       >

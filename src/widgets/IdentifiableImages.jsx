@@ -95,11 +95,12 @@ export default function IdentifiableImages({ userData, style = {} }) {
     return (
       <div className="cell" style={style}>
         <h3>⚠️ Identifiable Images</h3>
-        <p className="stat-meta">No media posts found</p>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: '8px', padding: '24px 16px' }}>
-          <div style={{ fontSize: '40px' }}>🛡️</div>
-          <div style={{ color: '#4ade80', fontSize: '13px', fontWeight: 600 }}>User keeps their appearance private</div>
-          <div style={{ color: COLORS.TEXT_MUTED, fontSize: '11px' }}>No identifiable images found in posts</div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: '12px', padding: '32px 16px' }}>
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <path d="M9 12l2 2 4-4" />
+          </svg>
+          <div style={{ color: '#4ade80', fontSize: '14px', fontWeight: 600, textAlign: 'center' }}>User keeps their appearance private</div>
         </div>
       </div>
     );
@@ -217,16 +218,19 @@ export default function IdentifiableImages({ userData, style = {} }) {
 
           {identifiableWithData.length === 0 ? (
             <div style={{
-              padding: '20px 16px',
-              backgroundColor: 'rgba(74, 222, 128, 0.06)',
-              borderRadius: '8px',
-              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '24px 16px',
               marginTop: '12px',
-              border: '1px solid rgba(74, 222, 128, 0.2)'
+              gap: '12px'
             }}>
-              <div style={{ fontSize: '36px', marginBottom: '8px' }}>🛡️</div>
-              <div style={{ fontSize: '13px', color: '#4ade80', fontWeight: 600 }}>User keeps their appearance private</div>
-              <div style={{ fontSize: '11px', color: COLORS.TEXT_MUTED, marginTop: '4px' }}>No identifiable images detected in posts</div>
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <path d="M9 12l2 2 4-4" />
+              </svg>
+              <div style={{ fontSize: '14px', color: '#4ade80', fontWeight: 600, textAlign: 'center' }}>User keeps their appearance private</div>
             </div>
           ) : currentItem && (
             <>
