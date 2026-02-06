@@ -69,6 +69,7 @@ import {
   RelationshipStatus,
   ProfessionAnalysis,
   LocationAnalysis,
+  IdentifiableImages,
 } from './widgets';
 import TopWorstContent from './widgets/TopWorstContent';
 
@@ -134,6 +135,7 @@ const WIDGET_SIZES = {
   RelationshipStatus: { cols: 1, rows: 2 },
   ProfessionAnalysis: { cols: 1, rows: 2 },
   LocationAnalysis: { cols: 2, rows: 2 },
+  IdentifiableImages: { cols: 2, rows: 2 },
 
 };
 
@@ -873,6 +875,7 @@ function App() {
           style={getSize('TopLocationsWidget')} 
         />
         <LocationAnalysis userData={userData} style={getSize('LocationAnalysis')} />
+        <IdentifiableImages userData={userData} style={getSize('IdentifiableImages')} />
         
         {/* Row: WorldMap */}
         <WorldMapWidget 
