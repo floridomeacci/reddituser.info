@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './WorldMap.css';
 
-const WorldMap = ({ comments, posts, activityByHour, peakWindow }) => {
+const WorldMap = ({ comments, posts, activityByHour, peakWindow, aiLocation }) => {
   const svgRef = useRef(null);
   const [highlightedCountries, setHighlightedCountries] = useState(new Set());
   const [hoveredCountry, setHoveredCountry] = useState(null);
@@ -9,48 +9,106 @@ const WorldMap = ({ comments, posts, activityByHour, peakWindow }) => {
   const [estimatedTimezone, setEstimatedTimezone] = useState(null);
   const [estimatedLocation, setEstimatedLocation] = useState(null);
   const [detectedLanguage, setDetectedLanguage] = useState(null);
-  const [confidence, setConfidence] = useState({ timezone: false, location: false, language: false, timezoneMatch: false });
+  const [confidence, setConfidence] = useState({ timezone: false, location: false, language: false, timezoneMatch: false, aiMatch: false, aiConfidence: null });
+
+  // Country name → typical UTC offset (for reverse lookup from AI location)
+  const countryToTimezone = {
+    'usa': -5, 'canada': -5, 'mexico': -6, 'brazil': -3, 'argentina': -3, 'chile': -4,
+    'colombia': -5, 'peru': -5, 'ecuador': -5, 'venezuela': -4, 'uruguay': -3, 'bolivia': -4,
+    'britain': 0, 'ireland': 0, 'iceland': 0, 'portugal': 0, 'ghana': 0, 'senegal': 0,
+    'germany': 1, 'france': 1, 'spain': 1, 'italy': 1, 'netherlands': 1, 'belgium': 1,
+    'poland': 1, 'norway': 1, 'sweden': 1, 'denmark': 1, 'austria': 1, 'switzerland': 1,
+    'czech': 1, 'algeria': 1, 'nigeria': 1, 'cameroon': 1, 'morocco': 1, 'tunisia': 1,
+    'finland': 2, 'estonia': 2, 'latvia': 2, 'lithuania': 2, 'ukraine': 2, 'romania': 2,
+    'bulgaria': 2, 'greece': 2, 'egypt': 2, 'south africa': 2, 'israel': 2,
+    'turkey': 3, 'russia': 3, 'saudi': 3, 'iraq': 3, 'kenya': 3, 'ethiopia': 3,
+    'tanzania': 3, 'madagascar': 3,
+    'emirates': 4, 'oman': 4,
+    'pakistan': 5, 'uzbekistan': 5, 'india': 5, 'kazakhstan': 6, 'bangladesh': 6,
+    'thailand': 7, 'vietnam': 7, 'cambodia': 7, 'laos': 7, 'indonesia': 7,
+    'china': 8, 'singapore': 8, 'malaysia': 8, 'philippines': 8, 'taiwan': 8,
+    'japan': 9, 'south korea': 9, 'north korea': 9,
+    'australia': 10, 'papua new guinea': 10,
+    'new zealand north island': 12, 'new zealand south island': 12,
+  };
+
+  // Map AI country names to SVG path IDs
+  const aiCountryToSvgId = {
+    'united states': 'usa', 'us': 'usa', 'usa': 'usa', 'america': 'usa',
+    'united kingdom': 'britain', 'uk': 'britain', 'england': 'britain',
+    'scotland': 'britain', 'wales': 'britain', 'great britain': 'britain',
+    'canada': 'canada', 'mexico': 'mexico', 'brazil': 'brazil', 'argentina': 'argentina',
+    'germany': 'germany', 'france': 'france', 'italy': 'italy', 'spain': 'spain',
+    'portugal': 'portugal', 'netherlands': 'netherlands', 'belgium': 'belgium',
+    'switzerland': 'switzerland', 'austria': 'austria', 'poland': 'poland',
+    'czech republic': 'czech', 'czechia': 'czech', 'romania': 'romania', 'bulgaria': 'bulgaria',
+    'greece': 'greece', 'ireland': 'ireland', 'iceland': 'iceland',
+    'norway': 'norway', 'sweden': 'sweden', 'finland': 'finland', 'denmark': 'denmark',
+    'ukraine': 'ukraine', 'russia': 'russia', 'turkey': 'turkey',
+    'china': 'china', 'japan': 'japan', 'india': 'india',
+    'south korea': 'south korea', 'korea': 'south korea',
+    'taiwan': 'taiwan', 'israel': 'israel', 'iran': 'iran', 'iraq': 'iraq',
+    'saudi arabia': 'saudi', 'uae': 'emirates', 'united arab emirates': 'emirates',
+    'pakistan': 'pakistan', 'bangladesh': 'bangladesh',
+    'thailand': 'thailand', 'vietnam': 'vietnam', 'philippines': 'philippines',
+    'indonesia': 'indonesia', 'malaysia': 'malaysia', 'singapore': 'singapore',
+    'egypt': 'egypt', 'south africa': 'south africa', 'nigeria': 'nigeria', 'kenya': 'kenya',
+    'colombia': 'colombia', 'peru': 'peru', 'chile': 'chile', 'venezuela': 'venezuela',
+    'new zealand': 'new zealand north island', 'australia': 'australia',
+  };
 
   useEffect(() => {
     // Calculate estimated timezone based on sleep patterns
     if (activityByHour && activityByHour.length > 0) {
-      // Find the least active period (sleep time)
-      const minActivity = Math.min(...activityByHour.map(h => h.count || 0));
-      const sleepHours = activityByHour.filter(h => h.count === minActivity || h.count < minActivity * 1.5);
-      
-      if (sleepHours.length > 0) {
-        // Get the middle of the sleep period
-        const avgSleepHour = sleepHours.reduce((sum, h) => {
-          const hour = typeof h.hour === 'number' ? h.hour : parseInt(h.hour.split(':')[0], 10);
-          return sum + hour;
-        }, 0) / sleepHours.length;
-        
-        // Assume sleep is around 3 AM local time, so calculate UTC offset
-        // If user sleeps at 3 AM local, and their data shows sleep at hour X UTC, then offset = X - 3
-        const estimatedOffset = Math.round(avgSleepHour - 3);
-        const offsetHours = ((estimatedOffset + 12) % 24) - 12; // Normalize to -12 to +12
-        
-        setEstimatedTimezone(offsetHours);
-        console.log('Estimated timezone offset:', offsetHours, 'hours from UTC');
+      const counts = activityByHour.map(h => h.count || 0);
+      const total = counts.reduce((a, b) => a + b, 0);
+      if (total === 0) return;
+
+      // activityByHour uses getHours() which returns VIEWER's local time
+      // Convert to UTC for proper timezone estimation
+      const viewerOffsetHours = -new Date().getTimezoneOffset() / 60;
+      const utcCounts = new Array(24).fill(0);
+      counts.forEach((count, localHour) => {
+        const utcHour = ((localHour - viewerOffsetHours) % 24 + 24) % 24;
+        utcCounts[Math.round(utcHour) % 24] += count;
+      });
+
+      // Find the 6-hour contiguous window with least total activity (sleep window)
+      let minSum = Infinity, sleepStartHour = 0;
+      for (let i = 0; i < 24; i++) {
+        let sum = 0;
+        for (let j = 0; j < 6; j++) {
+          sum += utcCounts[(i + j) % 24];
+        }
+        if (sum < minSum) {
+          minSum = sum;
+          sleepStartHour = i;
+        }
       }
+
+      // Middle of sleep window ≈ 3AM local time for the Reddit user
+      // sleepMidpointUTC is when the user is deepest asleep (in UTC)
+      // Since that's ~3AM local: local = UTC + offset → offset = 3 - sleepMidpointUTC
+      const sleepMidpointUTC = (sleepStartHour + 3) % 24;
+      const rawOffset = 3 - sleepMidpointUTC;
+      const offsetHours = ((rawOffset + 12) % 24) - 12; // Normalize to -12 to +12
+
+      setEstimatedTimezone(offsetHours);
+      console.log('Estimated timezone: UTC' + (offsetHours >= 0 ? '+' : '') + offsetHours,
+        '(viewer UTC' + (viewerOffsetHours >= 0 ? '+' : '') + viewerOffsetHours + ',',
+        'sleep window UTC', sleepStartHour + ':00-' + ((sleepStartHour + 5) % 24) + ':00)');
     }
   }, [activityByHour]);
 
   useEffect(() => {
-    // Calculate most likely location based on mentions and timezone
-    // Timezone to country mapping (approximate)
+    // Calculate most likely location — weighted: AI > timezone+mention > mention > timezone
     const timezoneCountries = {
-      '-11': ['samoa'],
-      '-10': ['hawaii'],
-      '-9': ['alaska'],
-      '-8': ['usa', 'canada'],
-      '-7': ['usa', 'canada', 'mexico'],
+      '-11': ['samoa'], '-10': ['hawaii'], '-9': ['alaska'],
+      '-8': ['usa', 'canada'], '-7': ['usa', 'canada', 'mexico'],
       '-6': ['usa', 'canada', 'mexico'],
       '-5': ['usa', 'canada', 'colombia', 'peru', 'ecuador'],
       '-4': ['usa', 'canada', 'venezuela', 'bolivia', 'chile'],
-      '-3': ['brazil', 'argentina', 'uruguay'],
-      '-2': [],
-      '-1': ['cape verde'],
+      '-3': ['brazil', 'argentina', 'uruguay'], '-2': [], '-1': ['cape verde'],
       '0': ['britain', 'portugal', 'ireland', 'iceland', 'ghana', 'senegal'],
       '1': ['germany', 'france', 'spain', 'italy', 'netherlands', 'belgium', 'poland', 'norway', 'sweden', 'denmark', 'austria', 'switzerland', 'czech', 'algeria', 'tunisia', 'morocco', 'nigeria', 'cameroon'],
       '2': ['finland', 'estonia', 'latvia', 'lithuania', 'ukraine', 'romania', 'bulgaria', 'greece', 'egypt', 'south africa', 'botswana', 'zimbabwe'],
@@ -66,57 +124,105 @@ const WorldMap = ({ comments, posts, activityByHour, peakWindow }) => {
       '12': ['new zealand north island', 'new zealand south island', 'fiji']
     };
 
-    // If we have timezone, we can calculate a location estimate
+    // ── PRIORITY 1: AI "Where They Live" with high/medium confidence ──
+    if (aiLocation?.likelyLocation?.country) {
+      const aiConf = (aiLocation.likelyLocation.confidence || '').toLowerCase();
+      const aiCountryRaw = aiLocation.likelyLocation.country.toLowerCase();
+      const svgId = aiCountryToSvgId[aiCountryRaw] || aiCountryRaw;
+
+      if (aiConf === 'high' || aiConf === 'medium') {
+        // Build rich display name from AI data
+        const parts = [
+          aiLocation.likelyLocation.city,
+          aiLocation.likelyLocation.state,
+          aiLocation.likelyLocation.country
+        ].filter(Boolean);
+        setEstimatedLocation(parts.join(', '));
+
+        // Check if activity-based timezone aligns with AI country
+        const aiTz = countryToTimezone[svgId];
+        const tzAligns = aiTz !== undefined && estimatedTimezone !== null &&
+          Math.abs(aiTz - estimatedTimezone) <= 2;
+
+        // If AI gives us a country, also override the timezone bar to match
+        if (aiTz !== undefined) {
+          setEstimatedTimezone(aiTz);
+        }
+
+        const textMatch = highlightedCountries.size > 0 &&
+          (highlightedCountries.has(svgId) ||
+           Array.from(highlightedCountries).some(c => c.includes(svgId) || svgId.includes(c)));
+
+        setConfidence({
+          timezone: estimatedTimezone !== null,
+          location: highlightedCountries.size > 0,
+          timezoneMatch: tzAligns || textMatch,
+          language: false, // will be updated by language detection
+          aiMatch: true,
+          aiConfidence: aiConf
+        });
+        return; // AI high/medium takes full priority
+      }
+    }
+
+    // ── PRIORITY 2: Timezone + text mentions (original logic, improved) ──
     if (estimatedTimezone !== null) {
       const possibleCountries = timezoneCountries[estimatedTimezone.toString()] || [];
-      
       let timezoneMatch = false;
       let selectedLocation = null;
-      let hasLocationMention = highlightedCountries.size > 0;
-      
+      const hasLocationMention = highlightedCountries.size > 0;
+
+      // Check if AI gave low confidence — use as tiebreaker
+      const aiLowConf = aiLocation?.likelyLocation?.country &&
+        (aiLocation.likelyLocation.confidence || '').toLowerCase() === 'low';
+
       if (hasLocationMention) {
-        // Find which highlighted country matches the timezone
-        const matches = Array.from(highlightedCountries).filter(country => 
+        const matches = Array.from(highlightedCountries).filter(country =>
           possibleCountries.some(tz => country.includes(tz) || tz.includes(country))
         );
-        
         if (matches.length > 0) {
           selectedLocation = matches[0];
           timezoneMatch = true;
+        } else if (aiLowConf) {
+          // AI low-confidence as tiebreaker between mentions
+          const aiSvgId = aiCountryToSvgId[aiLocation.likelyLocation.country.toLowerCase()];
+          selectedLocation = aiSvgId || Array.from(highlightedCountries)[0];
         } else {
-          // If no timezone match, just use the first highlighted country
           selectedLocation = Array.from(highlightedCountries)[0];
-          timezoneMatch = false;
         }
-      } else {
-        // No location mentions - use timezone's most common country as fallback
-        if (possibleCountries.length > 0) {
-          selectedLocation = possibleCountries[0];
-          timezoneMatch = true; // It matches timezone by definition
-        }
+      } else if (aiLowConf) {
+        // No text mentions but AI has a guess — use it
+        const aiSvgId = aiCountryToSvgId[aiLocation.likelyLocation.country.toLowerCase()];
+        selectedLocation = aiSvgId || (possibleCountries.length > 0 ? possibleCountries[0] : null);
+      } else if (possibleCountries.length > 0) {
+        selectedLocation = possibleCountries[0];
+        timezoneMatch = true;
       }
-      
-      setEstimatedLocation(selectedLocation);
-      
-      // Update confidence
+
+      if (selectedLocation) {
+        setEstimatedLocation(selectedLocation.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()));
+      }
       setConfidence(prev => ({
         ...prev,
         timezone: true,
         location: hasLocationMention,
-        timezoneMatch: timezoneMatch
+        timezoneMatch: timezoneMatch,
+        aiMatch: !!aiLowConf,
+        aiConfidence: aiLowConf ? 'low' : null
       }));
     } else if (highlightedCountries.size > 0) {
-      // No timezone but have location mentions
       const selectedLocation = Array.from(highlightedCountries)[0];
-      setEstimatedLocation(selectedLocation);
+      setEstimatedLocation(selectedLocation.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()));
       setConfidence(prev => ({
         ...prev,
         timezone: false,
         location: true,
-        timezoneMatch: false
+        timezoneMatch: false,
+        aiMatch: false,
+        aiConfidence: null
       }));
     }
-  }, [highlightedCountries, estimatedTimezone]);
+  }, [highlightedCountries, estimatedTimezone, aiLocation]);
 
   useEffect(() => {
     // Detect primary language from comments and posts
@@ -811,11 +917,17 @@ const WorldMap = ({ comments, posts, activityByHour, peakWindow }) => {
       <div className="location-estimate-box">
         <div className="location-estimate-title">Estimated Location</div>
         <div className="location-estimate-country">
-          {estimatedLocation ? estimatedLocation.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Calculating...'}
+          {estimatedLocation ? estimatedLocation : 'Calculating...'}
         </div>
         
         {/* Confidence indicators */}
         <div className="location-confidence">
+          {confidence.aiMatch && (
+            <div className="confidence-item" style={{ color: '#4ade80' }}>
+              <span className="confidence-check">✓</span>
+              <span>AI analysis ({confidence.aiConfidence})</span>
+            </div>
+          )}
           <div className="confidence-item" style={{ color: confidence.location ? '#4ade80' : '#666' }}>
             <span className="confidence-check">{confidence.location ? '✓' : '○'}</span>
             <span>Location mentioned</span>

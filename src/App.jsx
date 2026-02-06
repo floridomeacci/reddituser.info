@@ -165,6 +165,7 @@ function App() {
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [highlightedCountries, setHighlightedCountries] = useState(new Set());
   const [locationConfidence, setLocationConfidence] = useState({ location: null, timezone: null, language: null });
+  const [aiLocationData, setAiLocationData] = useState(null);
   const widgetRefs = useRef({});
   
   // Parse URL query parameter for username (e.g., ?username=XXX)
@@ -874,7 +875,7 @@ function App() {
           highlightedCountries={highlightedCountries}
           style={getSize('TopLocationsWidget')} 
         />
-        <LocationAnalysis userData={userData} style={getSize('LocationAnalysis')} />
+        <LocationAnalysis userData={userData} onLocationData={setAiLocationData} style={getSize('LocationAnalysis')} />
         <IdentifiableImages userData={userData} style={getSize('IdentifiableImages')} />
         
         {/* Row: WorldMap */}
@@ -882,6 +883,7 @@ function App() {
           userData={userData}
           activityByHour={activityByHour}
           peakWindow={peakWindow}
+          aiLocation={aiLocationData}
           onHighlightedCountriesChange={setHighlightedCountries}
           onConfidenceChange={(confidence) => {
             console.log('App received locationConfidence:', confidence);

@@ -42,7 +42,7 @@ const LIVING_PATTERNS = [
   /\b(back\s+home\s+in|back\s+in)\b/i,
 ];
 
-export default function LocationAnalysis({ userData, style = {} }) {
+export default function LocationAnalysis({ userData, onLocationData, style = {} }) {
   const [locationData, setLocationData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -157,6 +157,7 @@ export default function LocationAnalysis({ userData, style = {} }) {
           try { parsed = JSON.parse(raw); } catch (e) { /* keep as-is */ }
         }
         setLocationData(parsed);
+        if (onLocationData) onLocationData(parsed);
       } catch (err) {
         setError(err.message);
         console.error('Location Analysis AI error:', err);
