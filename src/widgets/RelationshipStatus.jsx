@@ -99,8 +99,10 @@ export default function RelationshipStatus({ userData, style = {} }) {
       <div className="cell" style={style}>
         <h3>Relationship Status</h3>
         <p className="stat-meta">No relationship mentions</p>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '120px', color: COLORS.TEXT_MUTED, fontSize: '11px' }}>
-          No relationship references found
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: '8px', padding: '24px 16px' }}>
+          <div style={{ fontSize: '40px' }}>🛡️</div>
+          <div style={{ color: '#4ade80', fontSize: '13px', fontWeight: 600 }}>User keeps relationship status private</div>
+          <div style={{ color: COLORS.TEXT_MUTED, fontSize: '11px' }}>No relationship references found in posts</div>
         </div>
       </div>
     );

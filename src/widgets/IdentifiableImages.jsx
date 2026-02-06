@@ -96,6 +96,11 @@ export default function IdentifiableImages({ userData, style = {} }) {
       <div className="cell" style={style}>
         <h3>⚠️ Identifiable Images</h3>
         <p className="stat-meta">No media posts found</p>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: '8px', padding: '24px 16px' }}>
+          <div style={{ fontSize: '40px' }}>🛡️</div>
+          <div style={{ color: '#4ade80', fontSize: '13px', fontWeight: 600 }}>User keeps their appearance private</div>
+          <div style={{ color: COLORS.TEXT_MUTED, fontSize: '11px' }}>No identifiable images found in posts</div>
+        </div>
       </div>
     );
   }
@@ -212,16 +217,16 @@ export default function IdentifiableImages({ userData, style = {} }) {
 
           {identifiableWithData.length === 0 ? (
             <div style={{
-              padding: '16px',
-              backgroundColor: 'rgba(255, 255, 255, 0.03)',
+              padding: '20px 16px',
+              backgroundColor: 'rgba(74, 222, 128, 0.06)',
               borderRadius: '8px',
               textAlign: 'center',
-              color: COLORS.TEXT_LIGHT_GREY,
               marginTop: '12px',
-              border: `1px solid ${COLORS.BORDER_DEFAULT}`
+              border: '1px solid rgba(74, 222, 128, 0.2)'
             }}>
-              <div style={{ fontSize: '32px', marginBottom: '8px' }}>✓</div>
-              <div style={{ fontSize: '13px' }}>No obviously identifiable images detected</div>
+              <div style={{ fontSize: '36px', marginBottom: '8px' }}>🛡️</div>
+              <div style={{ fontSize: '13px', color: '#4ade80', fontWeight: 600 }}>User keeps their appearance private</div>
+              <div style={{ fontSize: '11px', color: COLORS.TEXT_MUTED, marginTop: '4px' }}>No identifiable images detected in posts</div>
             </div>
           ) : currentItem && (
             <>

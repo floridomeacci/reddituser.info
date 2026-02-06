@@ -98,8 +98,10 @@ export default function FamilyTree({ userData, style = {} }) {
       <div className="cell" style={style}>
         <h3>Family Tree</h3>
         <p className="stat-meta">No family mentions detected</p>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '120px', color: COLORS.TEXT_MUTED, fontSize: '11px' }}>
-          No family references found
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: '8px', padding: '24px 16px' }}>
+          <div style={{ fontSize: '40px' }}>🛡️</div>
+          <div style={{ color: '#4ade80', fontSize: '13px', fontWeight: 600 }}>User keeps family info private</div>
+          <div style={{ color: COLORS.TEXT_MUTED, fontSize: '11px' }}>No family references found in posts</div>
         </div>
       </div>
     );
@@ -164,8 +166,10 @@ export default function FamilyTree({ userData, style = {} }) {
                 ))}
               </div>
             ) : (
-              <div style={{ color: COLORS.TEXT_MUTED, padding: '8px' }}>
-                No specific family members identified
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px 16px', backgroundColor: 'rgba(74, 222, 128, 0.06)', borderRadius: '8px', border: '1px solid rgba(74, 222, 128, 0.2)' }}>
+                <div style={{ fontSize: '36px', marginBottom: '8px' }}>🛡️</div>
+                <div style={{ color: '#4ade80', fontSize: '12px', fontWeight: 600 }}>User keeps family info private</div>
+                <div style={{ color: COLORS.TEXT_MUTED, fontSize: '10px', marginTop: '4px' }}>No specific family members identified</div>
               </div>
             )}
           </>
