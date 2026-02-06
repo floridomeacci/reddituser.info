@@ -86,7 +86,13 @@ export default function IdentifiableImages({ userData, style = {} }) {
     return (
       <div className="cell" style={style}>
         <h3>⚠️ Identifiable Images</h3>
-        <p className="stat-meta">No data available</p>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: '12px', padding: '32px 16px' }}>
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <path d="M9 12l2 2 4-4" />
+          </svg>
+          <div style={{ color: '#4ade80', fontSize: '14px', fontWeight: 600, textAlign: 'center' }}>User keeps their appearance private</div>
+        </div>
       </div>
     );
   }
@@ -144,6 +150,22 @@ export default function IdentifiableImages({ userData, style = {} }) {
       post: mediaPosts[item.id]
     }))
     .filter(item => item.post); // Filter out items where post doesn't exist
+
+  if (identifiableWithData.length === 0) {
+    return (
+      <div className="cell" style={style}>
+        <h3>⚠️ Identifiable Images</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: '12px', padding: '32px 16px' }}>
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <path d="M9 12l2 2 4-4" />
+          </svg>
+          <div style={{ color: '#4ade80', fontSize: '14px', fontWeight: 600, textAlign: 'center' }}>User keeps their appearance private</div>
+          <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '11px', textAlign: 'center' }}>Analyzed {mediaPosts.length} media posts — none appear identifiable</div>
+        </div>
+      </div>
+    );
+  }
 
   const riskColors = {
     high: COLORS.ACCENT_PRIMARY,
