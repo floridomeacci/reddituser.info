@@ -127,13 +127,13 @@ export default function FriendsNetwork({ userData, style = {} }) {
           <>
             {friendsData.summary && (
               <div style={{ 
-                background: 'rgba(107, 255, 193, 0.1)', 
-                border: `1px solid rgba(107, 255, 193, 0.3)`,
+                background: 'rgba(255, 107, 107, 0.1)', 
+                border: `1px solid ${COLORS.BORDER_DEFAULT}`,
                 borderRadius: '6px',
                 padding: '8px',
                 marginBottom: '12px',
                 fontSize: '10px',
-                color: COLORS.TEXT_PRIMARY
+                color: COLORS.TEXT_LIGHT_GREY
               }}>
                 {friendsData.summary}
               </div>
@@ -147,11 +147,11 @@ export default function FriendsNetwork({ userData, style = {} }) {
                     style={{
                       padding: '8px',
                       background: 'rgba(255, 255, 255, 0.03)',
-                      borderLeft: `3px solid ${COLORS.DATA_5}`,
+                      borderLeft: `3px solid ${COLORS.ACCENT_PRIMARY}`,
                       borderRadius: '4px'
                     }}
                   >
-                    <div style={{ fontWeight: '600', color: COLORS.DATA_5, textTransform: 'capitalize' }}>
+                    <div style={{ fontWeight: '600', color: COLORS.ACCENT_PRIMARY, textTransform: 'capitalize' }}>
                       {friend.type}
                       {friend.name && friend.name !== 'unknown' && ` (${friend.name})`}
                     </div>

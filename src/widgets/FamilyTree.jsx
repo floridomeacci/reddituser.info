@@ -128,12 +128,12 @@ export default function FamilyTree({ userData, style = {} }) {
             {familyData.summary && (
               <div style={{ 
                 background: 'rgba(255, 107, 107, 0.1)', 
-                border: `1px solid rgba(255, 107, 107, 0.3)`,
+                border: `1px solid ${COLORS.BORDER_DEFAULT}`,
                 borderRadius: '6px',
                 padding: '8px',
                 marginBottom: '12px',
                 fontSize: '10px',
-                color: COLORS.TEXT_PRIMARY
+                color: COLORS.TEXT_LIGHT_GREY
               }}>
                 {familyData.summary}
               </div>

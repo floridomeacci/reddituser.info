@@ -107,16 +107,8 @@ export default function RelationshipStatus({ userData, style = {} }) {
   }
 
   const getStatusColor = (status) => {
-    const colors = {
-      married: COLORS.DATA_5,
-      engaged: COLORS.DATA_3,
-      dating: COLORS.ACCENT_PRIMARY,
-      single: COLORS.DATA_2,
-      divorced: COLORS.DATA_4,
-      complicated: '#FF9500',
-      unknown: COLORS.TEXT_MUTED
-    };
-    return colors[status?.toLowerCase()] || COLORS.TEXT_MUTED;
+    if (!status || status.toLowerCase() === 'unknown') return COLORS.TEXT_MUTED;
+    return COLORS.ACCENT_PRIMARY;
   };
 
   return (
@@ -145,13 +137,13 @@ export default function RelationshipStatus({ userData, style = {} }) {
           <>
             {relationshipData.summary && (
               <div style={{ 
-                background: 'rgba(255, 193, 107, 0.1)', 
-                border: `1px solid rgba(255, 193, 107, 0.3)`,
+                background: 'rgba(255, 107, 107, 0.1)', 
+                border: `1px solid ${COLORS.BORDER_DEFAULT}`,
                 borderRadius: '6px',
                 padding: '8px',
                 marginBottom: '12px',
                 fontSize: '10px',
-                color: COLORS.TEXT_PRIMARY
+                color: COLORS.TEXT_LIGHT_GREY
               }}>
                 {relationshipData.summary}
               </div>
@@ -160,7 +152,7 @@ export default function RelationshipStatus({ userData, style = {} }) {
             {relationshipData.partner && (
               <div style={{
                 padding: '10px',
-                background: `rgba(${getStatusColor(relationshipData.status) === COLORS.DATA_5 ? '107, 255, 193' : '255, 107, 107'}, 0.08)`,
+                background: 'rgba(255, 107, 107, 0.08)',
                 borderRadius: '6px',
                 marginBottom: '12px'
               }}>
@@ -183,7 +175,7 @@ export default function RelationshipStatus({ userData, style = {} }) {
                 fontSize: '10px',
                 color: COLORS.TEXT_MUTED
               }}>
-                <div style={{ fontWeight: '600', color: COLORS.TEXT_PRIMARY, marginBottom: '4px' }}>
+                <div style={{ fontWeight: '600', color: COLORS.TEXT_WHITE, marginBottom: '4px' }}>
                   History
                 </div>
                 {relationshipData.history}

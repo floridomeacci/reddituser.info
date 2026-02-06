@@ -9,7 +9,7 @@ const WorldMap = ({ comments, posts, activityByHour, peakWindow }) => {
   const [estimatedTimezone, setEstimatedTimezone] = useState(null);
   const [estimatedLocation, setEstimatedLocation] = useState(null);
   const [detectedLanguage, setDetectedLanguage] = useState(null);
-  const [confidence, setConfidence] = useState({ timezone: false, location: false, language: false });
+  const [confidence, setConfidence] = useState({ timezone: false, location: false, language: false, timezoneMatch: false });
 
   useEffect(() => {
     // Calculate estimated timezone based on sleep patterns
@@ -54,7 +54,7 @@ const WorldMap = ({ comments, posts, activityByHour, peakWindow }) => {
       '0': ['britain', 'portugal', 'ireland', 'iceland', 'ghana', 'senegal'],
       '1': ['germany', 'france', 'spain', 'italy', 'netherlands', 'belgium', 'poland', 'norway', 'sweden', 'denmark', 'austria', 'switzerland', 'czech', 'algeria', 'tunisia', 'morocco', 'nigeria', 'cameroon'],
       '2': ['finland', 'estonia', 'latvia', 'lithuania', 'ukraine', 'romania', 'bulgaria', 'greece', 'egypt', 'south africa', 'botswana', 'zimbabwe'],
-      '3': ['russia', 'saudi', 'iraq', 'kenya', 'ethiopia', 'tanzania', 'madagascar'],
+      '3': ['russia', 'turkey', 'saudi', 'iraq', 'kenya', 'ethiopia', 'tanzania', 'madagascar'],
       '4': ['emirates', 'oman'],
       '5': ['pakistan', 'uzbekistan', 'kazakhstan'],
       '6': ['bangladesh', 'kazakhstan'],
@@ -820,8 +820,8 @@ const WorldMap = ({ comments, posts, activityByHour, peakWindow }) => {
             <span className="confidence-check">{confidence.location ? '✓' : '○'}</span>
             <span>Location mentioned</span>
           </div>
-          <div className="confidence-item" style={{ color: confidence.timezone ? '#4ade80' : '#666' }}>
-            <span className="confidence-check">{confidence.timezone ? '✓' : '○'}</span>
+          <div className="confidence-item" style={{ color: confidence.timezoneMatch ? '#4ade80' : '#666' }}>
+            <span className="confidence-check">{confidence.timezoneMatch ? '✓' : '○'}</span>
             <span>Timezone match</span>
           </div>
           <div className="confidence-item" style={{ color: confidence.language ? '#4ade80' : '#666' }}>

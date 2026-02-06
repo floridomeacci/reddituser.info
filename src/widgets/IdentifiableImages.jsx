@@ -140,9 +140,9 @@ export default function IdentifiableImages({ userData, style = {} }) {
     .filter(item => item.post); // Filter out items where post doesn't exist
 
   const riskColors = {
-    high: '#ff4444',
-    medium: '#ffaa00',
-    low: '#ffdd44'
+    high: COLORS.ACCENT_PRIMARY,
+    medium: COLORS.DATA_3,
+    low: COLORS.DATA_4
   };
 
   // Navigation handlers
@@ -185,10 +185,11 @@ export default function IdentifiableImages({ userData, style = {} }) {
           {identifiableWithData.length > 0 && (
             <div style={{
               padding: '8px 12px',
-              backgroundColor: 'rgba(255, 68, 68, 0.2)',
+              backgroundColor: 'rgba(255, 107, 107, 0.15)',
+              border: `1px solid ${COLORS.BORDER_DEFAULT}`,
               borderRadius: '6px',
               fontSize: '11px',
-              color: '#ff6b6b',
+              color: COLORS.ACCENT_PRIMARY,
               fontWeight: 500
             }}>
               Privacy Risk Detected
@@ -198,12 +199,12 @@ export default function IdentifiableImages({ userData, style = {} }) {
           {identifiableData.summary && (
             <div style={{
               padding: '10px 12px',
-              backgroundColor: 'rgba(255, 170, 0, 0.1)',
+              backgroundColor: 'rgba(255, 107, 107, 0.1)',
               borderRadius: '6px',
               fontSize: '12px',
-              color: '#ffaa00',
+              color: COLORS.TEXT_LIGHT_GREY,
               lineHeight: '1.5',
-              border: '1px solid rgba(255, 170, 0, 0.3)'
+              border: `1px solid ${COLORS.BORDER_DEFAULT}`
             }}>
               {identifiableData.summary}
             </div>
@@ -212,11 +213,12 @@ export default function IdentifiableImages({ userData, style = {} }) {
           {identifiableWithData.length === 0 ? (
             <div style={{
               padding: '16px',
-              backgroundColor: 'rgba(46, 213, 115, 0.1)',
+              backgroundColor: 'rgba(255, 255, 255, 0.03)',
               borderRadius: '8px',
               textAlign: 'center',
-              color: '#2ed573',
-              marginTop: '12px'
+              color: COLORS.TEXT_LIGHT_GREY,
+              marginTop: '12px',
+              border: `1px solid ${COLORS.BORDER_DEFAULT}`
             }}>
               <div style={{ fontSize: '32px', marginBottom: '8px' }}>✓</div>
               <div style={{ fontSize: '13px' }}>No obviously identifiable images detected</div>
@@ -228,13 +230,13 @@ export default function IdentifiableImages({ userData, style = {} }) {
                 padding: '12px',
                 backgroundColor: '#1a1a1a',
                 borderRadius: '8px',
-                border: `2px solid ${riskColors[currentItem.risk] || '#666'}`,
+                border: `2px solid ${riskColors[currentItem.risk] || COLORS.TEXT_MUTED}`,
                 marginTop: '8px'
               }}>
                 {/* Risk Badge */}
                 <div style={{
                   display: 'inline-block',
-                  backgroundColor: riskColors[currentItem.risk] || '#666',
+                  backgroundColor: riskColors[currentItem.risk] || COLORS.TEXT_MUTED,
                   color: '#000',
                   padding: '4px 10px',
                   borderRadius: '4px',
@@ -251,10 +253,10 @@ export default function IdentifiableImages({ userData, style = {} }) {
                   display: 'inline-block',
                   marginLeft: '8px',
                   padding: '4px 8px',
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  backgroundColor: 'rgba(255, 255, 255, 0.07)',
                   borderRadius: '4px',
                   fontSize: '10px',
-                  color: '#aaa',
+                  color: COLORS.TEXT_MUTED,
                   marginBottom: '10px'
                 }}>
                   {currentItem.category}
@@ -263,7 +265,7 @@ export default function IdentifiableImages({ userData, style = {} }) {
                 {/* Title */}
                 <div style={{
                   fontSize: '13px',
-                  color: '#fff',
+                  color: COLORS.TEXT_WHITE,
                   marginBottom: '10px',
                   lineHeight: '1.4',
                   fontWeight: 500
@@ -274,7 +276,7 @@ export default function IdentifiableImages({ userData, style = {} }) {
                 {/* Reason */}
                 <div style={{
                   fontSize: '11px',
-                  color: '#999',
+                  color: COLORS.TEXT_LIGHT_GREY,
                   lineHeight: '1.4',
                   fontStyle: 'italic',
                   marginBottom: '10px'
@@ -285,14 +287,14 @@ export default function IdentifiableImages({ userData, style = {} }) {
                 {/* Subreddit */}
                 <div style={{
                   fontSize: '11px',
-                  color: '#666',
+                  color: COLORS.TEXT_MUTED,
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center'
                 }}>
                   <span>r/{currentItem.post.subreddit}</span>
                   {currentItem.post.isNSFW && (
-                    <span style={{ color: '#ff4444', fontSize: '10px' }}>🔞 NSFW</span>
+                    <span style={{ color: COLORS.ACCENT_PRIMARY, fontSize: '10px' }}>🔞 NSFW</span>
                   )}
                 </div>
               </div>
@@ -301,7 +303,7 @@ export default function IdentifiableImages({ userData, style = {} }) {
               <div style={{
                 textAlign: 'center',
                 fontSize: '12px',
-                color: '#888',
+                color: COLORS.TEXT_MUTED,
                 marginTop: '8px'
               }}>
                 {currentIndex + 1} / {identifiableWithData.length}
@@ -313,10 +315,10 @@ export default function IdentifiableImages({ userData, style = {} }) {
         {/* Right Column - Carousel */}
         <div style={{
           position: 'relative',
-          backgroundColor: '#0a0a0a',
+          backgroundColor: 'rgba(0, 0, 0, 0.3)',
           borderRadius: '8px',
           overflow: 'hidden',
-          border: '1px solid #2a2a2a'
+          border: `1px solid ${COLORS.BORDER_DEFAULT}`
         }}>
           {identifiableWithData.length === 0 ? (
             <div style={{
@@ -325,7 +327,7 @@ export default function IdentifiableImages({ userData, style = {} }) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#666',
+              color: COLORS.TEXT_MUTED,
               fontSize: '14px'
             }}>
               No identifiable images
@@ -357,14 +359,14 @@ export default function IdentifiableImages({ userData, style = {} }) {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      color: '#666',
+                      color: COLORS.TEXT_MUTED,
                       fontSize: '48px'
                     }}>
                       🚫
                       <div style={{
                         position: 'absolute',
                         bottom: '20px',
-                        color: '#999',
+                        color: COLORS.TEXT_LIGHT_GREY,
                         fontSize: '14px'
                       }}>
                         Media no longer available
@@ -419,8 +421,8 @@ export default function IdentifiableImages({ userData, style = {} }) {
                       }}
                     >
                       <div style={{ fontSize: '40px', marginBottom: '10px' }}>🔞</div>
-                      <div style={{ color: '#fff', fontWeight: 500, marginBottom: '4px' }}>NSFW Content</div>
-                      <div style={{ color: '#aaa', fontSize: '12px' }}>
+                      <div style={{ color: COLORS.TEXT_WHITE, fontWeight: 500, marginBottom: '4px' }}>NSFW Content</div>
+                      <div style={{ color: COLORS.TEXT_MUTED, fontSize: '12px' }}>
                         Click to view
                       </div>
                     </div>
