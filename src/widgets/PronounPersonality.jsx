@@ -12,7 +12,7 @@ const traitDescriptions = {
 };
 
 const PronounPersonality = ({ userData, style }) => {
-  const [selectedTrait, setSelectedTrait] = useState('Introspective');
+  const [selectedTrait, setSelectedTrait] = useState(null);
   const radarCanvasRef = useRef(null);
 
   const pronounData = useMemo(() => {
@@ -145,6 +145,14 @@ const PronounPersonality = ({ userData, style }) => {
     return traits;
   }, [pronounData, userData]);
 
+  // Auto-select the highest-value trait
+  useEffect(() => {
+    if (radarData.length > 0 && !selectedTrait) {
+      const highest = radarData.reduce((a, b) => (b.value > a.value ? b : a), radarData[0]);
+      setSelectedTrait(highest.trait);
+    }
+  }, [radarData, selectedTrait]);
+
   useEffect(() => {
     if (!userData || !pronounData) return;
     
@@ -265,8 +273,8 @@ const PronounPersonality = ({ userData, style }) => {
       ctx.fillText(trait.trait, x, y);
       
       ctx.font = '9px "Space Grotesk", "Inter", system-ui, sans-serif';
-      ctx.fillStyle = radarPointColor;
-      ctx.fillText(`${Math.round(trait.value)}%`, x, y + 12);
+      ctx.fillStyle = Math.round(trait.value) > 0 ? radarPointColor : 'rgba(255,255,255,0.2)';
+      ctx.fillText(Math.round(trait.value) > 0 ? `${Math.round(trait.value)}%` : 'No data', x, y + 12);
       ctx.fillStyle = radarLabelColor;
       ctx.font = '11px "Space Grotesk", "Inter", system-ui, sans-serif';
     });
@@ -323,14 +331,21 @@ const PronounPersonality = ({ userData, style }) => {
       <p className="stat-meta" style={{ marginBottom: '8px' }}>Based on pronoun usage patterns</p>
       <div style={{ display: 'flex', gap: '16px', flex: 1, alignItems: 'center', width: '100%', minHeight: 0, overflow: 'visible', paddingTop: '40px', position: 'relative' }}>
         <div className="personality-info" style={{ flex: '0 0 180px', fontSize: '11px', lineHeight: '1.4' }}>
-          {selectedTrait ? (
-            <div className="trait-description">
-              <strong style={{ color: 'white', display: 'block', marginBottom: '8px', fontSize: '12px' }}>
-                {selectedTrait} ({Math.round(radarData.find(t => t.trait === selectedTrait)?.value || 0)}%)
-              </strong>
-              <p style={{ margin: 0, color: '#999' }}>{traitDescriptions[selectedTrait]}</p>
-            </div>
-          ) : (
+          {selectedTrait ? (() => {
+            const traitValue = Math.round(radarData.find(t => t.trait === selectedTrait)?.value || 0);
+            return (
+              <div className="trait-description">
+                <strong style={{ color: 'white', display: 'block', marginBottom: '8px', fontSize: '12px' }}>
+                  {selectedTrait} {traitValue > 0 ? `(${traitValue}%)` : ''}
+                </strong>
+                {traitValue > 0 ? (
+                  <p style={{ margin: 0, color: '#999' }}>{traitDescriptions[selectedTrait]}</p>
+                ) : (
+                  <p style={{ margin: 0, color: '#555' }}>No significant signal for this trait in the user's writing.</p>
+                )}
+              </div>
+            );
+          })() : (
             <div className="trait-description">
               <strong style={{ color: 'white' }}>Click a trait</strong> <span style={{ color: '#999' }}>to see what it means</span>
             </div>
