@@ -4,6 +4,7 @@ import { analyzeWithQueue } from '../lib/apiClient';
 export default function SearchBox({ userData, onUserDataChange, isLoading, setIsLoading, style, initialUsername, autoSearch }) {
   const [searchUsername, setSearchUsername] = useState(initialUsername || '');
   const [queueInfo, setQueueInfo] = useState(null);
+  const [consentChecked, setConsentChecked] = useState(false);
   const autoSearchTriggered = useRef(false);
   
   // Update search field when userData changes
@@ -68,6 +69,8 @@ export default function SearchBox({ userData, onUserDataChange, isLoading, setIs
       
       onUserDataChange(json);
       // Username will stay in input field via useEffect
+      // Reset consent checkbox after successful analysis
+      setConsentChecked(false);
     } catch (error) {
       console.error('Error fetching user data:', error);
       // Check if it's a 403 private account error
@@ -106,7 +109,11 @@ export default function SearchBox({ userData, onUserDataChange, isLoading, setIs
         <input
           type="text"
           value={searchUsername}
-          onChange={(e) => setSearchUsername(e.target.value)}
+          onChange={(e) => {
+            setSearchUsername(e.target.value);
+            // Reset consent when username changes
+            if (consentChecked) setConsentChecked(false);
+          }}
           placeholder="username"
           disabled={isLoading}
           style={{
@@ -133,31 +140,31 @@ export default function SearchBox({ userData, onUserDataChange, isLoading, setIs
       </div>
       <button
         type="submit"
-        disabled={isLoading || !searchUsername.trim() || isCurrentUser()}
+        disabled={isLoading || !searchUsername.trim() || isCurrentUser() || !consentChecked}
         style={{
           padding: '16px 24px',
           fontSize: '16px',
           fontWeight: '600',
-          background: isLoading || !searchUsername.trim() || isCurrentUser() 
+          background: isLoading || !searchUsername.trim() || isCurrentUser() || !consentChecked
             ? 'rgba(255, 107, 107, 0.3)' 
             : '#ff6b6b',
           border: 'none',
           borderRadius: '12px',
           color: '#fff',
-          cursor: isLoading || !searchUsername.trim() || isCurrentUser() ? 'not-allowed' : 'pointer',
+          cursor: isLoading || !searchUsername.trim() || isCurrentUser() || !consentChecked ? 'not-allowed' : 'pointer',
           transition: 'all 0.2s',
-          boxShadow: isLoading || !searchUsername.trim() || isCurrentUser() 
+          boxShadow: isLoading || !searchUsername.trim() || isCurrentUser() || !consentChecked
             ? 'none' 
             : '0 4px 16px rgba(255, 107, 107, 0.3)'
         }}
         onMouseEnter={(e) => {
-          if (!isLoading && searchUsername.trim() && !isCurrentUser()) {
+          if (!isLoading && searchUsername.trim() && !isCurrentUser() && consentChecked) {
             e.target.style.transform = 'translateY(-2px)';
             e.target.style.background = '#ff5252';
           }
         }}
         onMouseLeave={(e) => {
-          if (!isLoading && searchUsername.trim() && !isCurrentUser()) {
+          if (!isLoading && searchUsername.trim() && !isCurrentUser() && consentChecked) {
             e.target.style.transform = 'translateY(0)';
             e.target.style.background = '#ff6b6b';
           }
@@ -165,6 +172,32 @@ export default function SearchBox({ userData, onUserDataChange, isLoading, setIs
       >
         {isLoading ? 'Analyzing...' : 'Analyze'}
       </button>
+      
+      <label style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        fontSize: '13px',
+        color: 'rgba(255, 255, 255, 0.7)',
+        cursor: 'pointer',
+        userSelect: 'none',
+        marginTop: '-4px'
+      }}>
+        <input
+          type="checkbox"
+          checked={consentChecked}
+          onChange={(e) => setConsentChecked(e.target.checked)}
+          disabled={isLoading}
+          style={{
+            width: '18px',
+            height: '18px',
+            cursor: isLoading ? 'not-allowed' : 'pointer',
+            accentColor: '#ff6b6b'
+          }}
+        />
+        <span>I consent to my data being analyzed and confirm this is my account</span>
+      </label>
+      
       {queueInfo && queueInfo.status && (
         <div style={{ marginTop: '6px', fontSize: '12px', color: '#ccc' }}>
           {queueInfo.status === 'queued' && (
