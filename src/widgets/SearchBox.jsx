@@ -142,31 +142,31 @@ export default function SearchBox({ userData, onUserDataChange, isLoading, setIs
       </div>
       <button
         type="submit"
-        disabled={isLoading || !searchUsername.trim() || isCurrentUser() || !consentChecked}
+        disabled={isLoading || !searchUsername.trim() || isCurrentUser() || (!userData && !consentChecked)}
         style={{
           padding: '16px 24px',
           fontSize: '16px',
           fontWeight: '600',
-          background: isLoading || !searchUsername.trim() || isCurrentUser() || !consentChecked
+          background: isLoading || !searchUsername.trim() || isCurrentUser() || (!userData && !consentChecked)
             ? 'rgba(255, 107, 107, 0.3)' 
             : '#ff6b6b',
           border: 'none',
           borderRadius: '12px',
           color: '#fff',
-          cursor: isLoading || !searchUsername.trim() || isCurrentUser() || !consentChecked ? 'not-allowed' : 'pointer',
+          cursor: isLoading || !searchUsername.trim() || isCurrentUser() || (!userData && !consentChecked) ? 'not-allowed' : 'pointer',
           transition: 'all 0.2s',
-          boxShadow: isLoading || !searchUsername.trim() || isCurrentUser() || !consentChecked
+          boxShadow: isLoading || !searchUsername.trim() || isCurrentUser() || (!userData && !consentChecked)
             ? 'none' 
             : '0 4px 16px rgba(255, 107, 107, 0.3)'
         }}
         onMouseEnter={(e) => {
-          if (!isLoading && searchUsername.trim() && !isCurrentUser() && consentChecked) {
+          if (!isLoading && searchUsername.trim() && !isCurrentUser() && (userData || consentChecked)) {
             e.target.style.transform = 'translateY(-2px)';
             e.target.style.background = '#ff5252';
           }
         }}
         onMouseLeave={(e) => {
-          if (!isLoading && searchUsername.trim() && !isCurrentUser() && consentChecked) {
+          if (!isLoading && searchUsername.trim() && !isCurrentUser() && (userData || consentChecked)) {
             e.target.style.transform = 'translateY(0)';
             e.target.style.background = '#ff6b6b';
           }
@@ -175,47 +175,49 @@ export default function SearchBox({ userData, onUserDataChange, isLoading, setIs
         {isLoading ? 'Analyzing...' : 'Analyze'}
       </button>
       
-      <label style={{
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: '8px',
-        fontSize: '13px',
-        color: 'rgba(255, 255, 255, 0.7)',
-        userSelect: 'none',
-        marginTop: '-4px'
-      }}>
-        <input
-          type="checkbox"
-          checked={consentChecked}
-          onChange={(e) => setConsentChecked(e.target.checked)}
-          disabled={isLoading}
-          style={{
-            width: '18px',
-            height: '18px',
-            cursor: isLoading ? 'not-allowed' : 'pointer',
-            accentColor: '#ff6b6b',
-            marginTop: '2px',
-            flexShrink: 0
-          }}
-        />
-        <span style={{ cursor: 'default' }}>
-          I consent to our{' '}
-          <a
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              setShowTermsModal(true);
-            }}
+      {!userData && (
+        <label style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '8px',
+          fontSize: '13px',
+          color: 'rgba(255, 255, 255, 0.7)',
+          userSelect: 'none',
+          marginTop: '-4px'
+        }}>
+          <input
+            type="checkbox"
+            checked={consentChecked}
+            onChange={(e) => setConsentChecked(e.target.checked)}
+            disabled={isLoading}
             style={{
-              color: '#ff6b6b',
-              textDecoration: 'underline',
-              cursor: 'pointer'
+              width: '18px',
+              height: '18px',
+              cursor: isLoading ? 'not-allowed' : 'pointer',
+              accentColor: '#ff6b6b',
+              marginTop: '2px',
+              flexShrink: 0
             }}
-          >
-            terms and conditions
-          </a>
-        </span>
-      </label>
+          />
+          <span style={{ cursor: 'default' }}>
+            I consent to our{' '}
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                setShowTermsModal(true);
+              }}
+              style={{
+                color: '#ff6b6b',
+                textDecoration: 'underline',
+                cursor: 'pointer'
+              }}
+            >
+              terms and conditions
+            </a>
+          </span>
+        </label>
+      )}
       
       <TermsModal isOpen={showTermsModal} onClose={() => setShowTermsModal(false)} />
       
