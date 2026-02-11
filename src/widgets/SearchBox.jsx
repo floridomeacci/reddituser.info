@@ -184,7 +184,7 @@ export default function SearchBox({ userData, onUserDataChange, isLoading, setIs
           fontSize: '13px',
           color: 'rgba(255, 255, 255, 0.7)',
           userSelect: 'none',
-          marginTop: '-4px'
+          marginTop: '12px'
         }}>
           <input
             type="checkbox"
