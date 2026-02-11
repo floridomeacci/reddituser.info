@@ -6,6 +6,8 @@ import { COLORS, CHART_CONFIG, getDesignTokens } from './design-tokens';
 import { apiPost, resolveApiBase } from './lib/apiClient';
 import { franc } from 'franc-min';
 import SupportModal from './components/SupportModal';
+import TermsModal from './components/TermsModal';
+import CookieConsent from './components/CookieConsent';
 import { AnimatedGridPattern } from './components/AnimatedGridPattern';
 
 // Import all widgets
@@ -163,6 +165,7 @@ function App() {
   const [ageGenderError, setAgeGenderError] = useState(null);
   const [focusedWidget, setFocusedWidget] = useState(null);
   const [showSupportModal, setShowSupportModal] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
   const [highlightedCountries, setHighlightedCountries] = useState(new Set());
   const [locationConfidence, setLocationConfidence] = useState({ location: null, timezone: null, language: null });
   const [aiLocationData, setAiLocationData] = useState(null);
@@ -993,6 +996,14 @@ function App() {
       {showSupportModal && (
         <SupportModal onClose={() => setShowSupportModal(false)} />
       )}
+      
+      {/* Terms Modal */}
+      {showTermsModal && (
+        <TermsModal isOpen={showTermsModal} onClose={() => setShowTermsModal(false)} />
+      )}
+      
+      {/* Cookie Consent Banner */}
+      <CookieConsent onTermsClick={() => setShowTermsModal(true)} />
     </div>
   );
 }
