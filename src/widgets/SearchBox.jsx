@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { analyzeWithQueue } from '../lib/apiClient';
+import TermsModal from '../components/TermsModal';
 
 export default function SearchBox({ userData, onUserDataChange, isLoading, setIsLoading, style, initialUsername, autoSearch }) {
   const [searchUsername, setSearchUsername] = useState(initialUsername || '');
   const [queueInfo, setQueueInfo] = useState(null);
   const [consentChecked, setConsentChecked] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
   const autoSearchTriggered = useRef(false);
   
   // Update search field when userData changes
@@ -175,11 +177,10 @@ export default function SearchBox({ userData, onUserDataChange, isLoading, setIs
       
       <label style={{
         display: 'flex',
-        alignItems: 'center',
-        gap: '10px',
+        alignItems: 'flex-start',
+        gap: '8px',
         fontSize: '13px',
         color: 'rgba(255, 255, 255, 0.7)',
-        cursor: 'pointer',
         userSelect: 'none',
         marginTop: '-4px'
       }}>
@@ -192,11 +193,31 @@ export default function SearchBox({ userData, onUserDataChange, isLoading, setIs
             width: '18px',
             height: '18px',
             cursor: isLoading ? 'not-allowed' : 'pointer',
-            accentColor: '#ff6b6b'
+            accentColor: '#ff6b6b',
+            marginTop: '2px',
+            flexShrink: 0
           }}
         />
-        <span>I consent to my data being analyzed and confirm this is my account</span>
+        <span style={{ cursor: 'default' }}>
+          I consent to our{' '}
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              setShowTermsModal(true);
+            }}
+            style={{
+              color: '#ff6b6b',
+              textDecoration: 'underline',
+              cursor: 'pointer'
+            }}
+          >
+            terms and conditions
+          </a>
+        </span>
       </label>
+      
+      <TermsModal isOpen={showTermsModal} onClose={() => setShowTermsModal(false)} />
       
       {queueInfo && queueInfo.status && (
         <div style={{ marginTop: '6px', fontSize: '12px', color: '#ccc' }}>
