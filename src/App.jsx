@@ -599,8 +599,13 @@ function App() {
             fontSize: '32px',
             fontWeight: '700',
             textAlign: 'center',
-            letterSpacing: '-0.5px'
+            letterSpacing: '-0.5px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '12px'
           }}>
+            <img src="/reddituser-logo.svg" alt="RedditUser.info Logo" style={{ width: '32px', height: '32px' }} />
             REDDITUSER.INFO
           </h1>
           <p style={{ 
