@@ -52,7 +52,7 @@ export default function TermsModal({ isOpen, onClose }) {
           ×
         </button>
 
-        <h2 style={{ color: '#ff6b6b', marginTop: 0, marginBottom: '24px', fontSize: '24px' }}>
+        <h2 style={{ color: '#ff6b6b', marginTop: 0, marginBottom: '24px', fontSize: '24px', textAlign: 'center' }}>
           Terms and Conditions
         </h2>
 
