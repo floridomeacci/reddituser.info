@@ -179,6 +179,7 @@ export default function SearchBox({ userData, onUserDataChange, isLoading, setIs
         <label style={{
           display: 'flex',
           alignItems: 'flex-start',
+          justifyContent: 'center',
           gap: '8px',
           fontSize: '13px',
           color: 'rgba(255, 255, 255, 0.7)',
