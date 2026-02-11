@@ -8,6 +8,7 @@ import { franc } from 'franc-min';
 import SupportModal from './components/SupportModal';
 import TermsModal from './components/TermsModal';
 import CookieConsent from './components/CookieConsent';
+import HackerText from './components/HackerText';
 import { AnimatedGridPattern } from './components/AnimatedGridPattern';
 
 // Import all widgets
@@ -609,7 +610,7 @@ function App() {
             gap: '12px'
           }}>
             <img src="/reddituser-logo.svg" alt="RedditUser.info Logo" style={{ width: '32px', height: '32px' }} />
-            REDDITUSER.INFO
+            <HackerText text="REDDITUSER.INFO" duration={2000} />
           </h1>
           <p style={{ 
             color: 'rgba(255, 255, 255, 0.6)', 
