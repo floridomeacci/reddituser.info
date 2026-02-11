@@ -740,6 +740,7 @@ function App() {
               Need help or have feedback?
             </p>
             <button 
+              data-contact-support
               onClick={() => setShowSupportModal(true)}
               style={{
                 display: 'flex',

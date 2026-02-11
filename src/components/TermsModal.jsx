@@ -159,9 +159,9 @@ export default function TermsModal({ isOpen, onClose }) {
               <strong>Before Analysis:</strong> Simply do not submit your username for analysis
             </li>
             <li>
-              <strong>After Analysis:</strong> Contact us at{' '}
-              <a href="mailto:privacy@reddituser.info" style={{ color: '#ff6b6b' }}>
-                privacy@reddituser.info
+              <strong>After Analysis:</strong> Use our{' '}
+              <a href="#contact" style={{ color: '#ff6b6b', cursor: 'pointer' }} onClick={(e) => { e.preventDefault(); onClose(); document.querySelector('[data-contact-support]')?.click(); }}>
+                contact form
               </a>
               {' '}to request data removal
             </li>
@@ -189,13 +189,10 @@ export default function TermsModal({ isOpen, onClose }) {
             9. Contact Information
           </h3>
           <p style={{ marginBottom: '16px' }}>
-            For questions, concerns, or data removal requests, contact us at:
-          </p>
-          <p style={{ marginBottom: '8px' }}>
-            <strong>Email:</strong>{' '}
-            <a href="mailto:privacy@reddituser.info" style={{ color: '#ff6b6b' }}>
-              privacy@reddituser.info
-            </a>
+            For questions, concerns, or data removal requests, please use our{' '}
+            <a href="#contact" style={{ color: '#ff6b6b', cursor: 'pointer' }} onClick={(e) => { e.preventDefault(); onClose(); document.querySelector('[data-contact-support]')?.click(); }}>
+              contact form
+            </a>.
           </p>
           <p style={{ marginBottom: '16px' }}>
             <strong>Website:</strong>{' '}
