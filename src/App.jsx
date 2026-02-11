@@ -610,7 +610,7 @@ function App() {
             gap: '12px'
           }}>
             <img src="/reddituser-logo.svg" alt="RedditUser.info Logo" style={{ width: '32px', height: '32px' }} />
-            <HackerText text="REDDITUSER.INFO" duration={2000} />
+            <HackerText text="REDDITUSER.INFO" duration={2000} style={{ fontFamily: 'monospace', letterSpacing: '0' }} />
           </h1>
           <p style={{ 
             color: 'rgba(255, 255, 255, 0.6)', 
