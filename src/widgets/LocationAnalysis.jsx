@@ -47,8 +47,18 @@ export default function LocationAnalysis({ userData, onLocationData, style = {} 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Step 1: Find location words in content, then extract sentences containing them
+  // Check if backend already stored location data
+  const storedLocation = userData?.estimated_location;
+  const storedDetails = userData?.location_details;
+  const isStoredUnknown = storedLocation && (
+    storedLocation.toLowerCase() === 'unknown' ||
+    storedLocation.toLowerCase().includes('unknown')
+  );
+
+  // Step 1: Find location words in content (only if no stored data)
   const locationSentences = useMemo(() => {
+    // Skip extraction if we already have stored backend data
+    if (storedLocation) return [];
     if (!userData || (!userData.comments?.length && !userData.posts?.length)) {
       return [];
     }
@@ -120,10 +130,31 @@ export default function LocationAnalysis({ userData, onLocationData, style = {} 
     sentences.sort((a, b) => b.priority - a.priority || a.text.length - b.text.length);
 
     return sentences.slice(0, 40); // Top 40 most relevant
-  }, [userData]);
+  }, [userData, storedLocation]);
 
-  // Step 2: Send to AI for analysis
+  // Use stored data if available
   useEffect(() => {
+    if (storedLocation && !isStoredUnknown) {
+      // Build location data from stored backend results
+      const locData = {
+        likelyLocation: {
+          city: null,
+          state: null,
+          country: storedLocation,
+          confidence: storedDetails?.confidence || 'medium'
+        },
+        summary: storedDetails?.summary || `Estimated location: ${storedLocation}`,
+        evidence: [],
+        alternateLocations: []
+      };
+      setLocationData(locData);
+      if (onLocationData) onLocationData(locData);
+    }
+  }, [storedLocation, storedDetails, isStoredUnknown]);
+
+  // Step 2: Send to AI for analysis (only if no stored data)
+  useEffect(() => {
+    if (storedLocation) return; // skip AI if backend already analyzed
     if (locationSentences.length === 0) return;
 
     const queryAI = async () => {
@@ -167,7 +198,7 @@ export default function LocationAnalysis({ userData, onLocationData, style = {} 
     };
 
     queryAI();
-  }, [locationSentences, userData]);
+  }, [locationSentences, userData, storedLocation]);
 
   // Confidence color
   const getConfidenceColor = (conf) => {
@@ -203,7 +234,23 @@ export default function LocationAnalysis({ userData, onLocationData, style = {} 
     );
   }
 
-  if (locationSentences.length === 0) {
+  // Show privacy shield if stored data says Unknown
+  if (isStoredUnknown) {
+    return (
+      <div className="cell" style={style}>
+        <h3>📍 Where They Live</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: '12px', padding: '32px 16px' }}>
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <path d="M9 12l2 2 4-4" />
+          </svg>
+          <div style={{ color: '#4ade80', fontSize: '14px', fontWeight: 600, textAlign: 'center' }}>User keeps location private</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!storedLocation && locationSentences.length === 0) {
     return (
       <div className="cell" style={style}>
         <h3>📍 Where They Live</h3>

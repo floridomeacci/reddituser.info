@@ -372,29 +372,47 @@ export default function AdminPage() {
                     <td style={{ padding: '12px', color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px', whiteSpace: 'nowrap' }}>
                       {user.total_subreddits || '0'}
                     </td>
-                    <td style={{ padding: '12px', color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px', whiteSpace: 'nowrap' }}>
-                      {user.estimated_location || 'Unknown'}
+                    <td style={{ padding: '12px', fontSize: '13px', whiteSpace: 'nowrap' }}>
+                      {user.estimated_location && user.estimated_location !== 'Unknown' ? (
+                        <span style={{ padding: '3px 8px', background: 'rgba(34, 197, 94, 0.15)', color: '#4ade80', borderRadius: '8px', fontSize: '11px', fontWeight: 600 }}>{user.estimated_location}</span>
+                      ) : <span style={{ color: 'rgba(255,255,255,0.3)' }}>—</span>}
                     </td>
-                    <td style={{ padding: '12px', color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px', whiteSpace: 'nowrap' }}>
-                      {user.language || 'N/A'}
+                    <td style={{ padding: '12px', color: 'rgba(255, 255, 255, 0.7)', fontSize: '13px', whiteSpace: 'nowrap' }}>
+                      {user.language || '—'}
                     </td>
-                    <td style={{ padding: '12px', color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px', whiteSpace: 'nowrap', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {user.family || 'N/A'}
+                    <td style={{ padding: '12px', fontSize: '13px', whiteSpace: 'nowrap', maxWidth: '220px', overflow: 'hidden', textOverflow: 'ellipsis' }} title={user.family || 'N/A'}>
+                      {user.family && user.family !== 'N/A' ? (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px' }}>
+                          {user.family.split(', ').map((f, i) => (
+                            <span key={i} style={{ padding: '2px 6px', background: 'rgba(139, 92, 246, 0.2)', color: '#a78bfa', borderRadius: '8px', fontSize: '11px' }}>{f}</span>
+                          ))}
+                        </div>
+                      ) : <span style={{ color: 'rgba(255,255,255,0.3)' }}>—</span>}
                     </td>
-                    <td style={{ padding: '12px', color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px', whiteSpace: 'nowrap' }}>
-                      {user.relationship || 'N/A'}
+                    <td style={{ padding: '12px', fontSize: '13px', whiteSpace: 'nowrap' }}>
+                      {user.relationship && user.relationship !== 'N/A' && user.relationship !== 'Unknown' ? (
+                        <span style={{ padding: '3px 8px', background: 'rgba(236, 72, 153, 0.2)', color: '#f472b6', borderRadius: '8px', fontSize: '11px', fontWeight: 600 }}>{user.relationship}</span>
+                      ) : <span style={{ color: 'rgba(255,255,255,0.3)' }}>—</span>}
                     </td>
-                    <td style={{ padding: '12px', color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px', whiteSpace: 'nowrap' }}>
-                      {user.profession || 'N/A'}
+                    <td style={{ padding: '12px', fontSize: '13px', whiteSpace: 'nowrap' }}>
+                      {user.profession && user.profession !== 'N/A' && user.profession !== 'Unknown' ? (
+                        <span style={{ padding: '3px 8px', background: 'rgba(59, 130, 246, 0.2)', color: '#60a5fa', borderRadius: '8px', fontSize: '11px', fontWeight: 600 }}>{user.profession}</span>
+                      ) : <span style={{ color: 'rgba(255,255,255,0.3)' }}>—</span>}
                     </td>
-                    <td style={{ padding: '12px', color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px', whiteSpace: 'nowrap' }}>
-                      {user.pca_cluster || 'N/A'}
+                    <td style={{ padding: '12px', color: 'rgba(255, 255, 255, 0.5)', fontSize: '12px', whiteSpace: 'nowrap' }}>
+                      {user.pca_cluster || '—'}
                     </td>
-                    <td style={{ padding: '12px', color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px', whiteSpace: 'nowrap' }}>
-                      {user.tsne_cluster || 'N/A'}
+                    <td style={{ padding: '12px', color: 'rgba(255, 255, 255, 0.5)', fontSize: '12px', whiteSpace: 'nowrap' }}>
+                      {user.tsne_cluster || '—'}
                     </td>
-                    <td style={{ padding: '12px', color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px', whiteSpace: 'nowrap', maxWidth: '300px' }}>
-                      {user.interests || 'N/A'}
+                    <td style={{ padding: '12px', fontSize: '12px', maxWidth: '320px' }} title={user.interests || 'N/A'}>
+                      {user.interests && user.interests !== 'N/A' ? (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px' }}>
+                          {user.interests.split(', ').map((interest, i) => (
+                            <span key={i} style={{ padding: '2px 6px', background: i === 0 ? 'rgba(255, 107, 107, 0.2)' : 'rgba(255, 255, 255, 0.06)', color: i === 0 ? COLORS.ACCENT_PRIMARY : 'rgba(255,255,255,0.6)', borderRadius: '8px', fontSize: '10px', whiteSpace: 'nowrap' }}>{interest}</span>
+                          ))}
+                        </div>
+                      ) : <span style={{ color: 'rgba(255,255,255,0.3)' }}>—</span>}
                     </td>
                   </tr>
                 ))}

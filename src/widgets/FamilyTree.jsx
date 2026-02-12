@@ -6,8 +6,18 @@ export default function FamilyTree({ userData, style = {} }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Extract family-related sentences using regex
+  // Check if backend already stored family data
+  const storedFamily = userData?.family;
+  const isStoredUnknown = storedFamily && (
+    !storedFamily.flairs ||
+    storedFamily.flairs.length === 0 ||
+    (storedFamily.flairs.length === 1 && storedFamily.flairs[0]?.toLowerCase?.()?.includes('unknown'))
+  );
+
+  // Extract family-related sentences using regex (only if no stored data)
   const familySentences = useMemo(() => {
+    // Skip extraction if we already have stored backend data
+    if (storedFamily) return [];
     if (!userData || (!userData.comments?.length && !userData.posts?.length)) {
       return [];
     }
@@ -39,11 +49,29 @@ export default function FamilyTree({ userData, style = {} }) {
       }
     });
 
-    return Array.from(sentences).slice(0, 50); // Limit to 50 most relevant
-  }, [userData]);
+    return Array.from(sentences).slice(0, 50);
+  }, [userData, storedFamily]);
 
-  // Query AI endpoint
+  // Use stored data if available
   useEffect(() => {
+    if (storedFamily && !isStoredUnknown) {
+      // Convert stored flairs to member objects for display
+      const members = (storedFamily.flairs || []).map(flair => ({
+        relation: flair,
+        name: 'unknown',
+        details: ''
+      }));
+      setFamilyData({
+        members,
+        familySize: storedFamily.familySize || (members.length <= 2 ? 'small' : members.length <= 5 ? 'medium' : 'large'),
+        summary: storedFamily.summary,
+      });
+    }
+  }, [storedFamily, isStoredUnknown]);
+
+  // Query AI endpoint (only if no stored data)
+  useEffect(() => {
+    if (storedFamily) return; // skip AI if backend already analyzed
     if (familySentences.length === 0) return;
 
     const queryAI = async () => {
@@ -65,7 +93,6 @@ export default function FamilyTree({ userData, style = {} }) {
         if (!response.ok) throw new Error('AI query failed');
         
         const raw = await response.json();
-        // n8n returns [{"output": "JSON string"}] - unwrap it
         let parsed = raw;
         if (Array.isArray(raw) && raw[0]?.output) {
           try { parsed = JSON.parse(raw[0].output); } catch (e) { parsed = raw[0].output; }
@@ -82,7 +109,18 @@ export default function FamilyTree({ userData, style = {} }) {
     };
 
     queryAI();
-  }, [familySentences, userData]);
+  }, [familySentences, userData, storedFamily]);
+
+  // Privacy shield component
+  const PrivacyShield = ({ label }) => (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: '12px', padding: '32px 16px' }}>
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        <path d="M9 12l2 2 4-4" />
+      </svg>
+      <div style={{ color: '#4ade80', fontSize: '14px', fontWeight: 600, textAlign: 'center' }}>{label}</div>
+    </div>
+  );
 
   if (!userData || (!userData.comments?.length && !userData.posts?.length)) {
     return (
@@ -93,17 +131,12 @@ export default function FamilyTree({ userData, style = {} }) {
     );
   }
 
-  if (familySentences.length === 0) {
+  // Show privacy shield if stored data says Unknown OR no sentences found and no stored data
+  if (isStoredUnknown || (!storedFamily && familySentences.length === 0)) {
     return (
       <div className="cell" style={style}>
         <h3>Family Tree</h3>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: '12px', padding: '32px 16px' }}>
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            <path d="M9 12l2 2 4-4" />
-          </svg>
-          <div style={{ color: '#4ade80', fontSize: '14px', fontWeight: 600, textAlign: 'center' }}>User keeps family info private</div>
-        </div>
+        <PrivacyShield label="User keeps family info private" />
       </div>
     );
   }

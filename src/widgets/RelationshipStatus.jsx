@@ -6,8 +6,18 @@ export default function RelationshipStatus({ userData, style = {} }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Extract relationship-related sentences using regex
+  // Check if backend already stored relationship data
+  const storedRelationship = userData?.relationship;
+  const isStoredUnknown = storedRelationship && (
+    !storedRelationship.flair ||
+    storedRelationship.flair.toLowerCase() === 'unknown' ||
+    storedRelationship.flair.toLowerCase().includes('unknown')
+  );
+
+  // Extract relationship-related sentences using regex (only if no stored data)
   const relationshipSentences = useMemo(() => {
+    // Skip extraction if we already have stored backend data
+    if (storedRelationship) return [];
     if (!userData || (!userData.comments?.length && !userData.posts?.length)) {
       return [];
     }
@@ -41,10 +51,22 @@ export default function RelationshipStatus({ userData, style = {} }) {
     });
 
     return Array.from(sentences).slice(0, 50);
-  }, [userData]);
+  }, [userData, storedRelationship]);
 
-  // Query AI endpoint
+  // Use stored data if available
   useEffect(() => {
+    if (storedRelationship && !isStoredUnknown) {
+      setRelationshipData({
+        status: storedRelationship.flair,
+        partner: storedRelationship.partnerType ? { type: storedRelationship.partnerType } : null,
+        summary: storedRelationship.summary,
+      });
+    }
+  }, [storedRelationship, isStoredUnknown]);
+
+  // Query AI endpoint (only if no stored data)
+  useEffect(() => {
+    if (storedRelationship) return; // skip AI if backend already analyzed
     if (relationshipSentences.length === 0) return;
 
     const queryAI = async () => {
@@ -66,7 +88,6 @@ export default function RelationshipStatus({ userData, style = {} }) {
         if (!response.ok) throw new Error('AI query failed');
         
         const raw = await response.json();
-        // n8n returns [{"output": "JSON string"}] - unwrap it
         let parsed = raw;
         if (Array.isArray(raw) && raw[0]?.output) {
           try { parsed = JSON.parse(raw[0].output); } catch (e) { parsed = raw[0].output; }
@@ -83,7 +104,18 @@ export default function RelationshipStatus({ userData, style = {} }) {
     };
 
     queryAI();
-  }, [relationshipSentences, userData]);
+  }, [relationshipSentences, userData, storedRelationship]);
+
+  // Privacy shield component
+  const PrivacyShield = ({ label }) => (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: '12px', padding: '32px 16px' }}>
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        <path d="M9 12l2 2 4-4" />
+      </svg>
+      <div style={{ color: '#4ade80', fontSize: '14px', fontWeight: 600, textAlign: 'center' }}>{label}</div>
+    </div>
+  );
 
   if (!userData || (!userData.comments?.length && !userData.posts?.length)) {
     return (
@@ -94,17 +126,12 @@ export default function RelationshipStatus({ userData, style = {} }) {
     );
   }
 
-  if (relationshipSentences.length === 0) {
+  // Show privacy shield if stored data says Unknown OR no sentences found and no stored data
+  if (isStoredUnknown || (!storedRelationship && relationshipSentences.length === 0)) {
     return (
       <div className="cell" style={style}>
         <h3>Relationship Status</h3>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: '12px', padding: '32px 16px' }}>
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            <path d="M9 12l2 2 4-4" />
-          </svg>
-          <div style={{ color: '#4ade80', fontSize: '14px', fontWeight: 600, textAlign: 'center' }}>User keeps relationship status private</div>
-        </div>
+        <PrivacyShield label="User keeps relationship status private" />
       </div>
     );
   }

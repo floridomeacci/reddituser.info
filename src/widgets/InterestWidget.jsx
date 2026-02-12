@@ -6,6 +6,24 @@ import { getCategoryDistribution, INTEREST_CATEGORIES } from '../data/subredditC
 export default function InterestWidget({ userData, style = {} }) {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const interestData = useMemo(() => {
+    // Use stored backend interests if available
+    if (userData?.interests && Object.keys(userData.interests).length > 0) {
+      const data = Object.entries(userData.interests)
+        .map(([key, val]) => ({
+          category: INTEREST_CATEGORIES[key]?.label || key,
+          count: val.count || 0,
+          percentage: val.percentage || 0,
+          key
+        }))
+        .filter(d => d.count > 0)
+        .sort((a, b) => b.count - a.count);
+      return data.map(d => ({
+        ...d,
+        percentage: parseFloat(d.percentage).toFixed(1)
+      }));
+    }
+
+    // Fallback: compute client-side
     const distribution = getCategoryDistribution(userData, 'interest');
     
     // Convert to array and sort by count
