@@ -38,7 +38,21 @@ export const INTEREST_CATEGORIES = {
       'programminghorror', 'techsupportmacgyver', 'buildapcsales', 'buildapcforme',
       // AI tools & platforms
       'comfyui', 'localllama', 'characterai', 'aiwars', 'soraai', 'aivideo',
-      'pcbuild', 'beneater', 'antiai', 'scratch'
+      'pcbuild', 'beneater', 'antiai', 'scratch',
+      // Bulk categorized additions
+      'selfhosted', 'pcbuildhelp', 'vrchat', 'reptime', 'oculusquest', 'steamdeck',
+      'bard', 'agi', 'hellaflyai', 'ai_art_is_not_art', 'playstationportal', 'github',
+      'askelectronics', 'isthisaicirclejerk', 'c64', 'gamingsuggestions', 'csharp', 'ender6',
+      'asm', 'technews', 'radeon', 'buildmeapc', 'aifails', 'oculusquest2',
+      'office365', 'emudev', 'turbowarp', 'amdhelp', 'cpap', 'softwareengineering',
+      'adventofcode', 'indiedev', 'macgaming', 'aislop', 'computerhelp', 'replit',
+      'macos', 'monitors', 'gridfinity', 'hacking_tutorials', 'thinkpad', 'ios',
+      'shitaibrossay', 'genai4all', 'informationtechnology', 'redstone', 'metaquestvr', 'androidquestions',
+      'linuxquestions', 'asus', 'garminwatches', 'itchio', 'robotics', 'homenetworking',
+      'chatgptpro', 'ender5', 'nvidia', 'entra', 'intune', 'fortran',
+      'reolinkcam', 'bigtreetech', 'pfsense', 'fivem', 'montechpc', 'unrealengine5',
+      'gaminglaptops', 'devvit', 'starlink', 'oled_gaming', 'creality', 'ubiquiti',
+      'hotas', 'ai_agents', 'claudeai', 'flstudiobeginners',
     ]
   },
   
@@ -68,7 +82,18 @@ export const INTEREST_CATEGORIES = {
       'dinosaurs', 'climate', 'environment', 'consciousness', 'ufos',
       'geography', 'conservation', 'cognitivetesting', 'mathmemes',
       'apstudents', 'elateachers', 'texasteachers', 'highstrangeness',
-      'mapporn'
+      'mapporn',
+      // Bulk categorized additions
+      'historicalcapsule', 'paleontology', 'spaceporn', 'aliens', 'invasivespecies', 'megafaunarewilding',
+      'pleistocene', 'histology', 'duolingo', 'homeworkhelp', 'speculativeevolution', 'solarpunk',
+      // Round 2 additions
+      'productivitycafe', 'newsinterpretation',
+      'ornithology', 'sat', 'prehistoricmemes', 'evolution', 'nature', 'cryptozoology',
+      'wguaccounting', 'climatechange', 'sciencememes', 'rarehistoricalphotos', 'snapshothistory', 'radiology',
+      'whatsthisplant', 'archaeology', 'historicalfiction', 'imagesofhistory', 'learnpolish', 'holyshithistory',
+      'ushistory', 'labrats', 'learnfinnish', 'paleoart', 'askbiology', 'entomology',
+      'awesomeancientanimals', 'learnguitar', 'psychologytalk', 'microbiome', 'ornithologyuk', 'mesoamerica',
+      'linguisticshumor',
     ]
   },
   
@@ -101,7 +126,18 @@ export const INTEREST_CATEGORIES = {
       'superstonk', 'ausfinance', 'auspropertychat', 'finanzen',
       'wallstreetbetsger', 'wallstreetbetselite', 'fluentinfinance',
       'mvis', 'inbitcoinwetrust', 'wallstreetbets_wins', 'theraceto10million',
-      'gold', 'silverbugs', 'economiccollapse', 'inflation'
+      'gold', 'silverbugs', 'economiccollapse', 'inflation',
+      // Bulk categorized additions
+      'deepmarketscan', 'gme', 'bittensor_', 'wallstreet', 'wallstreetbetscrypto', 'homebuilding',
+      'firsttimehomebuyer', 'educatedinvesting', 'salary', 'smallstreetbets', 'fidelityinvestments', 'deepfuckingvalue',
+      'stocklaunchers', 'valueinvesting', 'filecoin', 'coincollecting', 'rivnstock', 'rddt',
+      'tax', 'chubbyfire', 'asx_bets', 'walllstreetbets', 'redditstock', 'coins',
+      // Round 2 additions
+      'thenextgenbusiness', 'thebusinessmix', 'tokentimes', 'currencycards',
+      'optionmillionaires', 'xrp', 'rebubble', 'torontorealestate', 'money', 'solana',
+      'roaringtilray', 'unusual_whales', 'trezor', 'cryptoreality', 'bitpanda', 'schwab',
+      'silver', 'bobbystock', 'numismatics', 'shibainucoin', 'bitcoinbeginners', 'thetagang',
+      'pennystock', 'currency', 'investingforbeginners', 'interactivebrokers',
     ]
   },
   
@@ -134,7 +170,20 @@ export const INTEREST_CATEGORIES = {
       'newsommassacre', 'leopardsatemyface', 'underreportednews',
       'goodnews', 'thescoop', 'suppressed_news', 'legalnews',
       'knowledgefight', 'behindthebastards', 'fedjerk',
-      'nofilternews', 'trumpnicknames'
+      'nofilternews', 'trumpnicknames',
+      // Bulk categorized additions
+      'foodstamps', 'darkbrandon', 'usnews', 'esist', 'qult_headquarters', 'newssource',
+      'conservativetalk', 'armedsocialists', 'trumpcriticizestrump', 'prolife', 'leakednews', 'epstein',
+      'political_revolution', 'babylonbee', 'optimistsunite', 'forunitedstates', 'shitstatistssay', 'trump',
+      '2ndyomkippurwar', 'inthenews', 'byebyejob', 'politicalcompassmemes', 'vaccinelonghauler', 'conspiracytheories',
+      'full_news', 'impeach_trump', 'politicswithrespect', 'russialago', 'therestispolitics', 'buttcoin',
+      'billionairessuck', 'feminism', 'the_mueller', 'unitedamericahq', 'topmindsofreddit', 'ancap101',
+      'prepperintel', 'leopardsatemyfarm', 'maganazi', 'selfawarewolves', 'askpolitics', 'scottgalloway',
+      'workreform', 'fuckgregabbott', 'hermancainaward', 'parlerwatch', 'latestagecapitalism', 'jordanpeterson',
+      'fuckcars', 'project2025award', 'jordan_peterson_memes', 'noncredibledefense', 'liberalgunowners', 'twoxpreppers',
+      'israelcrimes', 'ukrainianconflict', 'shrinkflation', 'conservativeterrorism', 'labouruk', 'amerexit',
+      'stupidpol', 'murderedbyaoc', 'acab', 'ironfrontusa', 'shermanposting', 'fascismlink',
+      'enlightenedcentrism',
     ]
   },
   
@@ -157,7 +206,16 @@ export const INTEREST_CATEGORIES = {
       'wearethemusicmakers', 'musictheory', 'learnmusic', 'edmproduction',
       'ableton', 'fl_studio',
       // Additional creative
-      'analogcommunity', 'analogcirclejerk', 'flowerphotography', 'nikon'
+      'analogcommunity', 'analogcirclejerk', 'flowerphotography', 'nikon',
+      // Bulk categorized additions
+      'imaginaryelections', 'imaginarymaps', 'wildlifephotography', 'fanfiction', 'amigurumi', 'outofcontextcomics',
+      'nocontextpics', 'songwriting', 'albumcovers', 'askphotography', 'fakehistoryporn', 'africanart',
+      'infraredphotography', 'pixelary', 'crochetpatterns', 'bronica', 'handwritinganalysis', 'imaginaryaviation',
+      'filmphotography', 'artmemes', 'comicbookart', 'fujix', 'mediumformat', 'photomarket',
+      'blackandwhite', 'cameras', 'accidentalrenaissance', 'designporn', 'walkingpics', 'framing',
+      'imaginarysliceoflife', 'diyclothes', 'craftsnark', 'cineshots', 'macrophotography', 'vintageads',
+      'badart', 'minimalistphotography', 'gameart', 'musicproduction', 'amateurphotography', 'photographs',
+      'darkroom', 'geekycrochet', 'toyphotography',
     ]
   },
   
@@ -172,7 +230,12 @@ export const INTEREST_CATEGORIES = {
       'protectandserve', 'accounting', 'teachers', 'military', 'army',
       // Gig work & career
       'antiwork', 'ubereatsDrivers', 'grubhubdrivers', 'doordash_drivers',
-      'ubereats', 'socialsecurity', 'veteransbenefits'
+      'ubereats', 'socialsecurity', 'veteransbenefits',
+      // Bulk categorized additions
+      'roadie', 'uberdrivers', 'remotework', 'recruitinghell', 'medicare', 'doordash',
+      'veterans', 'grubhub', 'workfromhome', 'fatherhood', 'construction', 'lawyertalk',
+      'uber', 'careerguidance', 'truckers', 'careeradvice', 'jobsearch', 'fednews',
+      'askamechanic',
     ]
   }
 };
@@ -207,6 +270,8 @@ export const LEISURE_CATEGORIES = {
       'tf2', 'fromsoftware', 'monsterhunter', 'pathofexile2', 'gta6',
       'stalker', 'cyberpunkgame', 'wownoob', 'efootball', 'projectdiablo2',
       'edh', 'thetowergame', 'romanceclub', 'romanceclubdiscussion',
+      // Round 2 additions
+      'themsfightinherds', 'fighters',
       'cs2', 'counterstrike2', 'thelastofus2', 'thedivision', 'commandandconquer',
       'eldenring', 'masseffect', 'clashofclans', 'subnautica', 'ghostoftsushima',
       'darksouls2', 'stellaris', 'octopathtraveler', 'fortnitebr', 'warframe',
@@ -214,7 +279,33 @@ export const LEISURE_CATEGORIES = {
       'loveanddeepspace', 'hermitcraft', 'playstation', 'lowsodiumhelldivers',
       'baldursgate', 'ghostofyotei', 'gamingcirclejerk', 'warcraftlore',
       'pokemonquest', 'videogames', 'malbontesempire', 'lotrlcg',
-      'minecraftmemes', 'wiiu'
+      'minecraftmemes', 'wiiu',
+      // Bulk categorized additions
+      'pkmntcgdeals', 'sto', 'wepes', 'borderlands4', 'witcher3', 'mytimeatsandrock',
+      'ncaafbseries', 'kingdomcome', 'remnantgame', 'dbs_cardgame', 'deadbydaylightkillers', 'deathstranding',
+      'fo76', 'pokemonscarletviolet', 'shittydarksouls', 'maplestory', 'pathofexilebuilds', 'steam_giveaway',
+      'deadbydaylightrage', 'wizard101', 'pokemonhome', 'nomansskythegame', 'borderlands3', 'pokemoncardcollectors',
+      'dvdcollection', 'mhwilds', 'rdr2', 'monsterhunterwilds', 'crusaderkings', 'elitedangerous',
+      'tekken', 'albiononline', 'tf2shitposterclub', 'pokemongompls', 'finalfantasy', 'lastepoch',
+      'roguelites', 'pokemoncardvalue', 'megaman', 'dbsfusionworld', 'botw', 'competitivewow',
+      'tf2memes', 'swordandsuppergame', 'apexlegends', 'hoi4', 'legendsza', 'ps2',
+      'ark', 'wizardposting', 'fo4', 'diablo2', 'easportsfc', 'truegaming',
+      'pokemonlegendsarceus', 'deathstranding2', 'scp', 'diablo_2_resurrected', 'granturismo', 'fivenightsatfreddys',
+      'xbox360', 'borderlands2', 'breath_of_the_wild', 'undertale', 'satisfactorygame', 'reddeadredemption2',
+      'farcry', 'simracing', 'silenthill', 'psp', 'tcg', 'hookedonyou',
+      'oblivion', 'noita', 'classicwow', 'rimworld', 'f1game', 'stunfisk',
+      'bindingofisaac', 'spelunky', 'metroidvania', 'totk', 'xcom', 'quake',
+      'fansofcriticalrole', 'riseofkingdoms', 'summonerschool', 'civ5', 'walkingwarrobots', 'simracingstewards',
+      'boomershooters', 'xboxgamepass', 'systemshock', 'grimdawn', 'darksouls3', 'pokemongo',
+      'tinyglade', 'onednd', 'truepokemon', 'gamecollecting', 'cavesofqud', 'sniperelite',
+      'sunhaven', 'valheim', 'indiegaming', 'dragonquest', 'tearsofthekingdom', 'switch',
+      'kerbalspaceprogram', 'crossout', 'xdefiant', 'spore', 'bioshock', 'terraria',
+      'warhammer40k', 'starfield', 'pokemonsleep', 'armoredcore', 'darksouls', 'satisfactory',
+      'pokemonlegendsza', 'shinypokemon', 'scarletandviolet', 'titanfall', '3d6', 'acquisitionsinc',
+      'legendofzelda', 'genshin_impact', 'deadspace', 'halflife', 'strandeddeep', 'clonehero',
+      'rockband', 'playrust', 'simcity', 'granturismo7', 'ptcgp', 'codvanguard',
+      'deadbydaylightmobile', 'hadesthegame', 'civ', 'mw4', 'blackopscoldwar', 'codblackops7',
+      'portal', 'genshinimpacttips', 'pathofexile2builds',
     ]
   },
   
@@ -256,7 +347,17 @@ export const LEISURE_CATEGORIES = {
       'rolltide', 'scottishfootball', 'michiganwolverines', 'galatasaray',
       'mcfc', 'wrasslin', 'wrestling_figures', 'udinese', 'sportsbetting',
       'formuladank', 'motouk', 'softball', 'nfcnorthmemewar', 'nbatalk',
-      'browns', 'degenbets', 'whowouldwin'
+      'browns', 'degenbets', 'whowouldwin',
+      // Bulk categorized additions
+      'bikepacking', 'superlig', 'nflv2', 'fussball', 'colts', 'afcnorthmemewar',
+      'goalkeepers', 'mariners', 'bmwmotorrad', 'rugbyleague', 'sportsbook', 'aprilia',
+      'soccercirclejerk', 'astonmartinformula1', 'bikewrench', 'redbullracing', 'mountainbiking', 'golfgear',
+      // Round 2 additions
+      'footballcards', 'sportscards',
+      'secfootball', 'martialarts', 'fcbayern', 'wec', 'ohiostatefootball', 'basketball',
+      'golfswing', 'nflcirclejerk', 'nbacirclejerk', 'skiingcirclejerk', 'f1circlejerk', 'zwift',
+      'nbaeastmemewar', 'nfceastmemewar', 'indycar', 'collegefootballdawgs', 'nflmemes', 'rollercoasters',
+      'flyfishing', 'michiganfootball', 'f1discussions', 'motogp', 'fenerbahcesk',
     ]
   },
   
@@ -311,7 +412,24 @@ export const LEISURE_CATEGORIES = {
       'startrekmemes', 'shittydaystrom', 'tng', 'star_trek_',
       'unexpectedseinfeld', 'film', 'trixieandkatya',
       // Additional entertainment
-      'topcharactertropes', 'favoritecharacter'
+      'topcharactertropes', 'favoritecharacter',
+      // Bulk categorized additions
+      'timanderic', 'powerfuljre', 'dccmakingtheteam', 'biggboss', 'letterboxd', 'dungeoncrawlercarl',
+      'scifi', 'sitcoms', 'badmovies', 'transformers', 'tedlasso', 'thepunisher',
+      'invincible', 'spaceballs', 'wonderwoman', '80smovies', 'andor', 'thedollop',
+      'mcutheories', 'lv426', 'pka', 'iwatchedanoldmovie', 'adultswim', 'ghostbusters',
+      'jurassicworldevo', 'xmen', 'bandofbrothers', 'friskydingo', 'thesopranos', 'criticaldrinker',
+      // Round 2 additions
+      'scenesfromahat', 'hamilton', 'mission_impossible', 'unhhhh', 'actors', 'minecraftseeds',
+      'mst3k', 'halloweenmovies', 'superpowers', 'cinephobe', 'comedy', 'westerns',
+      'backtothefuture', 'standup', 'crunchyroll', 'lordoftherings', 'robocop', 'kindafunny',
+      'starwarscantina', 'disneyland', 'flicks', 'nottimandericpics', 'fantasticfour', 'freefolknation',
+      'moviequestions', 'davidlynch', 'venturebros', 'greenlantern', '90smovies', 'goosebumps',
+      'squidbillies', 'captainamerica', 'heartstoppersyndrome', 'lovetrash', 'stranger_things', 'topgun',
+      'jurassicpark', 'stephencolbert', 'tmnt', 'godzilla', 'gijoe', 'reno911',
+      'disneyplus', 'smilingfriends', 'theacolyte', 'nosleep', 'terrifier', 'taskmaster',
+      'houseofthedragon', 'pixar', 'starwarsoutlaws', 'napoleon', 'starwarscollecting', 'itcrowd',
+      'clarksonsfarm', 'starwarseu', 'disneyworld',
     ]
   },
   
@@ -326,7 +444,10 @@ export const LEISURE_CATEGORIES = {
       // Additional anime & manga
       'grapplerbaki', 'hajimenoippo', 'azumangaposting', 'mlplounge',
       'justyuri', 'deathbattlematchups', 'ben10', 'rwbycritics',
-      'dragonballsuper', 'dragonballz', 'animecirclejerk', 'animequestions', 'reiplush'
+      'dragonballsuper', 'dragonballz', 'animecirclejerk', 'animequestions', 'reiplush',
+      // Bulk categorized additions
+      'kimetsunoyaiba', 'mydressupdarlinganime', 'animereccomendations', 'fionnaandcake', 'nagatoro', 'characterrant',
+      'manhwa', 'chainsawman', 'fullmetalalchemist',
     ]
   },
   
@@ -337,7 +458,10 @@ export const LEISURE_CATEGORIES = {
       'suggestmeabook', 'freeebooks', 'boottoobig', 'harrypotter',
       'kingkillerchronicle', 'asoiaf', 'lotr', 'tolkienfans',
       // Additional books
-      'stephenking', 'fantasy', 'horrorlit'
+      'stephenking', 'fantasy', 'horrorlit',
+      // Bulk categorized additions
+      'dresdenfiles', 'exfor', 'humansarespaceorcs', 'thefirstlaw', 'printsf', 'stormlight_archive',
+      'discworld', 'neilgaiman', 'sciencefiction',
     ]
   },
   
@@ -346,7 +470,9 @@ export const LEISURE_CATEGORIES = {
     subs: [
       'comics', 'comicbooks', 'polandball', 'marvel', 'webcomics',
       'bertstrips', 'marvelstudios', 'defenders', 'marvelmemes',
-      'batman', 'calvinandhobbes', 'xkcd', 'dccomics'
+      'batman', 'calvinandhobbes', 'xkcd', 'dccomics',
+      // Bulk categorized additions
+      'starwarsmemes', 'transformemes', 'superheroes', 'comicbookmovies',
     ]
   },
   
@@ -372,7 +498,16 @@ export const LEISURE_CATEGORIES = {
       'michaeljackson', 'synthesizers', 'pantera', 'guitarcirclejerk',
       'musicsuggestions', 'guitars', 'toddintheshadow', 'truespotify',
       'fkatwigs', 'crappymusic', 'fantanoforever', 'vintageaudio',
-      'powermetal', 'musicians', 'reaper'
+      'powermetal', 'musicians', 'reaper',
+      // Bulk categorized additions
+      'musicrecommendations', 'stonerrock', '90shiphop', 'thebeatles', 'turntables', 'concerts',
+      'lanadelrey', '80smusic', 'ukulele', 'jazzcirclejerk', 'ironmaiden', 'hip_hop_that_u_need',
+      'askmusic', 'metalmemes', 'radioheadcirclejerk', 'kylieminogue', 'qotsa', 'arminvanbuuren',
+      'hozier', 'allrockmusic', 'inmetalwetrust', 'sabrinacarpenterfans', 'oasis', 'bassguitar',
+      'heavyvinyl', 'gloryhammer', 'davidbowie', 'classicrock', 'electricguitar', 'oldschoolcoolmusic',
+      'sludge', 'metalsuggestions', 'thecure', 'guitar_theory', 'bobdylan', 'guitaramps',
+      'rockmusic', 'progmetal', 'stratocaster', 'telecaster', 'guitarpedals', 'letstalkmusic',
+      'numetal', 'astateoftrance',
     ]
   },
   
@@ -453,7 +588,31 @@ export const LEISURE_CATEGORIES = {
       // Cannabis & substances
       'trees', 'lsd', 'microgrowery',
       // Nostalgia
-      '90s', '80s'
+      '90s', '80s',
+      // Bulk categorized additions
+      'cleetusmcfarland', 'ebayuk', 'realtesla', 'badfoodporn', 'qantasfrequentflyer', 'energydrinks',
+      'neca', 'incense', 'haworthia', 'legoleak', 'tools', 'dahlias',
+      'dashcams', 'lithops', 'hibiscus', 'carav', 'dentures', 'chesscom',
+      'tattooadvice', 'legocirclejerk', 'seafood', 'drivinguk', 'guns', 'weed',
+      'diyuk', 'arborists', 'cactusandsucculents', 'matureplants', 'audi', 'bmwgs',
+      'roses', 'friendsinbloom', 'customactionfigures', 'expats', 'tressless', 'conophytum',
+      'garageporn', 'gijoeclassifiedseries', 'buyitforlife', '90sand2000snostalgia', 'plants', 'civic',
+      'dmt', 'coolcollections', 'rolex', 'homemaintenance', 'whatnotapp', 'landscaping',
+      'idiotswithguns', 'vanlife', 'psychonaut', 'foodies_sydney', 'vaping', 'smithandwesson',
+      'classiccars', 'japanesefood', 'apartmentliving', 'legocastles', 'cartalkuk', 'keto_food',
+      'onlycacs', 'porsche', 'puzzles', 'vexillology', 'lightningcollection', 'countertops',
+      'innout', 'vhs', '70s', '2000snostalgia', 'lawncare', 'grilling',
+      'bathrooms', 'strangeplants', 'knifemaking', 'weirdwheels', 'whatisthiscar', 'dogadvice',
+      'cleaningtips', 'top_food', 'vagabond', 'euphorbiasandcaudex', 'gasteria', 'lophophora',
+      'remarkabletablet', 'crtgaming', 'shortwave', 'smoothies', 'steak', 'plantidentification',
+      'sandwiches', 'vaporents', 'carnivorediet', 'whatcarshouldibuy', 'dorstenia', 'wierdplants',
+      'qantasairways', 'travelagents', 'homebrewing', 'legopirates', 'rawmeat', 'pointstravel',
+      'roastmycar', 'magnetfishing', 'singaporeairlines', 'teslamodel3', 'craftymighty', 'puzzle',
+      'dumplings', 'pho', 'eggs', 'appliancerepair', 'psychedelics', 'vintagetees',
+      'trains', 'plantclinic', 'beer', 'curlyhairuk', 'mushroomid', 'hvacadvice',
+      'cereal', 'firewood', 'nolawns', 'electrical', 'gothplants', 'plantsandpots',
+      'ariocarpus', 'oldinternetculturev2', 'preppers', 'home', 'pestcontrol', 'hookah',
+      'plantbaseddiet', 'renovations',
     ]
   },
   
@@ -524,7 +683,36 @@ export const LEISURE_CATEGORIES = {
       // Discussion
       'discussionzone', 'allthequestions',
       // Additional social
-      'aitah', 'entertainment', 'starterpacks', 'combatfootage'
+      'aitah', 'entertainment', 'starterpacks', 'combatfootage',
+      // Bulk categorized additions
+      'askanaustralian', 'ask', 'help', 'guysbeingdudes', 'dallas', 'bald',
+      'columbiamo', 'askmen', 'bumble', 'wouldyourather', 'ama', 'christian',
+      'australia', 'askchina', 'bible', 'askchicago', 'freecompliments', 'arethestraightsok',
+      'hypotheticalsituation', 'bestofredditorupdates', 'twohottakes', 'life', 'nicegirls', '40something',
+      'britishproblems', 'australian', 'egg_irl', 'millennials', 'legaladviceuk', 'introvertmemes',
+      'bullcity', 'me_irlgbt', 'twoxchromosomes', 'seriousconversation', 'transtimelines', 'askachristian',
+      'dublin', 'london', 'toronto', 'ohio', 'eczemauk', 'alabama',
+      'cochlearimplants', 'sdsu', 'askindia', 'irvine', 'petpeeves', 'austin',
+      'fragreddit', 'yorkshire', 'longcovid', 'selfimprovement', 'askabrit', 'ontario',
+      'connecticut', 'getdisciplined', 'askgermany', 'trans', 'amiwrong', 'detroit',
+      'pennsylvania', 'askto', 'askdfw', 'health', 'newtoreddit', 'badroommates',
+      'edanonymous', 'askcanada', 'plano', 'losangeles', 'traaaaaaaaaaaansbians', 'zillennials',
+      'askfeminists', 'wisconsin', 'dermatologyquestions', 'oklahoma', 'askeurope', 'askaustria',
+      'asklatinamerica', 'northernireland', 'choosingbeggars', 'asksweddit', 'hygiene', 'askmenadvice',
+      'georgia', 'minneapolis', 'liverpool', 'dpdr', 'california', 'asksocialists',
+      'chicago', 'iowa', 'polska', 'askaliberal', 'nova', 'columbus',
+      'ukraine', 'asthma', 'huddersfield', 'santiago', 'kenya', 'unitedkingdom',
+      'sanantonio', 'poland', 'malaysia', 'tinnitus', 'huntsvillealabama', 'auslegal',
+      'iceland', 'chile', 'woundcare', 'newbrunswickcanada', 'monterrey', 'bayarea',
+      'eugene', 'sandiego', 'prostatecancer', 'toddlers', 'turkey', 'sydney',
+      'rhodeisland', 'cincinnati', 'bi_irl', 'berlin', 'paris', 'autisticcreatives',
+      'maine', 'deaf', 'finland', 'medellin', 'woodbridgeva', 'infp',
+      'gifted', 'reno', 'transytalk', 'florida', 'howislivingthere', 'sheffield',
+      'redditforgrownups', 'anxietymemes', 'maryland', 'askacanadian', 'massachusetts', 'newjersey',
+      'insaneparents', 'parents', 'amithejerk', 'concussion', 'catholicism', 'elsalvador',
+      // Round 2 additions
+      'canada', 'jewishleft',
+      'debateanatheist', 'melbourne',
     ]
   },
   
@@ -578,7 +766,24 @@ export const LEISURE_CATEGORIES = {
       'mapporncirclejerk', 'notinteresting', 'greatbritishmemes',
       'deutschememes', 'tragedeigh', 'crazyfuckingvideos',
       'stupidquestions', 'roastme', 'noshtisherlock',
-      'philosophymemes', 'ichbin40undschwurbler', 'copypasta_es'
+      'philosophymemes', 'ichbin40undschwurbler', 'copypasta_es',
+      // Bulk categorized additions
+      'amazing', 'creepy', 'thewordfuck', 'weird', 'nonsense', 'texts',
+      'explainitpeter', 'rareinsults', 'idiocracy', 'thanksimcured', 'sweatypalms', 'justfuckmyshitup',
+      'humorinpoortaste', 'madlads', 'iamthemaincharacter', 'tooktoomuch', 'abruptchaos', 'funnysigns',
+      'cursedcomments', 'doppelganger', 'trashy', 'instantkarma', 'justiceporn', 'iamverybadass',
+      'crappydesign', 'blursedimages', 'aboringdystopia', 'bonehurtingjuice', 'winstupidprizes', 'blursed_videos',
+      'thalassophobia', 'liminalspace', 'pareidolia', 'blackmagicfuckery', 'atbge', 'lifeprotips',
+      'bossfights', 'yesyesyesno', 'glowups', 'trollcoping', 'skamtebord', 'reactiongifs',
+      'damnthatsreal', 'woahdude', 'im14andthisisdeep', 'holdmycosmo', 'confusing_perspective', 'quityourbullshit',
+      'megalophobia', 'justneckbeardthings', 'bossfight', 'assholedesign', 'havewemet', 'urbanhell',
+      // Round 2 additions
+      'fightporn', 'captionthis', 'bombing', 'namethissthing', 'answers',
+      'abandonedporn', 'evilbuildings', 'iamatotalpieceofshit', 'justiceserved', 'coaxedintoasnafu', 'silmarillionmemes',
+      'simpsonsshitposting', 'perfectlycutscreams', 'memevideos', 'gatekeeping', 'totallylookslike', 'moviememes',
+      'notliketheothergirls', 'imthemaincharacter', 'misleadingthumbnails', 'gifsound', 'menwritingwomen', 'picsthatgohard',
+      'unethicallifeprotips', 'hmmm', '13or30', 'shittylifeprotips', 'foundsatan', 'sbubby',
+      'dontyouknowwhoiam', 'yesyesyesyesno',
     ]
   },
   
@@ -622,7 +827,16 @@ export const LEISURE_CATEGORIES = {
       'weathergifs', 'tropicalweather',
       // Additional animals
       'oneorangebraincell', 'velvethippos', 'funnyanimals',
-      'petsareamazing', 'birds', 'birding'
+      'petsareamazing', 'birds', 'birding',
+      // Bulk categorized additions
+      'animalid', 'ukbirds', 'pugs', 'elephants', 'awww', 'staffordbullterriers',
+      'namemycat', 'snakes', 'dogvideos', 'cartoons', 'bengalcats', 'norwegianforestcats',
+      'renalcats', 'funnycats', 'orangecats', 'seagulls', 'hardcorenature', 'animals',
+      'animalsbeingfunny', 'opossums', 'dogsbeingderps', 'kittens', 'insects', 'oceans',
+      'bigcats', 'animal', 'cockatiel', 'cathelp', 'jellyfish', 'leaves',
+      'birdsfacingforward', 'voidcats', 'fish', 'tuxedocats', 'whatsthisbird', 'catsbeingcats',
+      'spiders', 'beardeddragons', 'jumpingspiders', 'catbreeds', 'catsallday', 'blurrypicturesofcats',
+      'dachshund', 'pigeon',
     ]
   },
   
@@ -658,7 +872,16 @@ export const LEISURE_CATEGORIES = {
       'nonpoliticaltwitter', 'reckful', 'pics', 'videos', 'gifs',
       'modsupport', 'modcoord', 'redditipo', 'subreditdrama',
       'blueskyskeets', 'mntrolls', 'cursedguns',
-      'uktrains'
+      'uktrains',
+      // Bulk categorized additions
+      'subredditdrama', 'reddit.com', 'datguylirik', 'watchfuleyesbot', 'no', 'lol',
+      'pinterest', 'mitchjones', 'instagram', 'redditrequest', 'modnews', 'redditsafety',
+      'bestof', 'lostredditors', 'travisandtaylor', 'fixedbytheduet', 'save3rdpartyapps', 'redditgetsdrawnbadly',
+      'ludwigahgren', 'fridgedetective', 'redditonwiki', 'fundiesnarkuncensored', 'elizabetheatsnyc', 'twitter',
+      'joeroganreacharound', 'shanegillis', 'theovon', 'billburr', 'redditblackout2023', 'hasan_snark',
+      // Round 2 additions
+      'imisstheoldidubbbz', 'gorlworldfiles', 'theregulationpod',
+      'johnoliver', 'findareddit', 'hasan_piker', 'tiktok',
     ]
   }
 };
