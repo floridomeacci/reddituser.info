@@ -98,7 +98,7 @@ export const INTEREST_CATEGORIES = {
       'nft', 'nftexchange', 'nftsmarketplace', 'opensea', 'openseamarket',
       'solananft', 'solseanft',
       // Additional stocks & finance
-      'superstonk', 'ausfinance', 'auspropertycht', 'finanzen',
+      'superstonk', 'ausfinance', 'auspropertychat', 'finanzen',
       'wallstreetbetsger', 'wallstreetbetselite', 'fluentinfinance',
       'mvis', 'inbitcoinwetrust', 'wallstreetbets_wins', 'theraceto10million',
       'gold', 'silverbugs', 'economiccollapse', 'inflation'
@@ -133,7 +133,8 @@ export const INTEREST_CATEGORIES = {
       // News & commentary
       'newsommassacre', 'leopardsatemyface', 'underreportednews',
       'goodnews', 'thescoop', 'suppressed_news', 'legalnews',
-      'knowledgefight', 'behindthebastards', 'fedjerk', 'nofiltrnews'
+      'knowledgefight', 'behindthebastards', 'fedjerk',
+      'nofilternews', 'trumpnicknames'
     ]
   },
   
@@ -170,8 +171,8 @@ export const INTEREST_CATEGORIES = {
       'talesfromthesquadcar', 'talesfromthepharmacy', 'starbucks',
       'protectandserve', 'accounting', 'teachers', 'military', 'army',
       // Gig work & career
-      'antiwork', 'ubereatsadrivers', 'grubhubdrivers', 'doordash_drivers',
-      'ubereats', 'socialsecurity', 'veteransbenefits', 'ubereatsadrivers'
+      'antiwork', 'ubereatsDrivers', 'grubhubdrivers', 'doordash_drivers',
+      'ubereats', 'socialsecurity', 'veteransbenefits'
     ]
   }
 };
@@ -502,7 +503,7 @@ export const LEISURE_CATEGORIES = {
       'texas', 'indiana', 'houston', 'minnesota', 'michigan',
       'northcarolina', 'oregon', 'sacramento', 'nyc', 'annarbor',
       'providence', 'bogota', 'yurop', 'ameristralia', 'unket',
-      'shitrentals', 'auspropertycht',
+      'shitrentals',
       // Ask communities
       'asktheworld', 'askanything', 'askuk', 'askbrits', 'askanaustrailian',
       'askoldpeople', 'askmenover30', 'askus', 'askfrance', 'askireland',
@@ -521,7 +522,9 @@ export const LEISURE_CATEGORIES = {
       // LGBT
       'traaaaaaannnnnnnnnns2',
       // Discussion
-      'discussionzone', 'allthequestions'
+      'discussionzone', 'allthequestions',
+      // Additional social
+      'aitah', 'entertainment', 'starterpacks', 'combatfootage'
     ]
   },
   
@@ -654,7 +657,8 @@ export const LEISURE_CATEGORIES = {
       'asmongold', 'fauxmoi', 'popculturechat', 'curatedtumblr',
       'nonpoliticaltwitter', 'reckful', 'pics', 'videos', 'gifs',
       'modsupport', 'modcoord', 'redditipo', 'subreditdrama',
-      'blueskyskeets', 'mntrolls', 'cursedguns'
+      'blueskyskeets', 'mntrolls', 'cursedguns',
+      'uktrains'
     ]
   }
 };
