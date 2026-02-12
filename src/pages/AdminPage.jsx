@@ -309,11 +309,13 @@ export default function AdminPage() {
                     { key: 'total_posts', label: 'Total Posts' },
                     { key: 'total_subreddits', label: 'Subreddits' },
                     { key: 'estimated_location', label: 'Location' },
-                    { key: 'ai_gender', label: 'AI Gender' },
-                    { key: 'ai_age', label: 'AI Age' },
                     { key: 'language', label: 'Language' },
+                    { key: 'family', label: 'Family' },
+                    { key: 'relationship', label: 'Relationship' },
+                    { key: 'profession', label: 'Profession' },
                     { key: 'pca_cluster', label: 'PCA' },
-                    { key: 'tsne_cluster', label: 'TSNE' }
+                    { key: 'tsne_cluster', label: 'TSNE' },
+                    { key: 'interests', label: 'Interests' }
                   ].map(({ key, label }) => (
                     <th
                       key={key}
@@ -374,19 +376,25 @@ export default function AdminPage() {
                       {user.estimated_location || 'Unknown'}
                     </td>
                     <td style={{ padding: '12px', color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px', whiteSpace: 'nowrap' }}>
-                      {user.ai_gender || 'N/A'}
-                    </td>
-                    <td style={{ padding: '12px', color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px', whiteSpace: 'nowrap' }}>
-                      {user.ai_age || 'N/A'}
-                    </td>
-                    <td style={{ padding: '12px', color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px', whiteSpace: 'nowrap' }}>
                       {user.language || 'N/A'}
+                    </td>
+                    <td style={{ padding: '12px', color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px', whiteSpace: 'nowrap', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {user.family || 'N/A'}
+                    </td>
+                    <td style={{ padding: '12px', color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px', whiteSpace: 'nowrap' }}>
+                      {user.relationship || 'N/A'}
+                    </td>
+                    <td style={{ padding: '12px', color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px', whiteSpace: 'nowrap' }}>
+                      {user.profession || 'N/A'}
                     </td>
                     <td style={{ padding: '12px', color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px', whiteSpace: 'nowrap' }}>
                       {user.pca_cluster || 'N/A'}
                     </td>
                     <td style={{ padding: '12px', color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px', whiteSpace: 'nowrap' }}>
                       {user.tsne_cluster || 'N/A'}
+                    </td>
+                    <td style={{ padding: '12px', color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px', whiteSpace: 'nowrap', maxWidth: '300px' }}>
+                      {user.interests || 'N/A'}
                     </td>
                   </tr>
                 ))}
