@@ -126,7 +126,8 @@ const WorldMap = ({ comments, posts, activityByHour, peakWindow, aiLocation }) =
 
     // ── PRIORITY 1: AI "Where They Live" with high/medium confidence ──
     if (aiLocation?.likelyLocation?.country) {
-      const aiConf = (aiLocation.likelyLocation.confidence || '').toLowerCase();
+      const rawConf = aiLocation.likelyLocation.confidence;
+      const aiConf = typeof rawConf === 'number' ? (rawConf >= 0.7 ? 'high' : rawConf >= 0.4 ? 'medium' : 'low') : String(rawConf || '').toLowerCase();
       const aiCountryRaw = aiLocation.likelyLocation.country.toLowerCase();
       const svgId = aiCountryToSvgId[aiCountryRaw] || aiCountryRaw;
 
@@ -173,8 +174,9 @@ const WorldMap = ({ comments, posts, activityByHour, peakWindow, aiLocation }) =
       const hasLocationMention = highlightedCountries.size > 0;
 
       // Check if AI gave low confidence — use as tiebreaker
-      const aiLowConf = aiLocation?.likelyLocation?.country &&
-        (aiLocation.likelyLocation.confidence || '').toLowerCase() === 'low';
+      const rawAiConf = aiLocation?.likelyLocation?.confidence;
+      const aiConfNorm = typeof rawAiConf === 'number' ? (rawAiConf >= 0.7 ? 'high' : rawAiConf >= 0.4 ? 'medium' : 'low') : String(rawAiConf || '').toLowerCase();
+      const aiLowConf = aiLocation?.likelyLocation?.country && aiConfNorm === 'low';
 
       if (hasLocationMention) {
         const matches = Array.from(highlightedCountries).filter(country =>
