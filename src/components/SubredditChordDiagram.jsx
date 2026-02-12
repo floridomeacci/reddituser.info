@@ -106,8 +106,8 @@ const SubredditChordDiagram = ({ comments }) => {
       .attr('height', height)
       .attr('viewBox', [-width / 2, -height / 2, width, height]);
 
-    const outerRadius = Math.min(width, height) * 0.23;
-    const innerRadius = outerRadius - 20;
+    const outerRadius = Math.max(Math.min(width, height) * 0.23, 25);
+    const innerRadius = Math.max(outerRadius - 20, 5);
 
     // Color scale - using desaturated red palette
     const desaturatedRedPalette = [
