@@ -149,7 +149,15 @@ export default function RelationshipStatus({ userData, style = {} }) {
         {error && `❌ ${error}`}
         {relationshipData && (
           <span style={{ color: getStatusColor(relationshipData.status) }}>
-            {relationshipData.status || 'Unknown'}
+            {(() => {
+              const status = relationshipData.status || 'Unknown';
+              const confidence = relationshipData.confidence;
+              if (confidence && confidence > 0 && confidence <= 1) {
+                const pct = Math.round(confidence * 100);
+                return `${status} (${pct}%)`;
+              }
+              return status;
+            })()}
           </span>
         )}
       </p>

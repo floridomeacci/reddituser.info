@@ -218,11 +218,20 @@ export default function LocationAnalysis({ userData, onLocationData, style = {} 
     return '🔍';
   };
 
-  // Build display location string
+  // Build display location string with confidence
   const getLocationString = (loc) => {
     if (!loc) return 'Unknown';
     const parts = [loc.city, loc.state, loc.country].filter(Boolean);
-    return parts.length > 0 ? parts.join(', ') : 'Unknown';
+    const locationStr = parts.length > 0 ? parts.join(', ') : 'Unknown';
+    
+    // Add confidence percentage if available and numerical
+    const confidence = loc.confidence;
+    if (confidence && typeof confidence === 'number' && confidence > 0 && confidence <= 1) {
+      const pct = Math.round(confidence * 100);
+      return `${locationStr} (${pct}%)`;
+    }
+    
+    return locationStr;
   };
 
   if (!userData || (!userData.comments?.length && !userData.posts?.length)) {
@@ -301,24 +310,7 @@ export default function LocationAnalysis({ userData, onLocationData, style = {} 
                     {getLocationString(locationData.likelyLocation)}
                   </span>
                 </div>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  fontSize: '10px'
-                }}>
-                  <span style={{
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    background: `${getConfidenceColor(locationData.likelyLocation.confidence)}22`,
-                    color: getConfidenceColor(locationData.likelyLocation.confidence),
-                    fontWeight: '600',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em'
-                  }}>
-                    {locationData.likelyLocation.confidence || 'unknown'} confidence
-                  </span>
-                </div>
+                {/* Confidence badge removed - now shown inline with location */}
               </div>
             )}
 

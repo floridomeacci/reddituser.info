@@ -147,7 +147,17 @@ export default function FamilyTree({ userData, style = {} }) {
       <p className="stat-meta">
         {loading && '⏳ Analyzing...'}
         {error && `❌ ${error}`}
-        {familyData && `${familyData.members?.length || 0} members • ${familyData.familySize || 'unknown'}`}
+        {familyData && (() => {
+          const memberCount = familyData.members?.length || 0;
+          const familySize = familyData.familySize || 'unknown';
+          const confidence = familyData.confidence;
+          let text = `${memberCount} members • ${familySize}`;
+          if (confidence && confidence > 0 && confidence <= 1) {
+            const pct = Math.round(confidence * 100);
+            text += ` (${pct}%)`;
+          }
+          return text;
+        })()}
       </p>
 
       <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', fontSize: '11px' }}>

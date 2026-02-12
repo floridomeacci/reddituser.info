@@ -143,7 +143,15 @@ export default function ProfessionAnalysis({ userData, style = {} }) {
       <p className="stat-meta">
         {loading && '⏳ Analyzing...'}
         {error && `❌ ${error}`}
-        {professionData && `${professionData.profession || 'Unknown'}`}
+        {professionData && (() => {
+          const profession = professionData.profession || 'Unknown';
+          const confidence = professionData.confidence;
+          if (confidence && confidence > 0 && confidence <= 1) {
+            const pct = Math.round(confidence * 100);
+            return `${profession} (${pct}%)`;
+          }
+          return profession;
+        })()}
       </p>
 
       <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', fontSize: '11px' }}>
