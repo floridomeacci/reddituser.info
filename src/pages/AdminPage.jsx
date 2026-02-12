@@ -55,7 +55,11 @@ export default function AdminPage() {
       
       if (response.ok) {
         const data = await response.json();
-        setUsers(data.users || []);
+        // Filter out empty/private accounts (no comments and no posts)
+        const filteredUsers = (data.users || []).filter(user => 
+          user.total_comments > 0 || user.total_posts > 0
+        );
+        setUsers(filteredUsers);
       } else {
         setError('Failed to fetch users');
       }
