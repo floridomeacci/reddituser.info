@@ -60,6 +60,7 @@ export default function RelationshipStatus({ userData, style = {} }) {
         status: storedRelationship.flair,
         partner: storedRelationship.partnerType ? { type: storedRelationship.partnerType } : null,
         summary: storedRelationship.summary,
+        confidence: storedRelationship.confidence,
       });
     }
   }, [storedRelationship, isStoredUnknown]);

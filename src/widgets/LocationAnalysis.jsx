@@ -287,7 +287,7 @@ export default function LocationAnalysis({ userData, onLocationData, style = {} 
       <p className="stat-meta">
         {loading && '⏳ AI analyzing location clues...'}
         {error && `❌ ${error}`}
-        {!loading && !error && locationData && `${locationSentences.length} clues analyzed`}
+        {!loading && !error && locationData && (locationSentences.length > 0 ? `${locationSentences.length} clues analyzed` : 'AI-analyzed')}
         {!loading && !error && !locationData && `${locationSentences.length} location mentions found`}
       </p>
 

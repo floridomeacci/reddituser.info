@@ -61,6 +61,7 @@ export default function ProfessionAnalysis({ userData, style = {} }) {
         industry: storedProfession.industry,
         employmentStatus: storedProfession.employmentStatus,
         summary: storedProfession.summary,
+        confidence: storedProfession.confidence,
       });
     }
   }, [storedProfession, isStoredUnknown]);

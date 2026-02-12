@@ -65,6 +65,7 @@ export default function FamilyTree({ userData, style = {} }) {
         members,
         familySize: storedFamily.familySize || (members.length <= 2 ? 'small' : members.length <= 5 ? 'medium' : 'large'),
         summary: storedFamily.summary,
+        confidence: storedFamily.confidence,
       });
     }
   }, [storedFamily, isStoredUnknown]);
