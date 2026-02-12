@@ -200,19 +200,29 @@ export default function LocationAnalysis({ userData, onLocationData, style = {} 
     queryAI();
   }, [locationSentences, userData, storedLocation]);
 
-  // Confidence color
+  // Confidence color (handles both number 0-1 and string high/medium/low)
   const getConfidenceColor = (conf) => {
-    if (!conf) return COLORS.TEXT_MUTED;
-    const c = conf.toLowerCase();
+    if (!conf && conf !== 0) return COLORS.TEXT_MUTED;
+    if (typeof conf === 'number') {
+      if (conf >= 0.7) return '#4ade80';
+      if (conf >= 0.4) return '#fbbf24';
+      return '#f97316';
+    }
+    const c = String(conf).toLowerCase();
     if (c === 'high') return '#4ade80';
     if (c === 'medium') return '#fbbf24';
     return '#f97316';
   };
 
-  // Confidence icon
+  // Confidence icon (handles both number 0-1 and string high/medium/low)
   const getConfidenceIcon = (conf) => {
-    if (!conf) return '❓';
-    const c = conf.toLowerCase();
+    if (!conf && conf !== 0) return '❓';
+    if (typeof conf === 'number') {
+      if (conf >= 0.7) return '🎯';
+      if (conf >= 0.4) return '📍';
+      return '🔍';
+    }
+    const c = String(conf).toLowerCase();
     if (c === 'high') return '🎯';
     if (c === 'medium') return '📍';
     return '🔍';
