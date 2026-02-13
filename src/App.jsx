@@ -149,7 +149,8 @@ const WIDGET_SIZES = {
   IdentifiableImages: { cols: 2, rows: 2 },
 
   // Comparison widgets
-  RedditPersonality: { cols: 2, rows2 },
+  RedditPersonality: { cols: 2, rows: 2 },
+  KarmaEfficiency: { cols: 2, rows: 2 },
   ActivityFrequency: { cols: 2, rows: 2 },
   VocabularyLevel: { cols: 2, rows: 2 },
   NightOwlScore: { cols: 2, rows: 2 },
@@ -158,8 +159,6 @@ const WIDGET_SIZES = {
   PostCommentRatio: { cols: 2, rows: 2 },
   ControversyIndex: { cols: 2, rows: 2 },
   CommentLengthComparison: { cols: 2, rows: 2 },
-  KarmaOverTime: { cols: 2, rows: 2 },
-  HourlyActivityComparisonComparison: { cols: 2, rows: 2 },
   KarmaOverTime: { cols: 2, rows: 2 },
   HourlyActivityComparison: { cols: 2, rows: 2 },
 };
