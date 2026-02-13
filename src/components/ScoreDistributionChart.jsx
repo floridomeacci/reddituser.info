@@ -85,9 +85,16 @@ export default function ScoreDistributionChart({ comments }) {
         enabled: false
       },
       series: [{
+        name: 'Raw Data',
+        type: 'scatter',
+        data: scores,
+        visible: false,
+        showInLegend: false,
+        enableMouseTracking: false
+      }, {
         name: 'Distribution',
         type: 'bellcurve',
-        data: scores,
+        baseSeries: 0,
         color: COLORS.DATA_1,
         fillOpacity: 0.6,
         zIndex: -1
