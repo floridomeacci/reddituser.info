@@ -70,9 +70,9 @@ export default function ControversyIndex({ userData, style }) {
             <YAxis yAxisId="right" orientation="right" tick={{ fill: 'rgba(255,255,255,0.2)', fontSize: 8 }} axisLine={false} tickLine={false} />
             <Tooltip content={<CustomTooltip />} />
             <Legend iconType="line" wrapperStyle={{ fontSize: 10, opacity: 0.7 }} />
+            <ReferenceLine yAxisId="left" y={REDDIT_AVG_CONTROVERSY} stroke={COLORS.DATA_6} strokeWidth={2} strokeDasharray="6 3" label={{ value: `Reddit Avg: ${REDDIT_AVG_CONTROVERSY}%`, position: 'insideTopRight', fill: COLORS.DATA_6, fontSize: 9 }} />
             <Area yAxisId="left" type="monotone" dataKey="rate" name="Controversy %" stroke={COLORS.ACCENT_PRIMARY} fill="url(#controvGrad)" strokeWidth={2.5} dot={false} />
             <Line yAxisId="right" type="monotone" dataKey="avgScore" name="Avg Score" stroke={COLORS.DATA_2} strokeWidth={1.5} dot={false} opacity={0.6} />
-            <Line yAxisId="left" type="monotone" dataKey="redditAvg" name="Reddit Avg" stroke={COLORS.DATA_6} strokeWidth={2} strokeDasharray="5 3" dot={false} />
           </ComposedChart>
         </ResponsiveContainer>
       </div>

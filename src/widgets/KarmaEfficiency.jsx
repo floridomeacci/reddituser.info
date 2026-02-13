@@ -67,12 +67,12 @@ export default function KarmaEfficiency({ userData, style }) {
             <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 8 }} axisLine={false} tickLine={false} />
             <Tooltip content={<CustomTooltip />} />
             <Legend iconType="line" wrapperStyle={{ fontSize: 10, opacity: 0.7 }} />
+            <ReferenceLine y={8.5} stroke={COLORS.DATA_6} strokeWidth={2} strokeDasharray="6 3" label={{ value: 'Reddit Avg: ~8.5', position: 'insideTopRight', fill: COLORS.DATA_6, fontSize: 9 }} />
             <Bar dataKey="efficiency" name="You" fill={COLORS.ACCENT_PRIMARY} opacity={0.5} barSize={6} radius={[2, 2, 0, 0]}>
               {chartData.map((d, i) => (
-                <Cell key={i} fill={d.efficiency >= d.redditAvg ? COLORS.DATA_2 : COLORS.ACCENT_PRIMARY} opacity={0.6} />
+                <Cell key={i} fill={d.efficiency >= 8.5 ? COLORS.DATA_2 : COLORS.ACCENT_PRIMARY} opacity={0.6} />
               ))}
             </Bar>
-            <Line type="monotone" dataKey="redditAvg" name="Reddit Avg" stroke={COLORS.DATA_6} strokeWidth={2} strokeDasharray="5 3" dot={false} />
           </ComposedChart>
         </ResponsiveContainer>
       </div>

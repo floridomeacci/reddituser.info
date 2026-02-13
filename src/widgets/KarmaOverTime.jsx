@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
-import { ComposedChart, Area, Line, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { ComposedChart, Area, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend, ReferenceLine } from 'recharts';
 import { COLORS } from '../design-tokens';
 
 const REDDIT_MONTHLY_AVG_KARMA = 10;
 
 export default function KarmaOverTime({ userData, style }) {
-  const { chartData, totalKarma } = useMemo(() => {
+  const { chartData, totalKarma, monthCount } = useMemo(() => {
     if (!userData) return {};
     const allItems = [...(userData.comments || []), ...(userData.posts || [])];
     if (allItems.length < 10) return {};
@@ -23,22 +23,23 @@ export default function KarmaOverTime({ userData, style }) {
     const sorted = Object.entries(months).sort((a, b) => a[0].localeCompare(b[0]));
     if (sorted.length < 2) return {};
 
-    let userCum = 0, avgCum = 0;
+    let userCum = 0;
     const chartData = sorted.map(([month, data]) => {
       userCum += data.karma;
-      avgCum += REDDIT_MONTHLY_AVG_KARMA;
       return {
         label: new Date(month + '-01').toLocaleDateString('en', { month: 'short', year: '2-digit' }),
         monthly: data.karma,
         cumulative: userCum,
-        avgCumulative: avgCum,
       };
     });
 
-    return { chartData, totalKarma: userCum };
+    return { chartData, totalKarma: userCum, monthCount: sorted.length };
   }, [userData]);
 
   if (!chartData) return null;
+
+  const avgRedditorTotal = monthCount * REDDIT_MONTHLY_AVG_KARMA;
+  const multiplier = avgRedditorTotal > 0 ? Math.round(totalKarma / avgRedditorTotal) : 0;
 
   const CustomTooltip = ({ active, payload }) => {
     if (!active || !payload?.length) return null;
@@ -48,7 +49,7 @@ export default function KarmaOverTime({ userData, style }) {
         <div style={{ color: '#fff', fontWeight: 600, marginBottom: 4 }}>{d.label}</div>
         <div style={{ color: COLORS.ACCENT_PRIMARY }}>Monthly: {d.monthly > 0 ? '+' : ''}{d.monthly.toLocaleString()}</div>
         <div style={{ color: COLORS.DATA_2 }}>Your Total: {d.cumulative.toLocaleString()}</div>
-        <div style={{ color: COLORS.DATA_6 }}>Avg User: {d.avgCumulative.toLocaleString()}</div>
+        <div style={{ color: COLORS.DATA_6 }}>Avg Redditor would have: ~{REDDIT_MONTHLY_AVG_KARMA}/mo</div>
       </div>
     );
   };
@@ -56,7 +57,7 @@ export default function KarmaOverTime({ userData, style }) {
   return (
     <div className="cell" style={{ ...style }}>
       <h3>Karma Trajectory</h3>
-      <p className="stat-meta">Cumulative karma growth vs average Redditor · Total: <span style={{ color: COLORS.ACCENT_PRIMARY }}>{totalKarma.toLocaleString()}</span></p>
+      <p className="stat-meta">Cumulative karma growth · Total: <span style={{ color: COLORS.ACCENT_PRIMARY }}>{totalKarma.toLocaleString()}</span> · <span style={{ color: COLORS.DATA_6 }}>{multiplier > 1 ? `${multiplier}x` : '~1x'} avg Redditor</span></p>
       <div style={{ width: '100%', height: 'calc(100% - 50px)' }}>
         <ResponsiveContainer>
           <ComposedChart data={chartData} margin={{ left: -5, right: 5, top: 5, bottom: 0 }}>
@@ -67,12 +68,12 @@ export default function KarmaOverTime({ userData, style }) {
               </linearGradient>
             </defs>
             <XAxis dataKey="label" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 8 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} tickLine={false} interval={Math.max(Math.floor(chartData.length / 8), 0)} />
-            <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 8 }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v} />
+            <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 8 }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1000000 ? `${(v/1000000).toFixed(1)}M` : v >= 1000 ? `${(v/1000).toFixed(0)}k` : v} />
             <Tooltip content={<CustomTooltip />} />
             <Legend iconType="line" wrapperStyle={{ fontSize: 10, opacity: 0.7 }} />
+            <ReferenceLine y={avgRedditorTotal} stroke={COLORS.DATA_6} strokeWidth={2} strokeDasharray="6 3" label={{ value: `Avg Redditor: ${avgRedditorTotal.toLocaleString()}`, position: 'insideTopRight', fill: COLORS.DATA_6, fontSize: 9 }} />
             <Bar dataKey="monthly" name="Monthly ±" fill={COLORS.ACCENT_PRIMARY} opacity={0.25} barSize={4} />
             <Area type="monotone" dataKey="cumulative" name="You" stroke={COLORS.DATA_2} fill="url(#karmaGradU)" strokeWidth={2.5} dot={false} />
-            <Line type="monotone" dataKey="avgCumulative" name="Avg Redditor" stroke={COLORS.DATA_6} strokeWidth={2} strokeDasharray="6 3" dot={false} />
           </ComposedChart>
         </ResponsiveContainer>
       </div>

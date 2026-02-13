@@ -7,7 +7,14 @@ const REDDIT_AVG = {
   uniqueSubs: 6, nightPct: 15, weekendPct: 30, controversyPct: 8, ttr: 40,
 };
 
-function norm(val, avg) { return Math.min(Math.round((val / avg) * 50), 100); }
+function norm(val, avg) {
+  if (avg === 0) return 50;
+  const ratio = val / avg;
+  // Log-based normalization: 1x avg = 50, 10x = 80, 100x = 95, 0.1x = 20
+  if (ratio <= 0) return 5;
+  const score = 50 + (Math.log10(ratio) * 25);
+  return Math.max(5, Math.min(Math.round(score), 98));
+}
 
 export default function RedditPersonality({ userData, style }) {
   const metrics = useMemo(() => {

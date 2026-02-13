@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend, ReferenceLine } from 'recharts';
+import { ComposedChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend, ReferenceLine } from 'recharts';
 import { COLORS } from '../design-tokens';
 
 // Reddit average daily activity rate: ~0.5 items/day
@@ -65,7 +65,7 @@ export default function ActivityFrequency({ userData, style }) {
       <p className="stat-meta">Posts per day vs Reddit average · You: <span style={{ color: COLORS.ACCENT_PRIMARY }}>{overallAvg.toFixed(1)}/day</span></p>
       <div style={{ width: '100%', height: 'calc(100% - 50px)' }}>
         <ResponsiveContainer>
-          <AreaChart data={chartData} margin={{ left: -15, right: 5, top: 5, bottom: 0 }}>
+          <ComposedChart data={chartData} margin={{ left: -15, right: 5, top: 5, bottom: 0 }}>
             <defs>
               <linearGradient id="actGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={COLORS.ACCENT_PRIMARY} stopOpacity={0.25} />
@@ -76,10 +76,10 @@ export default function ActivityFrequency({ userData, style }) {
             <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 8 }} axisLine={false} tickLine={false} />
             <Tooltip content={<CustomTooltip />} />
             <Legend iconType="line" wrapperStyle={{ fontSize: 10, opacity: 0.7 }} />
+            <ReferenceLine y={REDDIT_AVG_DAILY} stroke={COLORS.DATA_6} strokeWidth={2} strokeDasharray="6 3" label={{ value: `Reddit Avg: ${REDDIT_AVG_DAILY}/day`, position: 'insideTopRight', fill: COLORS.DATA_6, fontSize: 9 }} />
             <Area type="monotone" dataKey="perDay" name="Weekly Rate" stroke={COLORS.ACCENT_PRIMARY} fill="url(#actGrad)" strokeWidth={1} dot={false} opacity={0.6} />
             <Area type="monotone" dataKey="movingAvg" name="4-week Avg" stroke={COLORS.DATA_3} fill="none" strokeWidth={2.5} dot={false} />
-            <Area type="monotone" dataKey="redditAvg" name="Reddit Avg" stroke={COLORS.DATA_6} fill="none" strokeWidth={2} strokeDasharray="5 3" dot={false} />
-          </AreaChart>
+          </ComposedChart>
         </ResponsiveContainer>
       </div>
     </div>

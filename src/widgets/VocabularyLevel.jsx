@@ -69,7 +69,7 @@ export default function VocabularyLevel({ userData, style }) {
             <YAxis domain={['auto', 'auto']} tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 8 }} axisLine={false} tickLine={false} tickFormatter={v => `${v}%`} />
             <Tooltip content={<CustomTooltip />} />
             <Legend iconType="line" wrapperStyle={{ fontSize: 10, opacity: 0.7 }} />
-            <Line type="monotone" dataKey="redditAvg" name="Reddit Avg" stroke={COLORS.DATA_6} strokeWidth={2} strokeDasharray="5 3" dot={false} />
+            <ReferenceLine y={REDDIT_AVG_TTR} stroke={COLORS.DATA_6} strokeWidth={2} strokeDasharray="6 3" label={{ value: `Reddit Avg: ${REDDIT_AVG_TTR}%`, position: 'insideBottomRight', fill: COLORS.DATA_6, fontSize: 9 }} />
             <Line type="monotone" dataKey="ttr" name="You" stroke={COLORS.DATA_5} strokeWidth={2.5} dot={{ r: 2, fill: COLORS.DATA_5 }} activeDot={{ r: 4 }} />
           </LineChart>
         </ResponsiveContainer>
