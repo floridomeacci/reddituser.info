@@ -284,7 +284,7 @@ export default function FamilyTree({ userData, style = {} }) {
                 </svg>
                 <div style={{ color: '#4ade80', fontSize: '14px', fontWeight: 600, textAlign: 'center' }}>User keeps family info private</div>
               </div>
-            )}
+            ) : null}
           </>
         ) : null}
       </div>
