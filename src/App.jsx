@@ -683,8 +683,7 @@ function App() {
         onMouseEnter={e => e.currentTarget.style.opacity = '1'}
         onMouseLeave={e => e.currentTarget.style.opacity = '0.7'}
       >
-        <img src="/reddituser-logo.svg" alt="Logo" style={{ width: '24px', height: '24px' }} />
-        REDDITUSER.INFO
+        <img src="/reddituser-logo.svg" alt="Logo" style={{ width: '32px', height: '32px' }} />
       </a>
 
       <div style={{
