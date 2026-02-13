@@ -71,6 +71,17 @@ import {
   ProfessionAnalysis,
   LocationAnalysis,
   IdentifiableImages,
+  RedditPersonality,
+  KarmaEfficiency,
+  ActivityFrequency,
+  VocabularyLevel,
+  NightOwlScore,
+  WeekendWarrior,
+  SubredditDiversity,
+  PostCommentRatio,
+  ControversyIndex,
+  CommentLengthComparison,
+  KarmaOverTime,
 } from './widgets';
 import TopWorstContent from './widgets/TopWorstContent';
 
@@ -136,6 +147,18 @@ const WIDGET_SIZES = {
   LocationAnalysis: { cols: 2, rows: 2 },
   IdentifiableImages: { cols: 2, rows: 2 },
 
+  // Comparison widgets
+  RedditPersonality: { cols: 2, rows: 2 },
+  KarmaEfficiency: { cols: 2, rows: 1 },
+  ActivityFrequency: { cols: 1, rows: 2 },
+  VocabularyLevel: { cols: 1, rows: 2 },
+  NightOwlScore: { cols: 1, rows: 2 },
+  WeekendWarrior: { cols: 1, rows: 2 },
+  SubredditDiversity: { cols: 2, rows: 2 },
+  PostCommentRatio: { cols: 1, rows: 2 },
+  ControversyIndex: { cols: 2, rows: 2 },
+  CommentLengthComparison: { cols: 2, rows: 2 },
+  KarmaOverTime: { cols: 2, rows: 2 },
 };
 
 // Helper to get grid style for a widget
@@ -1030,6 +1053,33 @@ function App() {
         {/* Edit Behavior Analysis */}
         {shouldShowWidget('EditFrequency') && <EditFrequency userData={userData} style={getSize('EditFrequency')} />}
         {shouldShowWidget('EditTiming') && <EditTiming userData={userData} style={getSize('EditTiming')} />}
+        
+        {/* Divider: How You Compare */}
+        <div style={{
+          gridColumn: '1 / -1',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '16px',
+          padding: '8px 0',
+          marginTop: '8px',
+        }}>
+          <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, transparent, rgba(255,107,107,0.3), rgba(255,107,107,0.3))' }} />
+          <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '2px', whiteSpace: 'nowrap' }}>How You Compare</span>
+          <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, rgba(255,107,107,0.3), rgba(255,107,107,0.3), transparent)' }} />
+        </div>
+
+        {/* Comparison Widgets */}
+        <RedditPersonality userData={userData} style={getSize('RedditPersonality')} />
+        <KarmaEfficiency userData={userData} style={getSize('KarmaEfficiency')} />
+        <ActivityFrequency userData={userData} style={getSize('ActivityFrequency')} />
+        <VocabularyLevel userData={userData} style={getSize('VocabularyLevel')} />
+        <NightOwlScore userData={userData} style={getSize('NightOwlScore')} />
+        <PostCommentRatio userData={userData} style={getSize('PostCommentRatio')} />
+        <WeekendWarrior userData={userData} style={getSize('WeekendWarrior')} />
+        <SubredditDiversity userData={userData} style={getSize('SubredditDiversity')} />
+        <ControversyIndex userData={userData} style={getSize('ControversyIndex')} />
+        <CommentLengthComparison userData={userData} style={getSize('CommentLengthComparison')} />
+        <KarmaOverTime userData={userData} style={getSize('KarmaOverTime')} />
         
         </div>
       </div>
