@@ -6,6 +6,9 @@ export default function FamilyTree({ userData, style = {} }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Generic family relations that apply to everyone — filter these out
+  const GENERIC_RELATIONS = /^(mother|mom|father|dad|parents?|grandma|grandpa|grandmother|grandfather|grandparents?)$/i;
+
   // Check if backend already stored family data
   const storedFamily = userData?.family;
   const isStoredUnknown = storedFamily && (
@@ -55,12 +58,14 @@ export default function FamilyTree({ userData, style = {} }) {
   // Use stored data if available
   useEffect(() => {
     if (storedFamily && !isStoredUnknown) {
-      // Convert stored flairs to member objects for display
-      const members = (storedFamily.flairs || []).map(flair => ({
-        relation: flair,
-        name: 'unknown',
-        details: ''
-      }));
+      // Convert stored flairs to member objects, filtering out generic relations
+      const members = (storedFamily.flairs || [])
+        .filter(flair => !GENERIC_RELATIONS.test(flair.trim()))
+        .map(flair => ({
+          relation: flair,
+          name: 'unknown',
+          details: ''
+        }));
       setFamilyData({
         members,
         familySize: storedFamily.familySize || (members.length <= 2 ? 'small' : members.length <= 5 ? 'medium' : 'large'),
@@ -99,6 +104,10 @@ export default function FamilyTree({ userData, style = {} }) {
           try { parsed = JSON.parse(raw[0].output); } catch (e) { parsed = raw[0].output; }
         } else if (typeof raw === 'string') {
           try { parsed = JSON.parse(raw); } catch (e) { /* keep as-is */ }
+        }
+        // Filter out generic family relations from AI response
+        if (parsed && parsed.members) {
+          parsed.members = parsed.members.filter(m => !GENERIC_RELATIONS.test((m.relation || '').trim()));
         }
         setFamilyData(parsed);
       } catch (err) {
