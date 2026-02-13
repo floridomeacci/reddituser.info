@@ -856,14 +856,6 @@ function App() {
           </div>
         </div>
         
-        {/* Dividing line spanning all columns */}
-        <div style={{
-          gridColumn: '1 / -1',
-          height: '1px',
-          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)',
-          margin: '4px 0',
-        }} />
-        
         {/* Columns 2-5: Main content grid */}
         <div className="dashboard-grid" style={{
           display: 'grid',
