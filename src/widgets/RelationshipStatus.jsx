@@ -14,10 +14,8 @@ export default function RelationshipStatus({ userData, style = {} }) {
     storedRelationship.flair.toLowerCase().includes('unknown')
   );
 
-  // Extract relationship-related sentences using regex (only if no stored data)
+  // Extract relationship-related sentences using regex
   const relationshipSentences = useMemo(() => {
-    // Skip extraction if we already have stored backend data
-    if (storedRelationship) return [];
     if (!userData || (!userData.comments?.length && !userData.posts?.length)) {
       return [];
     }
@@ -218,6 +216,29 @@ export default function RelationshipStatus({ userData, style = {} }) {
                   History
                 </div>
                 {relationshipData.history}
+              </div>
+            )}
+
+            {/* Evidence sentences */}
+            {relationshipSentences.length > 0 && (
+              <div style={{ marginTop: '8px' }}>
+                <div style={{ fontSize: '9px', fontWeight: '600', color: COLORS.TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>
+                  Evidence
+                </div>
+                {relationshipSentences.slice(0, 6).map((sentence, i) => (
+                  <div key={i} style={{
+                    padding: '6px 8px',
+                    marginBottom: '4px',
+                    background: 'rgba(255,255,255,0.02)',
+                    borderRadius: '4px',
+                    fontSize: '10px',
+                    color: COLORS.TEXT_SECONDARY,
+                    lineHeight: '1.3',
+                    borderLeft: '2px solid rgba(255,107,107,0.3)'
+                  }}>
+                    "{sentence}"
+                  </div>
+                ))}
               </div>
             )}
           </>

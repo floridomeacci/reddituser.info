@@ -17,10 +17,8 @@ export default function FamilyTree({ userData, style = {} }) {
     (storedFamily.flairs.length === 1 && storedFamily.flairs[0]?.toLowerCase?.()?.includes('unknown'))
   );
 
-  // Extract family-related sentences using regex (only if no stored data)
+  // Extract family-related sentences using regex
   const familySentences = useMemo(() => {
-    // Skip extraction if we already have stored backend data
-    if (storedFamily) return [];
     if (!userData || (!userData.comments?.length && !userData.posts?.length)) {
       return [];
     }
@@ -219,7 +217,32 @@ export default function FamilyTree({ userData, style = {} }) {
                   </div>
                 ))}
               </div>
-            ) : (
+            ) : null}
+
+            {/* Evidence sentences */}
+            {familySentences.length > 0 && (
+              <div style={{ marginTop: '8px' }}>
+                <div style={{ fontSize: '9px', fontWeight: '600', color: COLORS.TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>
+                  Evidence
+                </div>
+                {familySentences.slice(0, 6).map((sentence, i) => (
+                  <div key={i} style={{
+                    padding: '6px 8px',
+                    marginBottom: '4px',
+                    background: 'rgba(255,255,255,0.02)',
+                    borderRadius: '4px',
+                    fontSize: '10px',
+                    color: COLORS.TEXT_SECONDARY,
+                    lineHeight: '1.3',
+                    borderLeft: '2px solid rgba(255,107,107,0.3)'
+                  }}>
+                    "{sentence}"
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {(!familyData.members || familyData.members.length === 0) && familySentences.length === 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 16px', gap: '12px' }}>
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
