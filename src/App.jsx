@@ -644,7 +644,7 @@ function App() {
         const avatarUrl = about.icon_img || about.snoovatar_img || `https://www.redditstatic.com/avatars/defaults/v2/avatar_default_0.png`;
         const displayName = userData?.username || about.name || '';
         return displayName ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '24px 16px 8px', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px', padding: '24px 16px 8px', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
             <img
               src={avatarUrl}
               alt="Profile"
@@ -659,30 +659,24 @@ function App() {
               }}
               onError={(e) => { e.target.src = 'https://www.redditstatic.com/avatars/defaults/v2/avatar_default_0.png'; }}
             />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <a
-                href={`https://reddit.com/user/${displayName}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  fontSize: '36px',
-                  fontWeight: '700',
-                  color: '#ffffff',
-                  textDecoration: 'none',
-                  lineHeight: 1.1,
-                  transition: 'color 0.2s'
-                }}
-                onMouseEnter={e => e.currentTarget.style.color = '#ff6b6b'}
-                onMouseLeave={e => e.currentTarget.style.color = '#ffffff'}
-              >
-                u/{displayName}
-              </a>
-              {about.subreddit?.public_description && (
-                <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)', maxWidth: '400px' }}>
-                  {about.subreddit.public_description}
-                </span>
-              )}
-            </div>
+            <a
+              href={`https://reddit.com/user/${displayName}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                fontSize: '36px',
+                fontWeight: '700',
+                color: '#ffffff',
+                textDecoration: 'none',
+                lineHeight: 1.1,
+                transition: 'color 0.2s',
+                textAlign: 'center'
+              }}
+              onMouseEnter={e => e.currentTarget.style.color = '#ff6b6b'}
+              onMouseLeave={e => e.currentTarget.style.color = '#ffffff'}
+            >
+              u/{displayName}
+            </a>
           </div>
         ) : null;
       })()}
