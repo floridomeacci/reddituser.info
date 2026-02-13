@@ -218,89 +218,36 @@ export default function InteractionReach({ userData, style }) {
           </p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', height: 'calc(100% - 60px)' }}>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'flex-end',
-              gap: '56px',
-              padding: '18px 0 12px',
-            }}
-          >
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-              <div
-                style={{
-                  height: `${MAX_BAR_HEIGHT}px`,
-                  width: '52px',
-                  position: 'relative',
-                  display: 'flex',
-                  alignItems: 'flex-end',
-                  justifyContent: 'center',
-                }}
-              >
-                <span
-                  style={{
-                    position: 'absolute',
-                    bottom: `${uniqueBarHeight}px`,
-                    transform: 'translateY(-12px)',
-                    color: '#ff6b6b',
-                    fontSize: '18px',
-                    fontWeight: 600,
-                  }}
-                >
-                  {interactionData.uniqueCount}
-                </span>
-                <div
-                  style={{
-                    width: '52px',
-                    height: `${Math.max(uniqueBarHeight, uniqueBarHeight > 0 ? 6 : 0)}px`,
-                    background: '#d45a62',
-                    borderRadius: '12px',
-                  }}
-                />
-              </div>
-              <div style={{ fontSize: '12px', letterSpacing: '1px', textTransform: 'uppercase' }}>Unique</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', height: 'calc(100% - 60px)' }}>
+          {/* Stats row */}
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <div style={{ flex: 1, padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ fontSize: '24px', fontWeight: 700, color: '#ff6b6b' }}>{interactionData.uniqueCount}</div>
+              <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: '2px' }}>Unique</div>
             </div>
+            <div style={{ flex: 1, padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ fontSize: '24px', fontWeight: 700, color: '#fff' }}>{repeatInteractions}</div>
+              <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: '2px' }}>Repeats</div>
+            </div>
+            <div style={{ flex: 1, padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ fontSize: '24px', fontWeight: 700, color: '#fff' }}>{interactionData.totalInteractions}</div>
+              <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: '2px' }}>Total</div>
+            </div>
+          </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-              <div
-                style={{
-                  height: `${MAX_BAR_HEIGHT}px`,
-                  width: '52px',
-                  position: 'relative',
-                  display: 'flex',
-                  alignItems: 'flex-end',
-                  justifyContent: 'center',
-                }}
-              >
-                <span
-                  style={{
-                    position: 'absolute',
-                    bottom: `${repeatBarHeight}px`,
-                    transform: 'translateY(-12px)',
-                    color: '#ff6b6b',
-                    fontSize: '18px',
-                    fontWeight: 600,
-                  }}
-                >
-                  {repeatInteractions}
-                </span>
-                <div
-                  style={{
-                    width: '52px',
-                    height: `${Math.max(repeatBarHeight, repeatBarHeight > 0 ? 6 : 0)}px`,
-                    background: '#ff6b6b',
-                    borderRadius: '12px',
-                  }}
-                />
-              </div>
-              <div style={{ fontSize: '12px', letterSpacing: '1px', textTransform: 'uppercase' }}>Repeats</div>
+          {/* Ratio bar */}
+          <div>
+            <div style={{ display: 'flex', height: '6px', borderRadius: '3px', overflow: 'hidden', background: 'rgba(255,255,255,0.06)' }}>
+              <div style={{ width: `${interactionData.totalInteractions ? Math.round((interactionData.uniqueCount / interactionData.totalInteractions) * 100) : 0}%`, height: '100%', background: '#ff6b6b' }} />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px', fontSize: '10px', color: 'rgba(255,255,255,0.35)' }}>
+              <span>Unique {interactionData.totalInteractions ? Math.round((interactionData.uniqueCount / interactionData.totalInteractions) * 100) : 0}%</span>
+              <span>Repeat {interactionData.totalInteractions ? Math.round((repeatInteractions / interactionData.totalInteractions) * 100) : 0}%</span>
             </div>
           </div>
 
           {(interactionData.selfInteractions > 0 || interactionData.ignoredInteractions > 0) && (
-            <div className="stat-meta" style={{ textAlign: 'center' }}>
+            <div className="stat-meta" style={{ textAlign: 'center', fontSize: '10px' }}>
               {interactionData.selfInteractions > 0 && `Excluded ${interactionData.selfInteractions} self interactions`}
               {interactionData.ignoredInteractions > 0 && (
                 interactionData.selfInteractions > 0 ? ` • Skipped ${interactionData.ignoredInteractions} unknown owners` : `Skipped ${interactionData.ignoredInteractions} unknown owners`

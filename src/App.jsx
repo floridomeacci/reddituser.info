@@ -64,7 +64,6 @@ import {
   SubredditActivityWidget,
   EditFrequency,
   EditTiming,
-  CopypastaDetection,
   InteractionReach,
   LifetimeActivity,
   FamilyTree,
@@ -130,7 +129,6 @@ const WIDGET_SIZES = {
   InterestWidget: { cols: 2, rows: 2 },
   EditFrequency: { cols: 2, rows: 2 },
   EditTiming: { cols: 2, rows: 2 },
-  CopypastaDetection: { cols: 2, rows: 2 },
   InteractionReach: { cols: 2, rows: 2 },
   LifetimeActivity: { cols: 4, rows: 2 },
   FamilyTree: { cols: 1, rows: 2 },
@@ -523,8 +521,6 @@ function App() {
       case 'EditFrequency':
       case 'EditTiming':
         return allItems.some(item => item.edited && typeof item.edited === 'number');
-      case 'CopypastaDetection':
-        return comments.length >= 10;
       case 'RemovedCommentsOverTime':
       case 'RemovedCommentsBySubreddit':
         return comments.some(c => c.removed === true);
@@ -1041,8 +1037,6 @@ function App() {
         {shouldShowWidget('EditFrequency') && <EditFrequency userData={userData} style={getSize('EditFrequency')} />}
         {shouldShowWidget('EditTiming') && <EditTiming userData={userData} style={getSize('EditTiming')} />}
         
-        {/* Copypasta Detection */}
-        {shouldShowWidget('CopypastaDetection') && <CopypastaDetection userData={userData} style={getSize('CopypastaDetection')} />}
         </div>
       </div>
       
