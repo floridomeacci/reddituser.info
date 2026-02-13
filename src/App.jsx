@@ -64,7 +64,6 @@ import {
   SubredditActivityWidget,
   EditFrequency,
   EditTiming,
-  InteractionReach,
   LifetimeActivity,
   FamilyTree,
   FriendsNetwork,
@@ -129,7 +128,6 @@ const WIDGET_SIZES = {
   InterestWidget: { cols: 2, rows: 2 },
   EditFrequency: { cols: 2, rows: 2 },
   EditTiming: { cols: 2, rows: 2 },
-  InteractionReach: { cols: 2, rows: 2 },
   LifetimeActivity: { cols: 4, rows: 2 },
   FamilyTree: { cols: 1, rows: 2 },
   FriendsNetwork: { cols: 1, rows: 2 },
@@ -538,8 +536,6 @@ function App() {
         return allItems.length >= 20;
       case 'LanguageDetection':
         return allItems.length >= 10;
-      case 'InteractionReach':
-        return true;
       default:
         // By default, show widget if there's any data
         return allItems.length > 0;
@@ -1026,7 +1022,6 @@ function App() {
         
         {/* Reply Patterns */}
         {shouldShowWidget('ReplyPatterns') && <ReplyPatterns userData={userData} style={getSize('ReplyPatterns')} />}
-        {shouldShowWidget('InteractionReach') && <InteractionReach userData={userData} style={getSize('InteractionReach')} />}
         
         {/* Clustering Analysis - Bottom */}
         {shouldShowWidget('TSNEClustering') && <TSNEClustering userData={userData} style={getSize('TSNEClustering')} />}
