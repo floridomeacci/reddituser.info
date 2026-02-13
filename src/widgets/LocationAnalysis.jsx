@@ -370,7 +370,7 @@ export default function LocationAnalysis({ userData, onLocationData, style = {} 
                 {locationData.evidence.slice(0, 5).map((ev, i) => (
                   <a key={i} href={ev.permalink ? `https://reddit.com${ev.permalink}` : '#'}
                      target="_blank" rel="noopener noreferrer"
-                     style={{ textDecoration: 'none', display: 'block', marginBottom: '4px' }}>
+                     style={{ textDecoration: 'none', display: 'block', marginBottom: '4px', color: 'inherit' }}>
                     <div style={{
                       padding: '6px 8px',
                       background: 'rgba(255,255,255,0.02)',

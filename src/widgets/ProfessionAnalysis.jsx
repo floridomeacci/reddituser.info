@@ -268,7 +268,7 @@ export default function ProfessionAnalysis({ userData, style = {} }) {
                 {professionSentences.slice(0, 6).map((item, i) => (
                   <a key={i} href={item.permalink ? `https://reddit.com${item.permalink}` : '#'}
                      target="_blank" rel="noopener noreferrer"
-                     style={{ textDecoration: 'none', display: 'block', marginBottom: '4px' }}>
+                     style={{ textDecoration: 'none', display: 'block', marginBottom: '4px', color: 'inherit' }}>
                     <div style={{
                       padding: '6px 8px',
                       background: 'rgba(255,255,255,0.02)',
