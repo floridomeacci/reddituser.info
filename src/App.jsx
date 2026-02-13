@@ -637,14 +637,66 @@ function App() {
   }
 
   return (
-    <div className="app-container">
+    <div className="app-container" style={{ position: 'relative', overflow: 'hidden' }}>
+      {/* Animated Background (same as landing) */}
       <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        zIndex: 0,
+        pointerEvents: 'none'
+      }}>
+        <AnimatedGridPattern 
+          numSquares={30}
+          maxOpacity={0.15}
+          duration={3}
+          repeatDelay={1}
+          strokeColor="#ff6b6b"
+          fillColor="#ff6b6b"
+          width={60}
+          height={60}
+        />
+      </div>
+
+      {/* Logo top-left */}
+      <a
+        href="/"
+        onClick={(e) => { e.preventDefault(); setUserData(null); window.history.pushState({}, '', '/'); }}
+        style={{
+          position: 'fixed',
+          top: '16px',
+          left: '16px',
+          zIndex: 100,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          textDecoration: 'none',
+          color: '#ffffff',
+          fontFamily: 'monospace',
+          fontSize: '14px',
+          fontWeight: '700',
+          opacity: 0.7,
+          transition: 'opacity 0.2s'
+        }}
+        onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+        onMouseLeave={e => e.currentTarget.style.opacity = '0.7'}
+      >
+        <img src="/reddituser-logo.svg" alt="Logo" style={{ width: '24px', height: '24px' }} />
+        REDDITUSER.INFO
+      </a>
+
+      <div style={{
+        position: 'relative',
+        zIndex: 1,
         display: 'grid',
         gridTemplateColumns: '250px minmax(0, 1fr)',
         gap: 'var(--grid-gap)',
         width: '100%',
         maxWidth: '1400px',
         margin: '0 auto',
+        paddingTop: '48px',
       }}>
         {/* Column 1: Search Box */}
         <div style={{ 
@@ -694,16 +746,6 @@ function App() {
               </div>
             ) : null;
           })()}
-          <SearchBox 
-            userData={userData}
-            onUserDataChange={setUserData}
-            isLoading={isLoading}
-            setIsLoading={setIsLoading}
-            initialUsername={urlUsername}
-            style={{ gridColumn: 'span 1', gridRow: 'span 2' }}
-            className="no-enlarge"
-          />
-          
           {/* Support & Extension Widget */}
           <div className="cell no-enlarge" style={{ 
             display: 'flex', 
