@@ -638,6 +638,54 @@ function App() {
 
   return (
     <div className="app-container">
+      {/* Profile Header: PFP + u/username */}
+      {(() => {
+        const about = userData?.about || userData?.account_info || {};
+        const avatarUrl = about.icon_img || about.snoovatar_img || `https://www.redditstatic.com/avatars/defaults/v2/avatar_default_0.png`;
+        const displayName = userData?.username || about.name || '';
+        return displayName ? (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '24px 16px 8px', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
+            <img
+              src={avatarUrl}
+              alt="Profile"
+              style={{
+                width: '120px',
+                height: '120px',
+                borderRadius: '50%',
+                border: '3px solid rgba(255, 107, 107, 0.5)',
+                objectFit: 'cover',
+                flexShrink: 0,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
+              }}
+              onError={(e) => { e.target.src = 'https://www.redditstatic.com/avatars/defaults/v2/avatar_default_0.png'; }}
+            />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <a
+                href={`https://reddit.com/user/${displayName}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  fontSize: '36px',
+                  fontWeight: '700',
+                  color: '#ffffff',
+                  textDecoration: 'none',
+                  lineHeight: 1.1,
+                  transition: 'color 0.2s'
+                }}
+                onMouseEnter={e => e.currentTarget.style.color = '#ff6b6b'}
+                onMouseLeave={e => e.currentTarget.style.color = '#ffffff'}
+              >
+                u/{displayName}
+              </a>
+              {about.subreddit?.public_description && (
+                <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)', maxWidth: '400px' }}>
+                  {about.subreddit.public_description}
+                </span>
+              )}
+            </div>
+          </div>
+        ) : null;
+      })()}
       <div style={{
         display: 'grid',
         gridTemplateColumns: '250px minmax(0, 1fr)',
@@ -793,54 +841,6 @@ function App() {
           gap: 'var(--grid-gap)',
           minWidth: 0,
         }}>
-
-        {/* Profile Header: PFP + u/username */}
-        {(() => {
-          const about = userData?.about || userData?.account_info || {};
-          const avatarUrl = about.icon_img || about.snoovatar_img || `https://www.redditstatic.com/avatars/defaults/v2/avatar_default_0.png`;
-          const displayName = userData?.username || about.name || '';
-          return displayName ? (
-            <div className="cell no-enlarge" style={{ gridColumn: 'span 4', gridRow: 'span 1', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '16px' }}>
-              <img
-                src={avatarUrl}
-                alt="Profile"
-                style={{
-                  width: '100px',
-                  height: '100px',
-                  borderRadius: '50%',
-                  border: '3px solid rgba(255, 107, 107, 0.5)',
-                  objectFit: 'cover',
-                  flexShrink: 0
-                }}
-                onError={(e) => { e.target.src = 'https://www.redditstatic.com/avatars/defaults/v2/avatar_default_0.png'; }}
-              />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <a
-                  href={`https://reddit.com/user/${displayName}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    fontSize: '32px',
-                    fontWeight: '700',
-                    color: '#ffffff',
-                    textDecoration: 'none',
-                    lineHeight: 1.1,
-                    transition: 'color 0.2s'
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.color = '#ff6b6b'}
-                  onMouseLeave={e => e.currentTarget.style.color = '#ffffff'}
-                >
-                  u/{displayName}
-                </a>
-                {about.subreddit?.public_description && (
-                  <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', maxWidth: '400px' }}>
-                    {about.subreddit.public_description}
-                  </span>
-                )}
-              </div>
-            </div>
-          ) : null;
-        })()}
 
         {/* Row 1: Stats */}
         <AccountAge userData={userData} style={getSize('AccountAge')} className="no-enlarge" />
