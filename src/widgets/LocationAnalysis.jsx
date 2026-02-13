@@ -55,10 +55,8 @@ export default function LocationAnalysis({ userData, onLocationData, style = {} 
     storedLocation.toLowerCase().includes('unknown')
   );
 
-  // Step 1: Find location words in content (only if no stored data)
+  // Step 1: Find location words in content
   const locationSentences = useMemo(() => {
-    // Skip extraction if we already have stored backend data
-    if (storedLocation) return [];
     if (!userData || (!userData.comments?.length && !userData.posts?.length)) {
       return [];
     }
@@ -136,6 +134,11 @@ export default function LocationAnalysis({ userData, onLocationData, style = {} 
   useEffect(() => {
     if (storedLocation && !isStoredUnknown) {
       // Build location data from stored backend results
+      // Build evidence from extracted location sentences
+      const evidence = locationSentences.slice(0, 8).map(s => ({
+        text: s.text,
+        type: s.priority === 1 ? 'direct' : 'indirect'
+      }));
       const locData = {
         likelyLocation: {
           city: null,
@@ -144,13 +147,13 @@ export default function LocationAnalysis({ userData, onLocationData, style = {} 
           confidence: storedDetails?.confidence || 'medium'
         },
         summary: storedDetails?.summary || `Estimated location: ${storedLocation}`,
-        evidence: [],
+        evidence,
         alternateLocations: []
       };
       setLocationData(locData);
       if (onLocationData) onLocationData(locData);
     }
-  }, [storedLocation, storedDetails, isStoredUnknown]);
+  }, [storedLocation, storedDetails, isStoredUnknown, locationSentences]);
 
   // Step 2: Send to AI for analysis (only if no stored data)
   useEffect(() => {
