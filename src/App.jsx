@@ -637,7 +637,7 @@ function App() {
   }
 
   return (
-    <div className="app-container" style={{ position: 'relative', overflow: 'hidden' }}>
+    <div className="app-container" style={{ position: 'relative' }}>
       {/* Animated Background (same as landing) */}
       <div style={{
         position: 'fixed',
@@ -698,13 +698,14 @@ function App() {
         margin: '0 auto',
         paddingTop: '48px',
       }}>
-        {/* Column 1: Search Box */}
+        {/* Column 1: Sidebar */}
         <div style={{ 
           display: 'flex', 
           flexDirection: 'column', 
           gap: 'var(--grid-gap)',
           position: 'sticky',
-          top: 'calc(var(--grid-gap) + 16px)',
+          top: '16px',
+          alignSelf: 'start',
           height: 'fit-content'
         }}>
           {/* PFP above search */}
