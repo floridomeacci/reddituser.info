@@ -172,7 +172,15 @@ export default function SearchBox({ userData, onUserDataChange, isLoading, setIs
           }
         }}
       >
-        {isLoading ? 'Analyzing...' : 'Analyze'}
+        {isLoading
+          ? (queueInfo?.status === 'queued'
+              ? (typeof queueInfo.position === 'number'
+                  ? (queueInfo.position <= 0 ? 'You are up next…' : `#${queueInfo.position} in queue…`)
+                  : 'In queue…')
+              : queueInfo?.status === 'processing'
+                ? 'Processing…'
+                : 'Analyzing…')
+          : 'Analyze'}
       </button>
       
       {!userData && (
@@ -222,21 +230,7 @@ export default function SearchBox({ userData, onUserDataChange, isLoading, setIs
       
       <TermsModal isOpen={showTermsModal} onClose={() => setShowTermsModal(false)} />
       
-      {queueInfo && queueInfo.status && (
-        <div style={{ marginTop: '6px', fontSize: '12px', color: '#ccc' }}>
-          {queueInfo.status === 'queued' && (
-            <>
-              {typeof queueInfo.position === 'number' ? (
-                queueInfo.position <= 0 ? 'You are up next…' : `You are #${queueInfo.position} in queue…`
-              ) : 'Added to queue…'}
-            </>
-          )}
-          {queueInfo.status === 'processing' && 'Processing your request…'}
-          {(queueInfo.eta_seconds || queueInfo.eta) && (
-            <div style={{ color: '#999' }}>ETA ~ {Math.ceil((queueInfo.eta_seconds || queueInfo.eta) / 1)}s</div>
-          )}
-        </div>
-      )}
+
     </form>
   );
 }
