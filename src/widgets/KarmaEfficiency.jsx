@@ -1,43 +1,51 @@
 import { useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell, ReferenceLine } from 'recharts';
+import { ComposedChart, Bar, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend, ReferenceLine, Cell } from 'recharts';
 import { COLORS } from '../design-tokens';
 
-const REDDIT_AVG_COMMENT_KARMA = 7;
-const REDDIT_AVG_POST_KARMA = 15;
+// Reddit average karma per content by month-of-year
+const REDDIT_AVG_KARMA_BY_MONTH = [8, 7.5, 9, 10, 9, 8, 7, 7.5, 9, 10, 8.5, 7];
 
 export default function KarmaEfficiency({ userData, style }) {
-  const data = useMemo(() => {
+  const chartData = useMemo(() => {
     if (!userData) return null;
-    const comments = userData.comments || [];
-    const posts = userData.posts || [];
-    if (comments.length + posts.length < 3) return null;
+    const allItems = [...(userData.comments || []), ...(userData.posts || [])];
+    if (allItems.length < 10) return null;
 
-    const avgCommentKarma = comments.length > 0
-      ? comments.reduce((s, c) => s + (c.score || 0), 0) / comments.length
-      : 0;
-    const avgPostKarma = posts.length > 0
-      ? posts.reduce((s, p) => s + (p.score || 0), 0) / posts.length
-      : 0;
+    // Group by month
+    const months = {};
+    allItems.forEach(i => {
+      if (!i.created_utc) return;
+      const d = new Date(i.created_utc * 1000);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      if (!months[key]) months[key] = { totalKarma: 0, count: 0, monthIdx: d.getMonth() };
+      months[key].totalKarma += i.score || 0;
+      months[key].count++;
+    });
 
-    return [
-      { name: 'Comment Karma', you: Math.round(avgCommentKarma * 10) / 10, avg: REDDIT_AVG_COMMENT_KARMA },
-      { name: 'Post Karma', you: Math.round(avgPostKarma * 10) / 10, avg: REDDIT_AVG_POST_KARMA },
-    ];
+    const sorted = Object.entries(months).sort((a, b) => a[0].localeCompare(b[0]));
+    if (sorted.length < 2) return null;
+
+    return sorted.map(([month, data]) => ({
+      label: new Date(month + '-01').toLocaleDateString('en', { month: 'short', year: '2-digit' }),
+      efficiency: Math.round((data.totalKarma / data.count) * 10) / 10,
+      redditAvg: REDDIT_AVG_KARMA_BY_MONTH[data.monthIdx],
+      count: data.count,
+    }));
   }, [userData]);
 
-  if (!data) return null;
+  if (!chartData) return null;
 
-  const CustomTooltip = ({ active, payload, label }) => {
+  const userAvg = chartData.reduce((s, d) => s + d.efficiency, 0) / chartData.length;
+
+  const CustomTooltip = ({ active, payload }) => {
     if (!active || !payload?.length) return null;
+    const d = payload[0]?.payload;
     return (
       <div style={{ background: '#1a1a1a', border: '1px solid rgba(255,107,107,0.3)', borderRadius: 6, padding: '8px 12px', fontSize: 11 }}>
-        <div style={{ color: '#fff', fontWeight: 600, marginBottom: 4 }}>{label}</div>
-        {payload.map((p, i) => (
-          <div key={i} style={{ color: p.color, display: 'flex', gap: 8, justifyContent: 'space-between' }}>
-            <span>{p.name}:</span>
-            <span style={{ fontWeight: 600 }}>{p.value}</span>
-          </div>
-        ))}
+        <div style={{ color: '#fff', fontWeight: 600, marginBottom: 4 }}>{d.label}</div>
+        <div style={{ color: COLORS.ACCENT_PRIMARY }}>Your avg: {d.efficiency} karma/post</div>
+        <div style={{ color: COLORS.DATA_6 }}>Reddit avg: {d.redditAvg}</div>
+        <div style={{ color: 'rgba(255,255,255,0.4)' }}>{d.count} items</div>
       </div>
     );
   };
@@ -45,16 +53,27 @@ export default function KarmaEfficiency({ userData, style }) {
   return (
     <div className="cell" style={{ ...style }}>
       <h3>Karma Efficiency</h3>
-      <p className="stat-meta">Avg karma per content vs Reddit average</p>
+      <p className="stat-meta">Avg karma per post over time · You: <span style={{ color: COLORS.ACCENT_PRIMARY }}>{userAvg.toFixed(1)}</span> vs Reddit: ~8.5</p>
       <div style={{ width: '100%', height: 'calc(100% - 50px)' }}>
         <ResponsiveContainer>
-          <BarChart data={data} layout="vertical" margin={{ left: 10, right: 20, top: 10, bottom: 5 }}>
-            <XAxis type="number" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 9 }} axisLine={{ stroke: 'rgba(255,255,255,0.15)' }} />
-            <YAxis dataKey="name" type="category" tick={{ fill: 'rgba(255,255,255,0.7)', fontSize: 10 }} width={90} axisLine={false} tickLine={false} />
+          <ComposedChart data={chartData} margin={{ left: -10, right: 5, top: 5, bottom: 0 }}>
+            <defs>
+              <linearGradient id="effGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={COLORS.ACCENT_PRIMARY} stopOpacity={0.3} />
+                <stop offset="100%" stopColor={COLORS.ACCENT_PRIMARY} stopOpacity={0.02} />
+              </linearGradient>
+            </defs>
+            <XAxis dataKey="label" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 8 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} tickLine={false} interval={Math.max(Math.floor(chartData.length / 8), 0)} />
+            <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 8 }} axisLine={false} tickLine={false} />
             <Tooltip content={<CustomTooltip />} />
-            <Bar dataKey="you" name="You" fill={COLORS.ACCENT_PRIMARY} radius={[0, 4, 4, 0]} barSize={18} />
-            <Bar dataKey="avg" name="Reddit Avg" fill="rgba(255,255,255,0.15)" radius={[0, 4, 4, 0]} barSize={18} />
-          </BarChart>
+            <Legend iconType="line" wrapperStyle={{ fontSize: 10, opacity: 0.7 }} />
+            <Bar dataKey="efficiency" name="You" fill={COLORS.ACCENT_PRIMARY} opacity={0.5} barSize={6} radius={[2, 2, 0, 0]}>
+              {chartData.map((d, i) => (
+                <Cell key={i} fill={d.efficiency >= d.redditAvg ? COLORS.DATA_2 : COLORS.ACCENT_PRIMARY} opacity={0.6} />
+              ))}
+            </Bar>
+            <Line type="monotone" dataKey="redditAvg" name="Reddit Avg" stroke={COLORS.DATA_6} strokeWidth={2} strokeDasharray="5 3" dot={false} />
+          </ComposedChart>
         </ResponsiveContainer>
       </div>
     </div>

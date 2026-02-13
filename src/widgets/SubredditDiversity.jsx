@@ -1,124 +1,83 @@
 import { useMemo } from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { COLORS } from '../design-tokens';
 
-const REDDIT_AVG_SUBS = 6;
-
 export default function SubredditDiversity({ userData, style }) {
-  const { pieData, uniqueCount, topSubs, shannonIndex, label } = useMemo(() => {
-    if (!userData) return {};
+  const chartData = useMemo(() => {
+    if (!userData) return null;
     const allItems = [...(userData.comments || []), ...(userData.posts || [])];
-    if (allItems.length < 5) return {};
+    if (allItems.length < 20) return null;
 
-    // Count per subreddit
+    // Find top 5 subreddits
     const subCounts = {};
+    allItems.forEach(i => { if (i.subreddit) subCounts[i.subreddit] = (subCounts[i.subreddit] || 0) + 1; });
+    const topSubs = Object.entries(subCounts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([s]) => s);
+
+    // Group by month
+    const months = {};
     allItems.forEach(i => {
-      const s = i.subreddit;
-      if (s) subCounts[s] = (subCounts[s] || 0) + 1;
+      if (!i.created_utc || !i.subreddit) return;
+      const d = new Date(i.created_utc * 1000);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      if (!months[key]) months[key] = { total: 0 };
+      months[key].total++;
+      topSubs.forEach(s => { if (!months[key][s]) months[key][s] = 0; });
+      if (topSubs.includes(i.subreddit)) months[key][i.subreddit]++;
+      else {
+        if (!months[key]._other) months[key]._other = 0;
+        months[key]._other++;
+      }
     });
 
-    const entries = Object.entries(subCounts).sort((a, b) => b[1] - a[1]);
-    const uniqueCount = entries.length;
-    if (uniqueCount === 0) return {};
+    const sorted = Object.entries(months).sort((a, b) => a[0].localeCompare(b[0]));
+    if (sorted.length < 3) return null;
 
-    // Shannon diversity index
-    const total = allItems.length;
-    let H = 0;
-    entries.forEach(([, count]) => {
-      const p = count / total;
-      if (p > 0) H -= p * Math.log(p);
+    return sorted.map(([month, data]) => {
+      const entry = {
+        label: new Date(month + '-01').toLocaleDateString('en', { month: 'short', year: '2-digit' }),
+      };
+      topSubs.forEach(s => { entry[s] = data[s] || 0; });
+      entry['Other'] = data._other || 0;
+      return entry;
     });
-    const maxH = Math.log(uniqueCount);
-    const evenness = maxH > 0 ? H / maxH : 0; // 0-1, how evenly spread
-
-    let lbl = 'Focused';
-    if (uniqueCount > 20 && evenness > 0.7) lbl = 'Explorer';
-    else if (uniqueCount > 10 && evenness > 0.5) lbl = 'Diverse';
-    else if (uniqueCount > 5) lbl = 'Moderate';
-    else lbl = 'Focused';
-
-    // Pie data: top 8 + "Others"
-    const topN = entries.slice(0, 8);
-    const othersCount = entries.slice(8).reduce((s, [, c]) => s + c, 0);
-    
-    const colors = [COLORS.DATA_1, COLORS.DATA_2, COLORS.DATA_3, COLORS.DATA_4, COLORS.DATA_5, COLORS.DATA_6, COLORS.DATA_7, COLORS.DATA_8];
-    const pieData = topN.map(([name, count], i) => ({
-      name,
-      value: count,
-      pct: Math.round((count / total) * 1000) / 10,
-      fill: colors[i % colors.length],
-    }));
-    if (othersCount > 0) {
-      pieData.push({
-        name: `Others (${entries.length - 8})`,
-        value: othersCount,
-        pct: Math.round((othersCount / total) * 1000) / 10,
-        fill: 'rgba(255,255,255,0.15)',
-      });
-    }
-
-    return { pieData, uniqueCount, topSubs: topN.slice(0, 3), shannonIndex: evenness, label: lbl };
   }, [userData]);
 
-  if (!pieData) return null;
+  if (!chartData) return null;
 
-  const CustomTooltip = ({ active, payload }) => {
+  // Get the subreddit names (keys minus 'label' and 'Other')
+  const allKeys = Object.keys(chartData[0]).filter(k => k !== 'label');
+  const colors = [COLORS.ACCENT_PRIMARY, COLORS.DATA_2, COLORS.DATA_3, COLORS.DATA_4, COLORS.DATA_5, 'rgba(255,255,255,0.15)'];
+
+  const CustomTooltip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
-    const d = payload[0].payload;
     return (
       <div style={{ background: '#1a1a1a', border: '1px solid rgba(255,107,107,0.3)', borderRadius: 6, padding: '8px 12px', fontSize: 11 }}>
-        <div style={{ color: '#fff', fontWeight: 600 }}>r/{d.name}</div>
-        <div style={{ color: d.fill }}>{d.pct}% ({d.value} items)</div>
+        <div style={{ color: '#fff', fontWeight: 600, marginBottom: 4 }}>{label}</div>
+        {payload.filter(p => p.value > 0).map((p, i) => (
+          <div key={i} style={{ color: p.color, display: 'flex', gap: 12, justifyContent: 'space-between' }}>
+            <span>r/{p.name}</span><span style={{ fontWeight: 600 }}>{p.value}</span>
+          </div>
+        ))}
       </div>
     );
   };
 
   return (
     <div className="cell" style={{ ...style }}>
-      <h3>Subreddit Diversity</h3>
-      <p className="stat-meta">
-        <span style={{ color: COLORS.ACCENT_PRIMARY, fontWeight: 600 }}>{uniqueCount}</span> subreddits
-        <span style={{ opacity: 0.5 }}> (avg ~{REDDIT_AVG_SUBS})</span>
-        {' · '}
-        <span style={{ color: COLORS.ACCENT_PRIMARY }}>{label}</span>
-      </p>
-      <div style={{ display: 'flex', height: 'calc(100% - 50px)', gap: 8 }}>
-        <div style={{ flex: '0 0 55%' }}>
-          <ResponsiveContainer>
-            <PieChart>
-              <Pie
-                data={pieData}
-                cx="50%" cy="50%"
-                innerRadius="45%"
-                outerRadius="80%"
-                dataKey="value"
-                stroke="none"
-                paddingAngle={2}
-              >
-                {pieData.map((d, i) => <Cell key={i} fill={d.fill} />)}
-              </Pie>
-              <Tooltip content={<CustomTooltip />} />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 8 }}>
-          {/* Evenness bar */}
-          <div>
-            <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)', marginBottom: 4 }}>Evenness</div>
-            <div style={{ height: 6, background: 'rgba(255,255,255,0.08)', borderRadius: 3 }}>
-              <div style={{ width: `${shannonIndex * 100}%`, height: '100%', background: COLORS.ACCENT_PRIMARY, borderRadius: 3, transition: 'width 1s' }} />
-            </div>
-          </div>
-          {/* Top subs list */}
-          <div style={{ fontSize: 10 }}>
-            {topSubs.map(([name, count], i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                <span style={{ color: 'rgba(255,255,255,0.7)' }}>r/{name}</span>
-                <span style={{ color: COLORS.ACCENT_PRIMARY, fontWeight: 600 }}>{count}</span>
-              </div>
+      <h3>Subreddit Evolution</h3>
+      <p className="stat-meta">How your community spread has changed over time</p>
+      <div style={{ width: '100%', height: 'calc(100% - 50px)' }}>
+        <ResponsiveContainer>
+          <AreaChart data={chartData} margin={{ left: -15, right: 5, top: 5, bottom: 0 }} stackOffset="expand">
+            <XAxis dataKey="label" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 8 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} tickLine={false} interval={Math.max(Math.floor(chartData.length / 8), 0)} />
+            <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 8 }} axisLine={false} tickLine={false} tickFormatter={v => `${Math.round(v * 100)}%`} />
+            <Tooltip content={<CustomTooltip />} />
+            <Legend iconType="square" wrapperStyle={{ fontSize: 9, opacity: 0.7 }} />
+            {allKeys.map((key, i) => (
+              <Area key={key} type="monotone" dataKey={key} name={key} stackId="1" stroke={colors[i % colors.length]} fill={colors[i % colors.length]} fillOpacity={0.7} strokeWidth={0} />
             ))}
-          </div>
-        </div>
+          </AreaChart>
+        </ResponsiveContainer>
       </div>
     </div>
   );

@@ -82,6 +82,7 @@ import {
   ControversyIndex,
   CommentLengthComparison,
   KarmaOverTime,
+  HourlyActivityComparison,
 } from './widgets';
 import TopWorstContent from './widgets/TopWorstContent';
 
@@ -148,17 +149,19 @@ const WIDGET_SIZES = {
   IdentifiableImages: { cols: 2, rows: 2 },
 
   // Comparison widgets
-  RedditPersonality: { cols: 2, rows: 2 },
-  KarmaEfficiency: { cols: 2, rows: 1 },
-  ActivityFrequency: { cols: 1, rows: 2 },
-  VocabularyLevel: { cols: 1, rows: 2 },
-  NightOwlScore: { cols: 1, rows: 2 },
-  WeekendWarrior: { cols: 1, rows: 2 },
+  RedditPersonality: { cols: 2, rows2 },
+  ActivityFrequency: { cols: 2, rows: 2 },
+  VocabularyLevel: { cols: 2, rows: 2 },
+  NightOwlScore: { cols: 2, rows: 2 },
+  WeekendWarrior: { cols: 2, rows: 2 },
   SubredditDiversity: { cols: 2, rows: 2 },
-  PostCommentRatio: { cols: 1, rows: 2 },
+  PostCommentRatio: { cols: 2, rows: 2 },
   ControversyIndex: { cols: 2, rows: 2 },
   CommentLengthComparison: { cols: 2, rows: 2 },
   KarmaOverTime: { cols: 2, rows: 2 },
+  HourlyActivityComparisonComparison: { cols: 2, rows: 2 },
+  KarmaOverTime: { cols: 2, rows: 2 },
+  HourlyActivityComparison: { cols: 2, rows: 2 },
 };
 
 // Helper to get grid style for a widget
@@ -1080,6 +1083,7 @@ function App() {
         <ControversyIndex userData={userData} style={getSize('ControversyIndex')} />
         <CommentLengthComparison userData={userData} style={getSize('CommentLengthComparison')} />
         <KarmaOverTime userData={userData} style={getSize('KarmaOverTime')} />
+        <HourlyActivityComparison userData={userData} style={getSize('HourlyActivityComparison')} />
         
         </div>
       </div>

@@ -1,119 +1,79 @@
 import { useMemo } from 'react';
-import { ScatterChart, Scatter, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell, ReferenceLine, ReferenceArea } from 'recharts';
+import { ComposedChart, Area, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend, ReferenceLine } from 'recharts';
 import { COLORS } from '../design-tokens';
 
-const REDDIT_AVG_CONTROVERSY = 8; // % of content at 0 or below
+const REDDIT_AVG_CONTROVERSY = 8; // %
 
 export default function ControversyIndex({ userData, style }) {
-  const { scatterData, controversyPct, label, monthlyData } = useMemo(() => {
-    if (!userData) return {};
+  const chartData = useMemo(() => {
+    if (!userData) return null;
     const allItems = [...(userData.comments || []), ...(userData.posts || [])];
-    if (allItems.length < 10) return {};
+    if (allItems.length < 20) return null;
 
-    const controversialCount = allItems.filter(i => (i.score || 0) <= 0).length;
-    const pct = (controversialCount / allItems.length) * 100;
-
-    let lbl = 'Average';
-    if (pct > 30) lbl = 'Very Controversial';
-    else if (pct > 15) lbl = 'Controversial';
-    else if (pct > 10) lbl = 'Slightly Edgy';
-    else if (pct > 5) lbl = 'Average';
-    else lbl = 'Non-controversial';
-
-    // Scatter: each item as a dot (score vs time)
-    // Sample max 300 for performance
-    const sampled = allItems.length > 300
-      ? allItems.filter((_, i) => i % Math.ceil(allItems.length / 300) === 0)
-      : allItems;
-
-    const scatterData = sampled
-      .filter(i => i.created_utc)
-      .map(i => ({
-        x: i.created_utc,
-        y: Math.max(Math.min(i.score || 0, 100), -50),
-        score: i.score || 0,
-        isControversial: (i.score || 0) <= 0,
-        sub: i.subreddit || '',
-      }));
-
-    // Monthly controversy rate
+    // Group by month
     const months = {};
     allItems.forEach(i => {
       if (!i.created_utc) return;
       const d = new Date(i.created_utc * 1000);
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      if (!months[key]) months[key] = { total: 0, controversial: 0 };
+      if (!months[key]) months[key] = { total: 0, controversial: 0, totalScore: 0 };
       months[key].total++;
+      months[key].totalScore += i.score || 0;
       if ((i.score || 0) <= 0) months[key].controversial++;
     });
 
-    const monthlyData = Object.entries(months)
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([month, data]) => ({
-        month,
-        rate: Math.round((data.controversial / data.total) * 1000) / 10,
-      }));
+    const sorted = Object.entries(months).sort((a, b) => a[0].localeCompare(b[0]));
+    if (sorted.length < 3) return null;
 
-    return { scatterData, controversyPct: pct, label: lbl, monthlyData };
+    return sorted.map(([month, data]) => ({
+      label: new Date(month + '-01').toLocaleDateString('en', { month: 'short', year: '2-digit' }),
+      rate: Math.round((data.controversial / data.total) * 1000) / 10,
+      avgScore: Math.round(data.totalScore / data.total),
+      redditAvg: REDDIT_AVG_CONTROVERSY,
+      count: data.total,
+    }));
   }, [userData]);
 
-  if (!scatterData) return null;
+  if (!chartData) return null;
+
+  const overallRate = chartData.reduce((s, d) => s + d.rate, 0) / chartData.length;
 
   const CustomTooltip = ({ active, payload }) => {
     if (!active || !payload?.length) return null;
-    const d = payload[0].payload;
+    const d = payload[0]?.payload;
     return (
       <div style={{ background: '#1a1a1a', border: '1px solid rgba(255,107,107,0.3)', borderRadius: 6, padding: '8px 12px', fontSize: 11 }}>
-        <div style={{ color: '#fff', fontWeight: 600 }}>Score: {d.score}</div>
-        <div style={{ color: 'rgba(255,255,255,0.6)' }}>r/{d.sub}</div>
-        <div style={{ color: 'rgba(255,255,255,0.5)' }}>{new Date(d.x * 1000).toLocaleDateString()}</div>
+        <div style={{ color: '#fff', fontWeight: 600, marginBottom: 4 }}>{d.label}</div>
+        <div style={{ color: COLORS.ACCENT_PRIMARY }}>Controversy: {d.rate}%</div>
+        <div style={{ color: COLORS.DATA_2 }}>Avg Score: {d.avgScore}</div>
+        <div style={{ color: COLORS.DATA_6 }}>Reddit avg: {d.redditAvg}%</div>
+        <div style={{ color: 'rgba(255,255,255,0.4)' }}>{d.count} items</div>
       </div>
     );
   };
 
-  const minT = scatterData.length > 0 ? Math.min(...scatterData.map(d => d.x)) : 0;
-  const maxT = scatterData.length > 0 ? Math.max(...scatterData.map(d => d.x)) : 0;
-
   return (
     <div className="cell" style={{ ...style }}>
-      <h3>Controversy Index</h3>
-      <p className="stat-meta">
-        <span style={{ color: COLORS.ACCENT_PRIMARY, fontWeight: 600 }}>{controversyPct.toFixed(1)}%</span> controversial
-        <span style={{ opacity: 0.5 }}> (avg {REDDIT_AVG_CONTROVERSY}%)</span>
-        {' · '}
-        <span style={{ color: COLORS.ACCENT_PRIMARY }}>{label}</span>
-      </p>
+      <h3>Controversy Timeline</h3>
+      <p className="stat-meta">% of downvoted content over time · You: <span style={{ color: COLORS.ACCENT_PRIMARY }}>{overallRate.toFixed(1)}%</span> vs Reddit: {REDDIT_AVG_CONTROVERSY}%</p>
       <div style={{ width: '100%', height: 'calc(100% - 50px)' }}>
         <ResponsiveContainer>
-          <ScatterChart margin={{ left: -10, right: 10, top: 5, bottom: 0 }}>
-            {/* Controversial zone highlight */}
-            <ReferenceArea y1={-50} y2={0} fill="rgba(255,107,107,0.06)" />
-            <XAxis
-              dataKey="x" type="number" domain={[minT, maxT]}
-              tickFormatter={t => new Date(t * 1000).toLocaleDateString('en', { month: 'short', year: '2-digit' })}
-              tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 8 }}
-              axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
-              tickLine={false}
-            />
-            <YAxis
-              dataKey="y" type="number"
-              tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 8 }}
-              axisLine={false} tickLine={false}
-              label={{ value: 'Score', angle: -90, position: 'insideLeft', fill: 'rgba(255,255,255,0.3)', fontSize: 9 }}
-            />
-            <ReferenceLine y={0} stroke="rgba(255,107,107,0.3)" strokeDasharray="3 3" />
+          <ComposedChart data={chartData} margin={{ left: -10, right: 5, top: 5, bottom: 0 }}>
+            <defs>
+              <linearGradient id="controvGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={COLORS.ACCENT_PRIMARY} stopOpacity={0.35} />
+                <stop offset="100%" stopColor={COLORS.ACCENT_PRIMARY} stopOpacity={0.02} />
+              </linearGradient>
+            </defs>
+            <XAxis dataKey="label" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 8 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} tickLine={false} interval={Math.max(Math.floor(chartData.length / 7), 0)} />
+            <YAxis yAxisId="left" tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 8 }} axisLine={false} tickLine={false} tickFormatter={v => `${v}%`} />
+            <YAxis yAxisId="right" orientation="right" tick={{ fill: 'rgba(255,255,255,0.2)', fontSize: 8 }} axisLine={false} tickLine={false} />
             <Tooltip content={<CustomTooltip />} />
-            <Scatter data={scatterData} isAnimationActive={false}>
-              {scatterData.map((d, i) => (
-                <Cell
-                  key={i}
-                  fill={d.isControversial ? COLORS.ACCENT_PRIMARY : 'rgba(74,222,128,0.4)'}
-                  r={d.isControversial ? 4 : 2.5}
-                  opacity={d.isControversial ? 0.8 : 0.3}
-                />
-              ))}
-            </Scatter>
-          </ScatterChart>
+            <Legend iconType="line" wrapperStyle={{ fontSize: 10, opacity: 0.7 }} />
+            <Area yAxisId="left" type="monotone" dataKey="rate" name="Controversy %" stroke={COLORS.ACCENT_PRIMARY} fill="url(#controvGrad)" strokeWidth={2.5} dot={false} />
+            <Line yAxisId="right" type="monotone" dataKey="avgScore" name="Avg Score" stroke={COLORS.DATA_2} strokeWidth={1.5} dot={false} opacity={0.6} />
+            <Line yAxisId="left" type="monotone" dataKey="redditAvg" name="Reddit Avg" stroke={COLORS.DATA_6} strokeWidth={2} strokeDasharray="5 3" dot={false} />
+          </ComposedChart>
         </ResponsiveContainer>
       </div>
     </div>

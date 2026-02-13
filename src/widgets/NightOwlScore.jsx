@@ -1,95 +1,82 @@
 import { useMemo } from 'react';
+import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend, Line } from 'recharts';
 import { COLORS } from '../design-tokens';
 
-const REDDIT_AVG_NIGHT = 15; // % between midnight-6am
+const REDDIT_HOURS = {
+  0: 3.2, 1: 2.4, 2: 1.8, 3: 1.5, 4: 1.3, 5: 1.5,
+  6: 2.5, 7: 3.8, 8: 5.2, 9: 6.0, 10: 6.2, 11: 6.0,
+  12: 5.8, 13: 5.5, 14: 5.5, 15: 5.6, 16: 5.5, 17: 5.2,
+  18: 5.3, 19: 5.0, 20: 5.0, 21: 4.8, 22: 4.5, 23: 3.8,
+};
 
 export default function NightOwlScore({ userData, style }) {
-  const { nightPct, ratio, label } = useMemo(() => {
-    if (!userData) return {};
+  const chartData = useMemo(() => {
+    if (!userData) return null;
     const allItems = [...(userData.comments || []), ...(userData.posts || [])];
-    if (allItems.length < 10) return {};
+    if (allItems.length < 20) return null;
 
-    const nightCount = allItems.filter(i => {
-      const h = new Date((i.created_utc || 0) * 1000).getHours();
-      return h >= 0 && h < 6;
-    }).length;
-    const pct = (nightCount / allItems.length) * 100;
-    const r = pct / REDDIT_AVG_NIGHT;
-    
-    let lbl = 'Average';
-    if (r > 3) lbl = 'Extreme Night Owl';
-    else if (r > 2) lbl = 'Night Owl';
-    else if (r > 1.3) lbl = 'Slightly Nocturnal';
-    else if (r > 0.7) lbl = 'Average';
-    else lbl = 'Early Bird';
+    const hours = Array(24).fill(0);
+    allItems.forEach(i => {
+      if (!i.created_utc) return;
+      const h = new Date(i.created_utc * 1000).getHours();
+      hours[h]++;
+    });
 
-    return { nightPct: pct, ratio: r, label: lbl };
+    const total = hours.reduce((a, b) => a + b, 0);
+    if (total === 0) return null;
+
+    return Array.from({ length: 24 }, (_, h) => ({
+      hour: `${h.toString().padStart(2, '0')}:00`,
+      you: Math.round((hours[h] / total) * 1000) / 10,
+      reddit: REDDIT_HOURS[h],
+      isNight: h >= 22 || h <= 5,
+    }));
   }, [userData]);
 
-  if (!nightPct && nightPct !== 0) return null;
+  if (!chartData) return null;
 
-  // Moon-themed radial gauge 
-  const gaugeAngle = Math.min(nightPct / 50, 1) * 270; // 50% = full
-  const radius = 55;
-  const cx = 70, cy = 70;
+  // Calculate night owl %
+  const nightHours = chartData.filter(d => d.isNight);
+  const nightPct = nightHours.reduce((s, d) => s + d.you, 0);
+  const redditNightPct = nightHours.reduce((s, d) => s + d.reddit, 0);
 
-  const describeArc = (startAngle, endAngle) => {
-    const start = ((startAngle - 90) * Math.PI) / 180;
-    const end = ((endAngle - 90) * Math.PI) / 180;
-    const sx = cx + radius * Math.cos(start);
-    const sy = cy + radius * Math.sin(start);
-    const ex = cx + radius * Math.cos(end);
-    const ey = cy + radius * Math.sin(end);
-    const largeArc = endAngle - startAngle > 180 ? 1 : 0;
-    return `M ${sx} ${sy} A ${radius} ${radius} 0 ${largeArc} 1 ${ex} ${ey}`;
+  const CustomTooltip = ({ active, payload }) => {
+    if (!active || !payload?.length) return null;
+    const d = payload[0]?.payload;
+    return (
+      <div style={{ background: '#1a1a1a', border: '1px solid rgba(255,107,107,0.3)', borderRadius: 6, padding: '8px 12px', fontSize: 11 }}>
+        <div style={{ color: '#fff', fontWeight: 600, marginBottom: 4 }}>{d.hour} {d.isNight ? '🌙' : '☀️'}</div>
+        <div style={{ color: COLORS.ACCENT_PRIMARY }}>You: {d.you}%</div>
+        <div style={{ color: COLORS.DATA_4 }}>Reddit: {d.reddit}%</div>
+      </div>
+    );
   };
-
-  // Average marker angle
-  const avgAngle = (REDDIT_AVG_NIGHT / 50) * 270;
 
   return (
     <div className="cell" style={{ ...style }}>
       <h3>Night Owl Score</h3>
-      <p className="stat-meta">Activity between midnight - 6am</p>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
-        <svg width={140} height={140} viewBox="0 0 140 140">
-          {/* Background arc */}
-          <path d={describeArc(0, 270)} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={12} strokeLinecap="round" />
-          {/* Value arc */}
-          {gaugeAngle > 0 && (
-            <path d={describeArc(0, gaugeAngle)} fill="none" 
-              stroke={nightPct > 25 ? '#a78bfa' : COLORS.ACCENT_PRIMARY} 
-              strokeWidth={12} strokeLinecap="round"
-              style={{ filter: `drop-shadow(0 0 8px ${nightPct > 25 ? 'rgba(167,139,250,0.5)' : 'rgba(255,107,107,0.4)'})` }}
-            />
-          )}
-          {/* Average marker */}
-          {(() => {
-            const a = ((avgAngle - 90) * Math.PI) / 180;
-            const mx = cx + (radius + 12) * Math.cos(a);
-            const my = cy + (radius + 12) * Math.sin(a);
-            return (
-              <>
-                <circle cx={mx} cy={my} r={2.5} fill="rgba(255,255,255,0.4)" />
-                <text x={mx + 6} y={my + 3} fill="rgba(255,255,255,0.35)" fontSize={7}>avg</text>
-              </>
-            );
-          })()}
-          {/* Center content */}
-          <text x={cx} y={cy - 6} textAnchor="middle" fontSize={10}>🌙</text>
-          <text x={cx} y={cy + 12} textAnchor="middle" fill="#fff" fontSize={22} fontWeight="700">{nightPct.toFixed(0)}%</text>
-          <text x={cx} y={cy + 25} textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize={8}>at night</text>
-        </svg>
-        <div style={{ 
-          fontSize: 12, fontWeight: 600, 
-          color: nightPct > 25 ? '#a78bfa' : COLORS.ACCENT_PRIMARY,
-          marginTop: 2,
-          padding: '2px 10px',
-          background: nightPct > 25 ? 'rgba(167,139,250,0.1)' : 'rgba(255,107,107,0.1)',
-          borderRadius: 12,
-        }}>
-          {label}
-        </div>
+      <p className="stat-meta">Your 24h activity distribution · Night activity: <span style={{ color: COLORS.ACCENT_PRIMARY }}>{nightPct.toFixed(1)}%</span> (Reddit avg: {redditNightPct.toFixed(1)}%)</p>
+      <div style={{ width: '100%', height: 'calc(100% - 50px)' }}>
+        <ResponsiveContainer>
+          <AreaChart data={chartData} margin={{ left: -10, right: 5, top: 5, bottom: 0 }}>
+            <defs>
+              <linearGradient id="nightYouGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={COLORS.ACCENT_PRIMARY} stopOpacity={0.4} />
+                <stop offset="100%" stopColor={COLORS.ACCENT_PRIMARY} stopOpacity={0.02} />
+              </linearGradient>
+              <linearGradient id="nightRedditGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={COLORS.DATA_4} stopOpacity={0.3} />
+                <stop offset="100%" stopColor={COLORS.DATA_4} stopOpacity={0.02} />
+              </linearGradient>
+            </defs>
+            <XAxis dataKey="hour" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 8 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} tickLine={false} interval={2} />
+            <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 8 }} axisLine={false} tickLine={false} tickFormatter={v => `${v}%`} />
+            <Tooltip content={<CustomTooltip />} />
+            <Legend iconType="line" wrapperStyle={{ fontSize: 10, opacity: 0.7 }} />
+            <Area type="monotone" dataKey="you" name="You" stroke={COLORS.ACCENT_PRIMARY} fill="url(#nightYouGrad)" strokeWidth={2.5} dot={false} />
+            <Area type="monotone" dataKey="reddit" name="Reddit Avg" stroke={COLORS.DATA_4} fill="url(#nightRedditGrad)" strokeWidth={2} strokeDasharray="5 3" dot={false} />
+          </AreaChart>
+        </ResponsiveContainer>
       </div>
     </div>
   );

@@ -1,84 +1,78 @@
 import { useMemo } from 'react';
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend, ReferenceLine } from 'recharts';
 import { COLORS } from '../design-tokens';
 
+// Reddit avg TTR (type-token ratio) ~38-42% on 500-word samples
+const REDDIT_AVG_TTR = 40;
+
 export default function VocabularyLevel({ userData, style }) {
-  const { ttr, wordCount, uniqueCount, label, pct } = useMemo(() => {
-    if (!userData) return {};
+  const chartData = useMemo(() => {
+    if (!userData) return null;
     const comments = userData.comments || [];
-    const posts = userData.posts || [];
-    const allItems = [...comments, ...posts];
-    if (allItems.length < 5) return {};
+    if (comments.length < 20) return null;
 
-    const allText = allItems.map(i => i.comment || i.body || i.title || i.selftext || '').join(' ').toLowerCase();
-    const words = allText.split(/\s+/).filter(w => w.length > 2 && /^[a-z]+$/.test(w));
-    if (words.length < 50) return {};
-    
-    // Use first 2000 words for fair comparison
-    const sample = words.slice(0, 2000);
-    const unique = new Set(sample).size;
-    const ratio = (unique / sample.length) * 100;
+    // Sort by time
+    const sorted = [...comments].filter(c => c.created_utc).sort((a, b) => a.created_utc - b.created_utc);
 
-    // Reddit average TTR is ~35-45% on a 2000-word sample
-    const redditAvg = 40;
-    let lbl = 'Average';
-    if (ratio > 60) lbl = 'Exceptional';
-    else if (ratio > 50) lbl = 'Very Rich';
-    else if (ratio > 42) lbl = 'Above Average';
-    else if (ratio > 35) lbl = 'Average';
-    else lbl = 'Below Average';
+    // Calculate TTR in rolling windows of 50 comments
+    const windowSize = Math.min(50, Math.floor(sorted.length / 4));
+    if (windowSize < 10) return null;
 
-    return { ttr: ratio, wordCount: sample.length, uniqueCount: unique, label: lbl, pct: Math.min(ratio / 70, 1) * 100 };
+    const data = [];
+    for (let i = 0; i <= sorted.length - windowSize; i += Math.max(Math.floor(windowSize / 3), 1)) {
+      const window = sorted.slice(i, i + windowSize);
+      const text = window.map(c => c.comment || c.body || '').join(' ').toLowerCase();
+      const words = text.split(/\s+/).filter(w => w.length > 2 && /^[a-z]+$/.test(w));
+      if (words.length < 30) continue;
+
+      const sample = words.slice(0, 500);
+      const unique = new Set(sample).size;
+      const ttr = (unique / sample.length) * 100;
+
+      const avgTime = window.reduce((s, c) => s + c.created_utc, 0) / window.length;
+      data.push({
+        time: avgTime,
+        label: new Date(avgTime * 1000).toLocaleDateString('en', { month: 'short', year: '2-digit' }),
+        ttr: Math.round(ttr * 10) / 10,
+        redditAvg: REDDIT_AVG_TTR,
+        avgLen: Math.round(words.length / window.length),
+      });
+    }
+
+    return data.length >= 3 ? data : null;
   }, [userData]);
 
-  if (!ttr) return null;
+  if (!chartData) return null;
 
-  // Circular progress gauge
-  const radius = 55;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (pct / 100) * circumference;
-  // Average marker
-  const avgPct = (40 / 70) * 100;
-  const avgAngle = (avgPct / 100) * 360 - 90;
-  const avgRad = (avgAngle * Math.PI) / 180;
-  const avgX = 70 + (radius + 10) * Math.cos(avgRad);
-  const avgY = 70 + (radius + 10) * Math.sin(avgRad);
+  const overallTTR = chartData.reduce((s, d) => s + d.ttr, 0) / chartData.length;
+
+  const CustomTooltip = ({ active, payload }) => {
+    if (!active || !payload?.length) return null;
+    const d = payload[0]?.payload;
+    return (
+      <div style={{ background: '#1a1a1a', border: '1px solid rgba(255,107,107,0.3)', borderRadius: 6, padding: '8px 12px', fontSize: 11 }}>
+        <div style={{ color: '#fff', fontWeight: 600, marginBottom: 4 }}>{d.label}</div>
+        <div style={{ color: COLORS.DATA_5 }}>Your TTR: {d.ttr}%</div>
+        <div style={{ color: COLORS.DATA_6 }}>Reddit avg: {d.redditAvg}%</div>
+      </div>
+    );
+  };
 
   return (
     <div className="cell" style={{ ...style }}>
-      <h3>Vocabulary Level</h3>
-      <p className="stat-meta">Unique word ratio vs Reddit avg (40%)</p>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
-        <svg width={140} height={140} viewBox="0 0 140 140">
-          {/* Background circle */}
-          <circle cx={70} cy={70} r={radius} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={10} />
-          {/* Progress */}
-          <circle
-            cx={70} cy={70} r={radius} fill="none"
-            stroke={COLORS.ACCENT_PRIMARY}
-            strokeWidth={10}
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={offset}
-            transform="rotate(-90 70 70)"
-            style={{ filter: 'drop-shadow(0 0 6px rgba(255,107,107,0.4))', transition: 'stroke-dashoffset 1s ease' }}
-          />
-          {/* Average marker dot */}
-          <circle cx={avgX} cy={avgY} r={3} fill="rgba(255,255,255,0.5)" />
-          <text x={avgX + 8} y={avgY + 3} fill="rgba(255,255,255,0.4)" fontSize={7}>avg</text>
-          {/* Center */}
-          <text x={70} y={64} textAnchor="middle" fill="#fff" fontSize={24} fontWeight="700">{ttr.toFixed(0)}%</text>
-          <text x={70} y={80} textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize={8}>{uniqueCount} unique</text>
-        </svg>
-        <div style={{ 
-          fontSize: 12, fontWeight: 600, 
-          color: COLORS.ACCENT_PRIMARY,
-          marginTop: 4,
-          padding: '2px 10px',
-          background: 'rgba(255,107,107,0.1)',
-          borderRadius: 12,
-        }}>
-          {label}
-        </div>
+      <h3>Vocabulary Richness</h3>
+      <p className="stat-meta">Unique word ratio over time · You: <span style={{ color: COLORS.DATA_5 }}>{overallTTR.toFixed(0)}%</span> vs Reddit: {REDDIT_AVG_TTR}%</p>
+      <div style={{ width: '100%', height: 'calc(100% - 50px)' }}>
+        <ResponsiveContainer>
+          <LineChart data={chartData} margin={{ left: -15, right: 5, top: 5, bottom: 0 }}>
+            <XAxis dataKey="label" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 8 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} tickLine={false} interval={Math.max(Math.floor(chartData.length / 7), 0)} />
+            <YAxis domain={['auto', 'auto']} tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 8 }} axisLine={false} tickLine={false} tickFormatter={v => `${v}%`} />
+            <Tooltip content={<CustomTooltip />} />
+            <Legend iconType="line" wrapperStyle={{ fontSize: 10, opacity: 0.7 }} />
+            <Line type="monotone" dataKey="redditAvg" name="Reddit Avg" stroke={COLORS.DATA_6} strokeWidth={2} strokeDasharray="5 3" dot={false} />
+            <Line type="monotone" dataKey="ttr" name="You" stroke={COLORS.DATA_5} strokeWidth={2.5} dot={{ r: 2, fill: COLORS.DATA_5 }} activeDot={{ r: 4 }} />
+          </LineChart>
+        </ResponsiveContainer>
       </div>
     </div>
   );

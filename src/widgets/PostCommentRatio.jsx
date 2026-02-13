@@ -1,95 +1,80 @@
 import { useMemo } from 'react';
+import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend, Line } from 'recharts';
 import { COLORS } from '../design-tokens';
 
-const REDDIT_AVG_RATIO = 10; // avg user has ~10 comments per 1 post
-
 export default function PostCommentRatio({ userData, style }) {
-  const { commentPct, postPct, ratio, label } = useMemo(() => {
-    if (!userData) return {};
-    const comments = (userData.comments || []).length;
-    const posts = (userData.posts || []).length;
-    const total = comments + posts;
-    if (total < 3) return {};
+  const chartData = useMemo(() => {
+    if (!userData) return null;
+    const comments = userData.comments || [];
+    const posts = userData.posts || [];
+    if (comments.length + posts.length < 10) return null;
 
-    const cPct = Math.round((comments / total) * 1000) / 10;
-    const pPct = Math.round((posts / total) * 1000) / 10;
-    const r = posts > 0 ? comments / posts : comments;
-    
-    let lbl = 'Balanced';
-    if (r > 50) lbl = 'Pure Commenter';
-    else if (r > 15) lbl = 'Heavy Commenter';
-    else if (r > 8) lbl = 'Commenter-leaning';
-    else if (r > 3) lbl = 'Balanced';
-    else if (r > 1) lbl = 'Creator-leaning';
-    else lbl = 'Content Creator';
+    // Group by month
+    const months = {};
+    [...comments, ...posts].forEach(i => {
+      if (!i.created_utc) return;
+      const d = new Date(i.created_utc * 1000);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      if (!months[key]) months[key] = { comments: 0, posts: 0 };
+      if (i.comment || i.body) months[key].comments++;
+      else months[key].posts++;
+    });
 
-    return { commentPct: cPct, postPct: pPct, ratio: r, label: lbl };
+    const sorted = Object.entries(months).sort((a, b) => a[0].localeCompare(b[0]));
+    if (sorted.length < 2) return null;
+
+    return sorted.map(([month, data]) => ({
+      label: new Date(month + '-01').toLocaleDateString('en', { month: 'short', year: '2-digit' }),
+      comments: data.comments,
+      posts: data.posts,
+      ratio: data.posts > 0 ? Math.round((data.comments / data.posts) * 10) / 10 : data.comments,
+    }));
   }, [userData]);
 
-  if (!commentPct && commentPct !== 0) return null;
+  if (!chartData) return null;
 
-  const commentsLen = (userData.comments || []).length;
-  const postsLen = (userData.posts || []).length;
+  const totalC = (userData.comments || []).length;
+  const totalP = (userData.posts || []).length;
+  const overallRatio = totalP > 0 ? (totalC / totalP).toFixed(1) : totalC;
 
-  // Donut chart via SVG
-  const radius = 50;
-  const cx = 65, cy = 65;
-  const circumference = 2 * Math.PI * radius;
-  const commentArc = (commentPct / 100) * circumference;
-  const postArc = circumference - commentArc;
-
-  // Reddit average line
-  const avgCommentPct = (REDDIT_AVG_RATIO / (REDDIT_AVG_RATIO + 1)) * 100;
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (!active || !payload?.length) return null;
+    const d = payload[0]?.payload;
+    return (
+      <div style={{ background: '#1a1a1a', border: '1px solid rgba(255,107,107,0.3)', borderRadius: 6, padding: '8px 12px', fontSize: 11 }}>
+        <div style={{ color: '#fff', fontWeight: 600, marginBottom: 4 }}>{label}</div>
+        <div style={{ color: COLORS.ACCENT_PRIMARY }}>Comments: {d.comments}</div>
+        <div style={{ color: COLORS.DATA_6 }}>Posts: {d.posts}</div>
+        <div style={{ color: 'rgba(255,255,255,0.5)' }}>Ratio: {d.ratio}:1</div>
+      </div>
+    );
+  };
 
   return (
     <div className="cell" style={{ ...style }}>
-      <h3>Post vs Comment</h3>
-      <p className="stat-meta">Content type ratio vs avg (~{Math.round(avgCommentPct)}% comments)</p>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
-        <svg width={130} height={130} viewBox="0 0 130 130">
-          {/* Comments arc */}
-          <circle
-            cx={cx} cy={cy} r={radius}
-            fill="none" stroke={COLORS.ACCENT_PRIMARY}
-            strokeWidth={16}
-            strokeDasharray={`${commentArc} ${postArc}`}
-            strokeDashoffset={circumference / 4}
-            style={{ filter: 'drop-shadow(0 0 4px rgba(255,107,107,0.3))' }}
-          />
-          {/* Posts arc */}
-          <circle
-            cx={cx} cy={cy} r={radius}
-            fill="none" stroke={COLORS.DATA_6}
-            strokeWidth={16}
-            strokeDasharray={`${postArc} ${commentArc}`}
-            strokeDashoffset={circumference / 4 - commentArc}
-          />
-          {/* Center text */}
-          <text x={cx} y={cy - 2} textAnchor="middle" fill="#fff" fontSize={14} fontWeight="700">
-            {ratio < 100 ? `${ratio.toFixed(1)}:1` : `${Math.round(ratio)}:1`}
-          </text>
-          <text x={cx} y={cy + 12} textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize={8}>c/p ratio</text>
-        </svg>
-        <div style={{ display: 'flex', gap: 16, marginTop: 4, fontSize: 10 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <div style={{ width: 8, height: 8, borderRadius: 2, background: COLORS.ACCENT_PRIMARY }} />
-            <span style={{ color: 'rgba(255,255,255,0.7)' }}>{commentsLen} comments</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <div style={{ width: 8, height: 8, borderRadius: 2, background: COLORS.DATA_6 }} />
-            <span style={{ color: 'rgba(255,255,255,0.7)' }}>{postsLen} posts</span>
-          </div>
-        </div>
-        <div style={{ 
-          fontSize: 11, fontWeight: 600, 
-          color: COLORS.ACCENT_PRIMARY,
-          marginTop: 4,
-          padding: '2px 10px',
-          background: 'rgba(255,107,107,0.1)',
-          borderRadius: 12,
-        }}>
-          {label}
-        </div>
+      <h3>Posts vs Comments</h3>
+      <p className="stat-meta">Content mix over time · Ratio: <span style={{ color: COLORS.ACCENT_PRIMARY }}>{overallRatio}:1</span> (avg ~10:1)</p>
+      <div style={{ width: '100%', height: 'calc(100% - 50px)' }}>
+        <ResponsiveContainer>
+          <AreaChart data={chartData} margin={{ left: -15, right: 5, top: 5, bottom: 0 }}>
+            <defs>
+              <linearGradient id="commentGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={COLORS.ACCENT_PRIMARY} stopOpacity={0.4} />
+                <stop offset="100%" stopColor={COLORS.ACCENT_PRIMARY} stopOpacity={0.05} />
+              </linearGradient>
+              <linearGradient id="postGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={COLORS.DATA_6} stopOpacity={0.4} />
+                <stop offset="100%" stopColor={COLORS.DATA_6} stopOpacity={0.05} />
+              </linearGradient>
+            </defs>
+            <XAxis dataKey="label" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 8 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} tickLine={false} interval={Math.max(Math.floor(chartData.length / 8), 0)} />
+            <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 8 }} axisLine={false} tickLine={false} />
+            <Tooltip content={<CustomTooltip />} />
+            <Legend iconType="line" wrapperStyle={{ fontSize: 10, opacity: 0.7 }} />
+            <Area type="monotone" dataKey="comments" name="Comments" stroke={COLORS.ACCENT_PRIMARY} fill="url(#commentGrad)" strokeWidth={2} dot={false} />
+            <Area type="monotone" dataKey="posts" name="Posts" stroke={COLORS.DATA_6} fill="url(#postGrad)" strokeWidth={2} dot={false} />
+          </AreaChart>
+        </ResponsiveContainer>
       </div>
     </div>
   );
