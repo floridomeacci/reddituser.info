@@ -62,8 +62,8 @@ export default function LocationAnalysis({ userData, onLocationData, style = {} 
     }
 
     const allItems = [
-      ...(userData.comments || []).map(c => ({ text: c.body || c.comment || '', sub: c.subreddit })),
-      ...(userData.posts || []).map(p => ({ text: `${p.title || ''} ${p.selftext || ''}`, sub: p.subreddit }))
+      ...(userData.comments || []).map(c => ({ text: c.body || c.comment || '', sub: c.subreddit, permalink: c.permalink || c.link_permalink, created: c.created_utc || c.timestamp })),
+      ...(userData.posts || []).map(p => ({ text: `${p.title || ''} ${p.selftext || ''}`, sub: p.subreddit, permalink: p.permalink, created: p.created_utc || p.timestamp }))
     ];
 
     // Also try NER entities from items
@@ -85,7 +85,7 @@ export default function LocationAnalysis({ userData, onLocationData, style = {} 
     const sentences = [];
     const seen = new Set();
 
-    allItems.forEach(({ text, sub }) => {
+    allItems.forEach(({ text, sub, permalink, created }) => {
       if (!text || text.length < 10) return;
 
       // Split into sentences
@@ -117,6 +117,8 @@ export default function LocationAnalysis({ userData, onLocationData, style = {} 
               text: trimmed,
               location: matchedLocation,
               subreddit: sub,
+              permalink,
+              created,
               priority: hasLivingIndicator ? 1 : 0
             });
           }
@@ -137,7 +139,10 @@ export default function LocationAnalysis({ userData, onLocationData, style = {} 
       // Build evidence from extracted location sentences
       const evidence = locationSentences.slice(0, 8).map(s => ({
         text: s.text,
-        type: s.priority === 1 ? 'direct' : 'indirect'
+        type: s.priority === 1 ? 'direct' : 'indirect',
+        subreddit: s.subreddit,
+        permalink: s.permalink,
+        created: s.created
       }));
       const locData = {
         likelyLocation: {
@@ -191,6 +196,16 @@ export default function LocationAnalysis({ userData, onLocationData, style = {} 
           try { parsed = JSON.parse(raw); } catch (e) { /* keep as-is */ }
         }
         setLocationData(parsed);
+        // Enrich AI evidence with source comment metadata
+        if (parsed && parsed.evidence) {
+          parsed.evidence = parsed.evidence.map(ev => {
+            const match = locationSentences.find(s => 
+              s.text && ev.text && s.text.toLowerCase().includes(ev.text.toLowerCase().substring(0, 40))
+            );
+            return match ? { ...ev, subreddit: match.subreddit, permalink: match.permalink, created: match.created } : ev;
+          });
+        }
+        setLocationData({ ...parsed });
         if (onLocationData) onLocationData(parsed);
       } catch (err) {
         setError(err.message);
@@ -353,33 +368,47 @@ export default function LocationAnalysis({ userData, onLocationData, style = {} 
                   Evidence
                 </div>
                 {locationData.evidence.slice(0, 5).map((ev, i) => (
-                  <div key={i} style={{
-                    padding: '6px 8px',
-                    marginBottom: '4px',
-                    background: 'rgba(255,255,255,0.02)',
-                    borderRadius: '4px',
-                    fontSize: '10px',
-                    display: 'flex',
-                    gap: '6px',
-                    alignItems: 'flex-start'
-                  }}>
-                    <span style={{
-                      padding: '1px 4px',
-                      borderRadius: '3px',
-                      background: ev.type === 'direct' ? 'rgba(74,222,128,0.15)' : 'rgba(251,191,36,0.15)',
-                      color: ev.type === 'direct' ? '#4ade80' : '#fbbf24',
-                      fontSize: '8px',
-                      fontWeight: '600',
-                      textTransform: 'uppercase',
-                      flexShrink: 0,
-                      marginTop: '1px'
-                    }}>
-                      {ev.type || 'clue'}
-                    </span>
-                    <span style={{ color: COLORS.TEXT_SECONDARY, lineHeight: '1.3' }}>
-                      "{ev.text}"
-                    </span>
-                  </div>
+                  <a key={i} href={ev.permalink ? `https://reddit.com${ev.permalink}` : '#'}
+                     target="_blank" rel="noopener noreferrer"
+                     style={{ textDecoration: 'none', display: 'block', marginBottom: '4px' }}>
+                    <div style={{
+                      padding: '6px 8px',
+                      background: 'rgba(255,255,255,0.02)',
+                      borderRadius: '4px',
+                      fontSize: '10px',
+                      cursor: 'pointer',
+                      transition: 'background 0.15s'
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px' }}>
+                        <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                          <span style={{
+                            padding: '1px 4px',
+                            borderRadius: '3px',
+                            background: ev.type === 'direct' ? 'rgba(74,222,128,0.15)' : 'rgba(251,191,36,0.15)',
+                            color: ev.type === 'direct' ? '#4ade80' : '#fbbf24',
+                            fontSize: '8px',
+                            fontWeight: '600',
+                            textTransform: 'uppercase'
+                          }}>
+                            {ev.type || 'clue'}
+                          </span>
+                          {ev.subreddit && (
+                            <span style={{ fontSize: '8px', color: COLORS.ACCENT_PRIMARY, fontWeight: '600' }}>
+                              r/{ev.subreddit}
+                            </span>
+                          )}
+                        </div>
+                        <span style={{ fontSize: '8px', color: COLORS.TEXT_MUTED }}>
+                          {ev.created ? new Date(ev.created * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}
+                        </span>
+                      </div>
+                      <span style={{ color: COLORS.TEXT_SECONDARY, lineHeight: '1.3' }}>
+                        "{ev.text}"
+                      </span>
+                    </div>
+                  </a>
                 ))}
               </div>
             )}

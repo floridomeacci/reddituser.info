@@ -23,34 +23,53 @@ export default function FamilyTree({ userData, style = {} }) {
       return [];
     }
 
-    const allContent = [
-      ...(userData.comments || []).map(c => c.body || ''),
-      ...(userData.posts || []).map(p => `${p.title || ''} ${p.selftext || ''}`)
-    ].join(' ');
+    const allItems = [
+      ...(userData.comments || []).map(c => ({
+        text: c.body || c.comment || '',
+        sub: c.subreddit,
+        permalink: c.permalink || c.link_permalink,
+        created: c.created_utc || c.timestamp
+      })),
+      ...(userData.posts || []).map(p => ({
+        text: `${p.title || ''} ${p.selftext || ''}`,
+        sub: p.subreddit,
+        permalink: p.permalink,
+        created: p.created_utc || p.timestamp
+      }))
+    ];
 
     // Regex patterns for family mentions
     const familyPatterns = [
       /\b(my|our|his|her)\s+(mom|mother|dad|father|parent|son|daughter|child|kid|brother|sister|sibling|grandmother|grandfather|grandma|grandpa|aunt|uncle|cousin|nephew|niece|family|wife|husband|spouse)\b[^.!?]*[.!?]/gi,
-      /\b(mom|mother|dad|father|parent|son|daughter|brother|sister|sibling|family)\s+(is|was|has|have|had|does|did|will|would|said|told|thinks?|believes?)[^.!?]*[.!?]/gi,
+      /\b(mom|mother|dad|father|parent|son|daughter|brother|sister|sibling|family)\s+(is|was|has|have|had|does|did|will|would|said|told|thinks?|believes?)\s+[^.!?]*[.!?]/gi,
       /\bmy\s+family\b[^.!?]*[.!?]/gi,
       /\b(raised|grew up|childhood|growing up)\b[^.!?]*[.!?]/gi,
       /\b(inherit(ed)?|passed down|family tradition)\b[^.!?]*[.!?]/gi
     ];
 
-    const sentences = new Set();
-    familyPatterns.forEach(pattern => {
-      const matches = allContent.match(pattern);
-      if (matches) {
-        matches.forEach(match => {
-          const cleaned = match.trim();
-          if (cleaned.length > 20 && cleaned.length < 300) {
-            sentences.add(cleaned);
-          }
-        });
-      }
+    const results = [];
+    const seen = new Set();
+
+    allItems.forEach(({ text, sub, permalink, created }) => {
+      if (!text || text.length < 10) return;
+      familyPatterns.forEach(pattern => {
+        const matches = text.match(pattern);
+        if (matches) {
+          matches.forEach(match => {
+            const cleaned = match.trim();
+            if (cleaned.length > 20 && cleaned.length < 300) {
+              const key = cleaned.substring(0, 80).toLowerCase();
+              if (!seen.has(key)) {
+                seen.add(key);
+                results.push({ text: cleaned, subreddit: sub, permalink, created });
+              }
+            }
+          });
+        }
+      });
     });
 
-    return Array.from(sentences).slice(0, 50);
+    return results.slice(0, 50);
   }, [userData, storedFamily]);
 
   // Use stored data if available
@@ -225,19 +244,34 @@ export default function FamilyTree({ userData, style = {} }) {
                 <div style={{ fontSize: '9px', fontWeight: '600', color: COLORS.TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>
                   Evidence
                 </div>
-                {familySentences.slice(0, 6).map((sentence, i) => (
-                  <div key={i} style={{
-                    padding: '6px 8px',
-                    marginBottom: '4px',
-                    background: 'rgba(255,255,255,0.02)',
-                    borderRadius: '4px',
-                    fontSize: '10px',
-                    color: COLORS.TEXT_SECONDARY,
-                    lineHeight: '1.3',
-                    borderLeft: '2px solid rgba(255,107,107,0.3)'
-                  }}>
-                    "{sentence}"
-                  </div>
+                {familySentences.slice(0, 6).map((item, i) => (
+                  <a key={i} href={item.permalink ? `https://reddit.com${item.permalink}` : '#'}
+                     target="_blank" rel="noopener noreferrer"
+                     style={{ textDecoration: 'none', display: 'block', marginBottom: '4px' }}>
+                    <div style={{
+                      padding: '6px 8px',
+                      background: 'rgba(255,255,255,0.02)',
+                      borderRadius: '4px',
+                      fontSize: '10px',
+                      color: COLORS.TEXT_SECONDARY,
+                      lineHeight: '1.3',
+                      borderLeft: '2px solid rgba(255,107,107,0.3)',
+                      cursor: 'pointer',
+                      transition: 'background 0.15s'
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px' }}>
+                        <span style={{ fontSize: '8px', color: COLORS.ACCENT_PRIMARY, fontWeight: '600' }}>
+                          r/{item.subreddit || '?'}
+                        </span>
+                        <span style={{ fontSize: '8px', color: COLORS.TEXT_MUTED }}>
+                          {item.created ? new Date(item.created * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}
+                        </span>
+                      </div>
+                      <div>"{typeof item === 'string' ? item : item.text}"</div>
+                    </div>
+                  </a>
                 ))}
               </div>
             )}
