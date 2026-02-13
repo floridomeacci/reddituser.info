@@ -309,6 +309,9 @@ export default function TSNEClustering({ userData, style }) {
 
   const hasData = allItems && allItems.length > 0 && basePoints && basePoints.length > 0;
 
+  // Hide widget entirely if there's not enough data for default (both) view
+  if (!hasData && contentType === 'both') return null;
+
   try {
     return (
       <div className="cell" style={{ gridColumn: 'span 2', gridRow: 'span 2', ...style, overflow: 'hidden' }}>
