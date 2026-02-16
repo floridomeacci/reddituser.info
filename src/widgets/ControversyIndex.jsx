@@ -46,7 +46,7 @@ export default function ControversyIndex({ userData, globalStats, style }) {
       <div style={{ background: '#1a1a1a', border: '1px solid rgba(255,107,107,0.3)', borderRadius: 6, padding: '8px 12px', fontSize: 11 }}>
         <div style={{ color: '#fff', fontWeight: 600, marginBottom: 4 }}>{d.label}</div>
         <div style={{ color: COLORS.ACCENT_PRIMARY }}>Controversy: {d.rate}%</div>
-        <div style={{ color: COLORS.ACCENT_PRIMARY }}>Avg Score: {d.avgScore}</div>
+        <div style={{ color: COLORS.DATA_3 }}>Avg Score: {d.avgScore}</div>
         <div style={{ color: COLORS.DATA_6 }}>Users avg: {avgControversy.toFixed(1)}%</div>
         <div style={{ color: 'rgba(255,255,255,0.4)' }}>{d.count} items</div>
       </div>
@@ -73,7 +73,7 @@ export default function ControversyIndex({ userData, globalStats, style }) {
             <Legend iconType="line" wrapperStyle={{ fontSize: 10, opacity: 0.7 }} />
             <Area yAxisId="left" type="monotone" dataKey="rate" name="Controversy %" stroke={COLORS.ACCENT_PRIMARY} fill="url(#controvGrad)" strokeWidth={2.5} dot={false} />
             <Area yAxisId="left" type="monotone" dataKey="usersAvg" name="Users Avg" stroke={COLORS.DATA_6} fill="none" strokeWidth={2} strokeDasharray="5 3" dot={false} />
-            <Line yAxisId="right" type="monotone" dataKey="avgScore" name="Avg Score" stroke={COLORS.ACCENT_PRIMARY} strokeWidth={1.5} dot={false} opacity={0.5} />
+            <Line yAxisId="right" type="monotone" dataKey="avgScore" name="Avg Score" stroke={COLORS.DATA_3} strokeWidth={1.5} dot={false} opacity={0.8} />
           </ComposedChart>
         </ResponsiveContainer>
       </div>
