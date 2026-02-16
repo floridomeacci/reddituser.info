@@ -16,6 +16,7 @@ export default function VocabularyLevel({ userData, globalStats, style }) {
     const windowSize = Math.min(50, Math.floor(sorted.length / 4));
     if (windowSize < 10) return null;
 
+    const avgTTR = globalStats.ttr;
     const data = [];
     for (let i = 0; i <= sorted.length - windowSize; i += Math.max(Math.floor(windowSize / 3), 1)) {
       const window = sorted.slice(i, i + windowSize);
@@ -32,6 +33,7 @@ export default function VocabularyLevel({ userData, globalStats, style }) {
         time: avgTime,
         label: new Date(avgTime * 1000).toLocaleDateString('en', { month: 'short', year: '2-digit' }),
         ttr: Math.round(ttr * 10) / 10,
+        usersAvg: avgTTR,
         avgLen: Math.round(words.length / window.length),
       });
     }
@@ -50,7 +52,7 @@ export default function VocabularyLevel({ userData, globalStats, style }) {
     return (
       <div style={{ background: '#1a1a1a', border: '1px solid rgba(255,107,107,0.3)', borderRadius: 6, padding: '8px 12px', fontSize: 11 }}>
         <div style={{ color: '#fff', fontWeight: 600, marginBottom: 4 }}>{d.label}</div>
-        <div style={{ color: COLORS.DATA_5 }}>Your TTR: {d.ttr}%</div>
+        <div style={{ color: COLORS.ACCENT_PRIMARY }}>Your TTR: {d.ttr}%</div>
         <div style={{ color: COLORS.DATA_6 }}>Users avg: {avgTTR.toFixed(0)}%</div>
       </div>
     );
@@ -59,7 +61,7 @@ export default function VocabularyLevel({ userData, globalStats, style }) {
   return (
     <div className="cell" style={{ ...style }}>
       <h3>Vocabulary Richness</h3>
-      <p className="stat-meta">Unique word ratio (TTR) over time · You: <span style={{ color: COLORS.DATA_5 }}>{overallTTR.toFixed(0)}%</span> · Users avg: {avgTTR.toFixed(0)}%</p>
+      <p className="stat-meta">Unique word ratio (TTR) over time · You: <span style={{ color: COLORS.ACCENT_PRIMARY }}>{overallTTR.toFixed(0)}%</span> · Users avg: {avgTTR.toFixed(0)}%</p>
       <div style={{ width: '100%', height: 'calc(100% - 50px)' }}>
         <ResponsiveContainer>
           <LineChart data={chartData} margin={{ left: -15, right: 5, top: 5, bottom: 0 }}>
@@ -67,8 +69,8 @@ export default function VocabularyLevel({ userData, globalStats, style }) {
             <YAxis domain={['auto', 'auto']} tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 8 }} axisLine={false} tickLine={false} tickFormatter={v => `${v}%`} />
             <Tooltip content={<CustomTooltip />} />
             <Legend iconType="line" wrapperStyle={{ fontSize: 10, opacity: 0.7 }} />
-            <ReferenceLine y={avgTTR} stroke={COLORS.DATA_6} strokeWidth={2} strokeDasharray="6 3" label={{ value: `Avg: ${avgTTR.toFixed(0)}%`, position: 'insideBottomRight', fill: COLORS.DATA_6, fontSize: 9 }} />
-            <Line type="monotone" dataKey="ttr" name="You" stroke={COLORS.DATA_5} strokeWidth={2.5} dot={{ r: 2, fill: COLORS.DATA_5 }} activeDot={{ r: 4 }} />
+            <Line type="monotone" dataKey="ttr" name="You" stroke={COLORS.ACCENT_PRIMARY} strokeWidth={2.5} dot={false} />
+            <Line type="monotone" dataKey="usersAvg" name="Users Avg" stroke={COLORS.DATA_6} strokeWidth={2} strokeDasharray="5 3" dot={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>

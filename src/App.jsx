@@ -78,7 +78,6 @@ import {
   VocabularyLevel,
   NightOwlScore,
   WeekendWarrior,
-  SubredditDiversity,
   PostCommentRatio,
   ControversyIndex,
   CommentLengthComparison,
@@ -156,7 +155,6 @@ const WIDGET_SIZES = {
   VocabularyLevel: { cols: 2, rows: 2 },
   NightOwlScore: { cols: 2, rows: 2 },
   WeekendWarrior: { cols: 2, rows: 2 },
-  SubredditDiversity: { cols: 2, rows: 2 },
   PostCommentRatio: { cols: 2, rows: 2 },
   ControversyIndex: { cols: 2, rows: 2 },
   CommentLengthComparison: { cols: 2, rows: 2 },
@@ -1101,7 +1099,6 @@ function App() {
         <NightOwlScore userData={userData} globalStats={globalStats} style={getSize('NightOwlScore')} />
         <PostCommentRatio userData={userData} style={getSize('PostCommentRatio')} />
         <WeekendWarrior userData={userData} globalStats={globalStats} style={getSize('WeekendWarrior')} />
-        <SubredditDiversity userData={userData} globalStats={globalStats} style={getSize('SubredditDiversity')} />
         <ControversyIndex userData={userData} globalStats={globalStats} style={getSize('ControversyIndex')} />
         <CommentLengthComparison userData={userData} globalStats={globalStats} style={getSize('CommentLengthComparison')} />
         <KarmaOverTime userData={userData} globalStats={globalStats} style={getSize('KarmaOverTime')} />
