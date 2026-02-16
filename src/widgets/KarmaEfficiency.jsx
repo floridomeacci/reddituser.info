@@ -68,7 +68,7 @@ export default function KarmaEfficiency({ userData, globalStats, style }) {
             <ReferenceLine y={avgEfficiency} stroke={COLORS.DATA_6} strokeWidth={2} strokeDasharray="6 3" label={{ value: `Avg: ${avgEfficiency.toFixed(1)}`, position: 'insideTopRight', fill: COLORS.DATA_6, fontSize: 9 }} />
             <Bar dataKey="efficiency" name="You" fill={COLORS.ACCENT_PRIMARY} opacity={0.5} barSize={6} radius={[2, 2, 0, 0]}>
               {chartData.map((d, i) => (
-                <Cell key={i} fill={d.efficiency >= avgEfficiency ? COLORS.DATA_2 : COLORS.ACCENT_PRIMARY} opacity={0.6} />
+                <Cell key={i} fill={COLORS.ACCENT_PRIMARY} opacity={d.efficiency >= avgEfficiency ? 0.9 : 0.4} />
               ))}
             </Bar>
           </ComposedChart>

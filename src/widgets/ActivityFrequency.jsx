@@ -53,7 +53,7 @@ export default function ActivityFrequency({ userData, globalStats, style }) {
       <div style={{ background: '#1a1a1a', border: '1px solid rgba(255,107,107,0.3)', borderRadius: 6, padding: '8px 12px', fontSize: 11 }}>
         <div style={{ color: '#fff', fontWeight: 600, marginBottom: 4 }}>{d.label}</div>
         <div style={{ color: COLORS.ACCENT_PRIMARY }}>{d.perDay}/day this week</div>
-        <div style={{ color: COLORS.DATA_3 }}>4-week avg: {d.movingAvg}/day</div>
+        <div style={{ color: COLORS.ACCENT_PRIMARY }}>4-week avg: {d.movingAvg}/day</div>
         <div style={{ color: COLORS.DATA_6 }}>Users avg: {avgDaily.toFixed(1)}/day</div>
       </div>
     );
@@ -77,7 +77,7 @@ export default function ActivityFrequency({ userData, globalStats, style }) {
             <Tooltip content={<CustomTooltip />} />
             <Legend iconType="line" wrapperStyle={{ fontSize: 10, opacity: 0.7 }} />
             <Area type="monotone" dataKey="perDay" name="Weekly Rate" stroke={COLORS.ACCENT_PRIMARY} fill="url(#actGrad)" strokeWidth={1} dot={false} opacity={0.6} />
-            <Area type="monotone" dataKey="movingAvg" name="4-week Avg" stroke={COLORS.DATA_3} fill="none" strokeWidth={2.5} dot={false} />
+            <Area type="monotone" dataKey="movingAvg" name="4-week Avg" stroke={COLORS.ACCENT_PRIMARY} fill="none" strokeWidth={2.5} dot={false} opacity={0.7} />
             <Area type="monotone" dataKey="usersAvg" name="Users Avg" stroke={COLORS.DATA_6} fill="none" strokeWidth={2} strokeDasharray="5 3" dot={false} />
           </ComposedChart>
         </ResponsiveContainer>
