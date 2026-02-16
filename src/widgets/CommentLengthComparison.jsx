@@ -21,7 +21,7 @@ export default function CommentLengthComparison({ userData, style }) {
   }, []);
 
   const chartData = useMemo(() => {
-    if (!userData) return null;
+    if (!userData || !globalStats) return null;
     const comments = userData.comments || [];
     if (comments.length < 10) return null;
 

@@ -11,7 +11,7 @@ export default function VocabularyLevel({ userData, style }) {
   }, []);
 
   const chartData = useMemo(() => {
-    if (!userData) return null;
+    if (!userData || !globalStats) return null;
     const comments = userData.comments || [];
     if (comments.length < 20) return null;
 

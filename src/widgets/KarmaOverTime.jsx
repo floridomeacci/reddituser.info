@@ -11,7 +11,7 @@ export default function KarmaOverTime({ userData, style }) {
   }, []);
 
   const { chartData, totalKarma, monthCount } = useMemo(() => {
-    if (!userData) return {};
+    if (!userData || !globalStats) return {};
     const allItems = [...(userData.comments || []), ...(userData.posts || [])];
     if (allItems.length < 10) return {};
 

@@ -23,7 +23,7 @@ export default function RedditPersonality({ userData, style }) {
   }, []);
 
   const metrics = useMemo(() => {
-    if (!userData) return null;
+    if (!userData || !globalStats) return null;
     const comments = userData.comments || [];
     const posts = userData.posts || [];
     const all = [...comments, ...posts];

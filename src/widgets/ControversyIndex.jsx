@@ -11,7 +11,7 @@ export default function ControversyIndex({ userData, style }) {
   }, []);
 
   const chartData = useMemo(() => {
-    if (!userData) return null;
+    if (!userData || !globalStats) return null;
     const allItems = [...(userData.comments || []), ...(userData.posts || [])];
     if (allItems.length < 20) return null;
 
