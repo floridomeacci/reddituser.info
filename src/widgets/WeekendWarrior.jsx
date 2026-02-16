@@ -1,6 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend, Cell } from 'recharts';
 import { COLORS } from '../design-tokens';
+import { getGlobalStats } from '../lib/globalStats';
 
 // Reddit average day-of-week distribution (%)
 const REDDIT_DOW_AVG = [12.5, 15.2, 15.8, 15.5, 15.0, 14.5, 11.5]; // Sun-Sat
