@@ -247,7 +247,7 @@ export default function FamilyTree({ userData, style = {} }) {
                 {familySentences.slice(0, 6).map((item, i) => (
                   <a key={i} href={item.permalink ? `https://reddit.com${item.permalink}` : '#'}
                      target="_blank" rel="noopener noreferrer"
-                     style={{ textDecoration: 'none', display: 'block', marginBottom: '4px' }}>
+                     style={{ textDecoration: 'none', display: 'block', marginBottom: '4px', color: 'inherit' }}>
                     <div style={{
                       padding: '6px 8px',
                       background: 'rgba(255,255,255,0.02)',
@@ -284,7 +284,7 @@ export default function FamilyTree({ userData, style = {} }) {
                 </svg>
                 <div style={{ color: '#4ade80', fontSize: '14px', fontWeight: 600, textAlign: 'center' }}>User keeps family info private</div>
               </div>
-            )}
+            ) : null}
           </>
         ) : null}
       </div>

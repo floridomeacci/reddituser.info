@@ -34,6 +34,9 @@ export default function FavoriteNumber({ userData, style }) {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 3);
 
+  // Hide widget if no numbers found
+  if (topNumbers.length === 0) return null;
+
   // Olympic podium configuration: [2nd, 1st, 3rd]
   const podiumOrder = topNumbers.length >= 3 
     ? [topNumbers[1], topNumbers[0], topNumbers[2]]

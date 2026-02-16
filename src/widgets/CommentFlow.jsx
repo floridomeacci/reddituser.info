@@ -2,7 +2,7 @@ import CommentFlowTree from '../components/CommentFlowTree';
 
 export default function CommentFlow({ userData, style }) {
   if (!userData || !userData.comments?.length) return null;
-  
+
   // Build hierarchical tree from sentence patterns
   const commentTreeData = (() => {
     const sentences = [];
@@ -160,6 +160,9 @@ export default function CommentFlow({ userData, style }) {
     
     return allTrees;
   })();
+
+  // Hide widget if no meaningful patterns found
+  if (!commentTreeData || commentTreeData.length === 0) return null;
 
   return (
     <div className="cell" style={{ gridColumn: 'span 1', gridRow: 'span 1', ...style }}>

@@ -88,107 +88,58 @@ export default function ReplyPatterns({ userData, style }) {
       {!selectedCategory ? (
         <div style={{ 
           display: 'flex', 
-          alignItems: 'center',
+          flexDirection: 'column',
           justifyContent: 'center',
           height: 'calc(100% - 80px)',
-          gap: '40px',
-          position: 'relative'
+          gap: '16px',
+          padding: '0 8px'
         }}>
-          {/* Grey baseline */}
-          <div style={{
-            position: 'absolute',
-            bottom: '20%',
-            left: '10%',
-            right: '10%',
-            height: '2px',
-            background: 'rgba(255, 255, 255, 0.1)',
-            zIndex: 0
-          }} />
-          
-          {/* Self bubble - size based on percentage/ratio */}
-          {(() => {
-            const selfRatio = replyStats.self / replyStats.total;
-            const othersRatio = replyStats.others / replyStats.total;
-            const maxSize = 200;
-            const minSize = 80;
-            const selfSize = minSize + (selfRatio * (maxSize - minSize));
-            const othersSize = minSize + (othersRatio * (maxSize - minSize));
-            
-            return (
-              <>
-                <div 
-                  onClick={() => setSelectedCategory('self')}
-                  style={{
-                    width: `${selfSize}px`,
-                    height: `${selfSize}px`,
-                    borderRadius: '50%',
-                    background: 'rgba(255, 107, 107, 0.5)',
-                    border: '2px solid #ff6b6b',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    transition: 'transform 0.3s ease',
-                    position: 'relative',
-                    zIndex: 1
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'scale(1.05)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'scale(1)';
-                  }}
-                >
-                  <div style={{ fontSize: selfSize > 120 ? '32px' : '24px', fontWeight: 'bold', color: '#fff' }}>
-                    {replyStats.self}
-                  </div>
-                  <div style={{ fontSize: selfSize > 120 ? '12px' : '10px', color: 'rgba(255, 255, 255, 0.9)', marginTop: '4px' }}>
-                    Self-replies
-                  </div>
-                  <div style={{ fontSize: selfSize > 120 ? '16px' : '13px', fontWeight: '600', color: '#fff', marginTop: selfSize > 120 ? '8px' : '4px' }}>
-                    {selfPercentage}%
-                  </div>
-                </div>
+          {/* Self-replies bar */}
+          <div 
+            onClick={() => setSelectedCategory('self')}
+            style={{ cursor: 'pointer', transition: 'opacity 0.2s' }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '6px' }}>
+              <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}>Self-replies</span>
+              <span style={{ fontSize: '20px', fontWeight: 700, color: '#fff' }}>{replyStats.self} <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', fontWeight: 400 }}>({selfPercentage}%)</span></span>
+            </div>
+            <div style={{ height: '8px', borderRadius: '4px', background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+              <div style={{ width: `${selfPercentage}%`, height: '100%', borderRadius: '4px', background: 'rgba(255, 107, 107, 0.6)', transition: 'width 0.5s ease' }} />
+            </div>
+          </div>
 
-                {/* Others bubble - size based on percentage/ratio */}
-                <div 
-                  onClick={() => setSelectedCategory('others')}
-                  style={{
-                    width: `${othersSize}px`,
-                    height: `${othersSize}px`,
-                    borderRadius: '50%',
-                    background: 'rgba(250, 82, 82, 0.5)',
-                    border: '2px solid #fa5252',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    transition: 'transform 0.3s ease',
-                    position: 'relative',
-                    zIndex: 1
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'scale(1.05)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'scale(1)';
-                  }}
-                >
-                  <div style={{ fontSize: othersSize > 120 ? '32px' : '24px', fontWeight: 'bold', color: '#fff' }}>
-                    {replyStats.others}
-                  </div>
-                  <div style={{ fontSize: othersSize > 120 ? '12px' : '10px', color: 'rgba(255, 255, 255, 0.9)', marginTop: '4px' }}>
-                    Other users
-                  </div>
-                  <div style={{ fontSize: othersSize > 120 ? '16px' : '13px', fontWeight: '600', color: '#fff', marginTop: othersSize > 120 ? '8px' : '4px' }}>
-                    {othersPercentage}%
-                  </div>
-                </div>
-              </>
-            );
-          })()}
+          {/* Other users bar */}
+          <div 
+            onClick={() => setSelectedCategory('others')}
+            style={{ cursor: 'pointer', transition: 'opacity 0.2s' }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '6px' }}>
+              <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}>Other users</span>
+              <span style={{ fontSize: '20px', fontWeight: 700, color: '#fff' }}>{replyStats.others} <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', fontWeight: 400 }}>({othersPercentage}%)</span></span>
+            </div>
+            <div style={{ height: '8px', borderRadius: '4px', background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+              <div style={{ width: `${othersPercentage}%`, height: '100%', borderRadius: '4px', background: '#ff6b6b', transition: 'width 0.5s ease' }} />
+            </div>
+          </div>
+
+          {/* Ratio indicator */}
+          <div style={{ marginTop: '8px', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Reply ratio</div>
+            <div style={{ display: 'flex', height: '6px', borderRadius: '3px', overflow: 'hidden', background: 'rgba(255,255,255,0.06)' }}>
+              <div style={{ width: `${selfPercentage}%`, height: '100%', background: 'rgba(255,107,107,0.6)' }} />
+              <div style={{ width: `${othersPercentage}%`, height: '100%', background: '#ff6b6b' }} />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px', fontSize: '10px', color: 'rgba(255,255,255,0.35)' }}>
+              <span>Self {selfPercentage}%</span>
+              <span>Others {othersPercentage}%</span>
+            </div>
+          </div>
+
+          <p className="stat-meta" style={{ textAlign: 'center', marginTop: '4px', fontSize: '10px' }}>Click a category to see comments</p>
         </div>
       ) : (
         <div style={{ 

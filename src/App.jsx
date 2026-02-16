@@ -64,8 +64,6 @@ import {
   SubredditActivityWidget,
   EditFrequency,
   EditTiming,
-  CopypastaDetection,
-  InteractionReach,
   LifetimeActivity,
   FamilyTree,
   FriendsNetwork,
@@ -73,6 +71,18 @@ import {
   ProfessionAnalysis,
   LocationAnalysis,
   IdentifiableImages,
+  RedditPersonality,
+  KarmaEfficiency,
+  ActivityFrequency,
+  VocabularyLevel,
+  NightOwlScore,
+  WeekendWarrior,
+  SubredditDiversity,
+  PostCommentRatio,
+  ControversyIndex,
+  CommentLengthComparison,
+  KarmaOverTime,
+  HourlyActivityComparison,
 } from './widgets';
 import TopWorstContent from './widgets/TopWorstContent';
 
@@ -130,8 +140,6 @@ const WIDGET_SIZES = {
   InterestWidget: { cols: 2, rows: 2 },
   EditFrequency: { cols: 2, rows: 2 },
   EditTiming: { cols: 2, rows: 2 },
-  CopypastaDetection: { cols: 2, rows: 2 },
-  InteractionReach: { cols: 2, rows: 2 },
   LifetimeActivity: { cols: 4, rows: 2 },
   FamilyTree: { cols: 1, rows: 2 },
   FriendsNetwork: { cols: 1, rows: 2 },
@@ -140,6 +148,19 @@ const WIDGET_SIZES = {
   LocationAnalysis: { cols: 2, rows: 2 },
   IdentifiableImages: { cols: 2, rows: 2 },
 
+  // Comparison widgets
+  RedditPersonality: { cols: 2, rows: 2 },
+  KarmaEfficiency: { cols: 2, rows: 2 },
+  ActivityFrequency: { cols: 2, rows: 2 },
+  VocabularyLevel: { cols: 2, rows: 2 },
+  NightOwlScore: { cols: 2, rows: 2 },
+  WeekendWarrior: { cols: 2, rows: 2 },
+  SubredditDiversity: { cols: 2, rows: 2 },
+  PostCommentRatio: { cols: 2, rows: 2 },
+  ControversyIndex: { cols: 2, rows: 2 },
+  CommentLengthComparison: { cols: 2, rows: 2 },
+  KarmaOverTime: { cols: 2, rows: 2 },
+  HourlyActivityComparison: { cols: 2, rows: 2 },
 };
 
 // Helper to get grid style for a widget
@@ -523,8 +544,6 @@ function App() {
       case 'EditFrequency':
       case 'EditTiming':
         return allItems.some(item => item.edited && typeof item.edited === 'number');
-      case 'CopypastaDetection':
-        return comments.length >= 10;
       case 'RemovedCommentsOverTime':
       case 'RemovedCommentsBySubreddit':
         return comments.some(c => c.removed === true);
@@ -542,8 +561,6 @@ function App() {
         return allItems.length >= 20;
       case 'LanguageDetection':
         return allItems.length >= 10;
-      case 'InteractionReach':
-        return true;
       default:
         // By default, show widget if there's any data
         return allItems.length > 0;
@@ -637,88 +654,120 @@ function App() {
   }
 
   return (
-    <div className="app-container">
-      {/* Profile Header: PFP + u/username */}
-      {(() => {
-        const about = userData?.about || userData?.account_info || {};
-        const avatarUrl = about.icon_img || about.snoovatar_img || `https://www.redditstatic.com/avatars/defaults/v2/avatar_default_0.png`;
-        const displayName = userData?.username || about.name || '';
-        return displayName ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '24px 16px 8px', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
-            <img
-              src={avatarUrl}
-              alt="Profile"
-              style={{
-                width: '120px',
-                height: '120px',
-                borderRadius: '50%',
-                border: '3px solid rgba(255, 107, 107, 0.5)',
-                objectFit: 'cover',
-                flexShrink: 0,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
-              }}
-              onError={(e) => { e.target.src = 'https://www.redditstatic.com/avatars/defaults/v2/avatar_default_0.png'; }}
-            />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <a
-                href={`https://reddit.com/user/${displayName}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  fontSize: '36px',
-                  fontWeight: '700',
-                  color: '#ffffff',
-                  textDecoration: 'none',
-                  lineHeight: 1.1,
-                  transition: 'color 0.2s'
-                }}
-                onMouseEnter={e => e.currentTarget.style.color = '#ff6b6b'}
-                onMouseLeave={e => e.currentTarget.style.color = '#ffffff'}
-              >
-                u/{displayName}
-              </a>
-              {about.subreddit?.public_description && (
-                <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)', maxWidth: '400px' }}>
-                  {about.subreddit.public_description}
-                </span>
-              )}
-            </div>
-          </div>
-        ) : null;
-      })()}
+    <div className="app-container" style={{ position: 'relative' }}>
+      {/* Animated Background (same as landing) */}
       <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        zIndex: 0,
+        pointerEvents: 'none'
+      }}>
+        <AnimatedGridPattern 
+          numSquares={30}
+          maxOpacity={0.15}
+          duration={3}
+          repeatDelay={1}
+          strokeColor="#ff6b6b"
+          fillColor="#ff6b6b"
+          width={60}
+          height={60}
+        />
+      </div>
+
+      {/* Logo top-left */}
+      <a
+        href="/"
+        onClick={(e) => { e.preventDefault(); setUserData(null); window.history.pushState({}, '', '/'); }}
+        style={{
+          position: 'fixed',
+          top: '16px',
+          left: '16px',
+          zIndex: 100,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          textDecoration: 'none',
+          color: '#ffffff',
+          fontFamily: 'monospace',
+          fontSize: '14px',
+          fontWeight: '700',
+          opacity: 0.7,
+          transition: 'opacity 0.2s'
+        }}
+        onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+        onMouseLeave={e => e.currentTarget.style.opacity = '0.7'}
+      >
+        <img src="/reddituser-logo.svg" alt="Logo" style={{ width: '32px', height: '32px' }} />
+      </a>
+
+      <div style={{
+        position: 'relative',
+        zIndex: 1,
         display: 'grid',
         gridTemplateColumns: '250px minmax(0, 1fr)',
         gap: 'var(--grid-gap)',
         width: '100%',
         maxWidth: '1400px',
         margin: '0 auto',
+        paddingTop: '48px',
       }}>
-        {/* Column 1: Search Box */}
+        {/* Column 1: Sidebar */}
         <div style={{ 
           display: 'flex', 
           flexDirection: 'column', 
           gap: 'var(--grid-gap)',
           position: 'sticky',
-          top: 'calc(var(--grid-gap) + 16px)',
+          top: '16px',
+          alignSelf: 'start',
           height: 'fit-content'
         }}>
-          <SearchBox 
-            userData={userData}
-            onUserDataChange={setUserData}
-            isLoading={isLoading}
-            setIsLoading={setIsLoading}
-            initialUsername={urlUsername}
-            style={{ gridColumn: 'span 1', gridRow: 'span 2' }}
-            className="no-enlarge"
-          />
-          
-          {/* Support & Extension Widget */}
+          {/* PFP + Support & Extension Widget */}
           <div className="cell no-enlarge" style={{ 
             display: 'flex', 
             flexDirection: 'column', 
             gap: '12px'
           }}>
+            {(() => {
+              const about = userData?.about || userData?.account_info || {};
+              const avatarUrl = about.icon_img || about.snoovatar_img || 'https://www.redditstatic.com/avatars/defaults/v2/avatar_default_0.png';
+              const displayName = userData?.username || about.name || '';
+              return displayName ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', paddingBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                  <img
+                    src={avatarUrl}
+                    alt="Profile"
+                    style={{
+                      width: '100px',
+                      height: '100px',
+                      borderRadius: '50%',
+                      border: '3px solid rgba(255, 107, 107, 0.5)',
+                      objectFit: 'cover',
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
+                    }}
+                    onError={(e) => { e.target.src = 'https://www.redditstatic.com/avatars/defaults/v2/avatar_default_0.png'; }}
+                  />
+                  <a
+                    href={`https://reddit.com/user/${displayName}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      fontSize: '18px',
+                      fontWeight: '700',
+                      color: '#ffffff',
+                      textDecoration: 'none',
+                      transition: 'color 0.2s'
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.color = '#ff6b6b'}
+                    onMouseLeave={e => e.currentTarget.style.color = '#ffffff'}
+                  >
+                    u/{displayName}
+                  </a>
+                </div>
+              ) : null;
+            })()}
             <p className="stat-meta" style={{ textAlign: 'center', margin: 0 }}>
               Help me pay for proxies to keep this service running
             </p>
@@ -997,7 +1046,6 @@ function App() {
         
         {/* Reply Patterns */}
         {shouldShowWidget('ReplyPatterns') && <ReplyPatterns userData={userData} style={getSize('ReplyPatterns')} />}
-        {shouldShowWidget('InteractionReach') && <InteractionReach userData={userData} style={getSize('InteractionReach')} />}
         
         {/* Clustering Analysis - Bottom */}
         {shouldShowWidget('TSNEClustering') && <TSNEClustering userData={userData} style={getSize('TSNEClustering')} />}
@@ -1008,8 +1056,34 @@ function App() {
         {shouldShowWidget('EditFrequency') && <EditFrequency userData={userData} style={getSize('EditFrequency')} />}
         {shouldShowWidget('EditTiming') && <EditTiming userData={userData} style={getSize('EditTiming')} />}
         
-        {/* Copypasta Detection */}
-        {shouldShowWidget('CopypastaDetection') && <CopypastaDetection userData={userData} style={getSize('CopypastaDetection')} />}
+        {/* Divider: How You Compare */}
+        <div style={{
+          gridColumn: '1 / -1',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '16px',
+          padding: '8px 0',
+          marginTop: '8px',
+        }}>
+          <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, transparent, rgba(255,107,107,0.3), rgba(255,107,107,0.3))' }} />
+          <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '2px', whiteSpace: 'nowrap' }}>How You Compare</span>
+          <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, rgba(255,107,107,0.3), rgba(255,107,107,0.3), transparent)' }} />
+        </div>
+
+        {/* Comparison Widgets */}
+        <RedditPersonality userData={userData} style={getSize('RedditPersonality')} />
+        <KarmaEfficiency userData={userData} style={getSize('KarmaEfficiency')} />
+        <ActivityFrequency userData={userData} style={getSize('ActivityFrequency')} />
+        <VocabularyLevel userData={userData} style={getSize('VocabularyLevel')} />
+        <NightOwlScore userData={userData} style={getSize('NightOwlScore')} />
+        <PostCommentRatio userData={userData} style={getSize('PostCommentRatio')} />
+        <WeekendWarrior userData={userData} style={getSize('WeekendWarrior')} />
+        <SubredditDiversity userData={userData} style={getSize('SubredditDiversity')} />
+        <ControversyIndex userData={userData} style={getSize('ControversyIndex')} />
+        <CommentLengthComparison userData={userData} style={getSize('CommentLengthComparison')} />
+        <KarmaOverTime userData={userData} style={getSize('KarmaOverTime')} />
+        <HourlyActivityComparison userData={userData} style={getSize('HourlyActivityComparison')} />
+        
         </div>
       </div>
       

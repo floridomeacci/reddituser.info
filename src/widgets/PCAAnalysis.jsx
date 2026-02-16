@@ -267,6 +267,9 @@ export default function PCAAnalysis({ userData, style }) {
 
   const hasData = allItems && allItems.length >= 10 && basePoints && basePoints.length > 0;
 
+  // Hide widget entirely if there's not enough data for default (both) view
+  if (!hasData && contentType === 'both') return null;
+
   try {
     return (
       <div className="cell" style={{ gridColumn: 'span 2', gridRow: 'span 2', ...style, overflow: 'hidden' }}>

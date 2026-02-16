@@ -66,3 +66,17 @@ export { default as RelationshipStatus } from './RelationshipStatus';
 export { default as ProfessionAnalysis } from './ProfessionAnalysis';
 export { default as LocationAnalysis } from './LocationAnalysis';
 export { default as IdentifiableImages } from './IdentifiableImages';
+
+// Comparison widgets
+export { default as RedditPersonality } from './RedditPersonality';
+export { default as KarmaEfficiency } from './KarmaEfficiency';
+export { default as ActivityFrequency } from './ActivityFrequency';
+export { default as VocabularyLevel } from './VocabularyLevel';
+export { default as NightOwlScore } from './NightOwlScore';
+export { default as WeekendWarrior } from './WeekendWarrior';
+export { default as SubredditDiversity } from './SubredditDiversity';
+export { default as PostCommentRatio } from './PostCommentRatio';
+export { default as ControversyIndex } from './ControversyIndex';
+export { default as CommentLengthComparison } from './CommentLengthComparison';
+export { default as KarmaOverTime } from './KarmaOverTime';
+export { default as HourlyActivityComparison } from './HourlyActivityComparison';
