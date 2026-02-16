@@ -59,7 +59,7 @@ export default function VocabularyLevel({ userData, globalStats, style }) {
   return (
     <div className="cell" style={{ ...style }}>
       <h3>Vocabulary Richness</h3>
-      <p className="stat-meta">Unique word ratio over time · You: <span style={{ color: COLORS.DATA_5 }}>{overallTTR.toFixed(0)}%</span> vs Users: {avgTTR.toFixed(0)}%</p>
+      <p className="stat-meta">Unique word ratio (TTR) over time · You: <span style={{ color: COLORS.DATA_5 }}>{overallTTR.toFixed(0)}%</span> · Users avg: {avgTTR.toFixed(0)}%</p>
       <div style={{ width: '100%', height: 'calc(100% - 50px)' }}>
         <ResponsiveContainer>
           <LineChart data={chartData} margin={{ left: -15, right: 5, top: 5, bottom: 0 }}>

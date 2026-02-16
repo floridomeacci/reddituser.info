@@ -25,6 +25,7 @@ export default function ActivityFrequency({ userData, globalStats, style }) {
     if (sorted.length < 3) return null;
 
     // Calculate moving average (4-week)
+    const avgDaily = globalStats.activity_per_day;
     return sorted.map(([week, count], idx) => {
       const perDay = count / 7;
       const windowStart = Math.max(0, idx - 3);
@@ -35,6 +36,7 @@ export default function ActivityFrequency({ userData, globalStats, style }) {
         label: new Date(week).toLocaleDateString('en', { month: 'short', day: 'numeric', year: '2-digit' }),
         perDay: Math.round(perDay * 100) / 100,
         movingAvg: Math.round(movingAvg * 100) / 100,
+        usersAvg: avgDaily,
       };
     });
   }, [userData]);
@@ -60,7 +62,7 @@ export default function ActivityFrequency({ userData, globalStats, style }) {
   return (
     <div className="cell" style={{ ...style }}>
       <h3>Activity Over Time</h3>
-      <p className="stat-meta">Posts per day vs Reddit average · You: <span style={{ color: COLORS.ACCENT_PRIMARY }}>{overallAvg.toFixed(1)}/day</span></p>
+      <p className="stat-meta">Posts per day vs Reddit average · You: <span style={{ color: COLORS.ACCENT_PRIMARY }}>{overallAvg.toFixed(1)}/day</span> vs Users: {avgDaily.toFixed(1)}/day</p>
       <div style={{ width: '100%', height: 'calc(100% - 50px)' }}>
         <ResponsiveContainer>
           <ComposedChart data={chartData} margin={{ left: -15, right: 5, top: 5, bottom: 0 }}>
@@ -74,9 +76,9 @@ export default function ActivityFrequency({ userData, globalStats, style }) {
             <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 8 }} axisLine={false} tickLine={false} />
             <Tooltip content={<CustomTooltip />} />
             <Legend iconType="line" wrapperStyle={{ fontSize: 10, opacity: 0.7 }} />
-            <ReferenceLine y={avgDaily} stroke={COLORS.DATA_6} strokeWidth={2} strokeDasharray="6 3" label={{ value: `Avg: ${avgDaily.toFixed(1)}/day`, position: 'insideTopRight', fill: COLORS.DATA_6, fontSize: 9 }} />
             <Area type="monotone" dataKey="perDay" name="Weekly Rate" stroke={COLORS.ACCENT_PRIMARY} fill="url(#actGrad)" strokeWidth={1} dot={false} opacity={0.6} />
             <Area type="monotone" dataKey="movingAvg" name="4-week Avg" stroke={COLORS.DATA_3} fill="none" strokeWidth={2.5} dot={false} />
+            <Area type="monotone" dataKey="usersAvg" name="Users Avg" stroke={COLORS.DATA_6} fill="none" strokeWidth={2} strokeDasharray="5 3" dot={false} />
           </ComposedChart>
         </ResponsiveContainer>
       </div>

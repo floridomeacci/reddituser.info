@@ -59,7 +59,7 @@ export default function WeekendWarrior({ userData, globalStats, style }) {
             <Legend iconType="square" wrapperStyle={{ fontSize: 10, opacity: 0.7 }} />
             <Bar dataKey="you" name="You" radius={[3, 3, 0, 0]} barSize={14}>
               {chartData.map((d, i) => (
-                <Cell key={i} fill={d.isWeekend ? COLORS.ACCENT_PRIMARY : 'rgba(255,107,107,0.5)'} />
+                <Cell key={i} fill={COLORS.ACCENT_PRIMARY} opacity={d.isWeekend ? 0.9 : 0.5} />
               ))}
             </Bar>
             <Bar dataKey="reddit" name="Reddit Avg" fill={COLORS.DATA_6} opacity={0.4} radius={[3, 3, 0, 0]} barSize={14} />

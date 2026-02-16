@@ -53,7 +53,7 @@ export default function PostCommentRatio({ userData, style }) {
   return (
     <div className="cell" style={{ ...style }}>
       <h3>Posts vs Comments</h3>
-      <p className="stat-meta">Content mix over time · Ratio: <span style={{ color: COLORS.ACCENT_PRIMARY }}>{overallRatio}:1</span> (avg ~10:1)</p>
+      <p className="stat-meta">Your content mix over time · Ratio: <span style={{ color: COLORS.ACCENT_PRIMARY }}>{overallRatio}:1</span></p>
       <div style={{ width: '100%', height: 'calc(100% - 50px)' }}>
         <ResponsiveContainer>
           <AreaChart data={chartData} margin={{ left: -15, right: 5, top: 5, bottom: 0 }}>

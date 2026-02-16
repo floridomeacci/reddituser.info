@@ -24,10 +24,12 @@ export default function ControversyIndex({ userData, globalStats, style }) {
     const sorted = Object.entries(months).sort((a, b) => a[0].localeCompare(b[0]));
     if (sorted.length < 3) return null;
 
+    const avgControversy = globalStats.controversy_pct;
     return sorted.map(([month, data]) => ({
       label: new Date(month + '-01').toLocaleDateString('en', { month: 'short', year: '2-digit' }),
       rate: Math.round((data.controversial / data.total) * 1000) / 10,
       avgScore: Math.round(data.totalScore / data.total),
+      usersAvg: avgControversy,
       count: data.total,
     }));
   }, [userData]);
@@ -69,8 +71,8 @@ export default function ControversyIndex({ userData, globalStats, style }) {
             <YAxis yAxisId="right" orientation="right" tick={{ fill: 'rgba(255,255,255,0.2)', fontSize: 8 }} axisLine={false} tickLine={false} />
             <Tooltip content={<CustomTooltip />} />
             <Legend iconType="line" wrapperStyle={{ fontSize: 10, opacity: 0.7 }} />
-            <ReferenceLine yAxisId="left" y={avgControversy} stroke={COLORS.DATA_6} strokeWidth={2} strokeDasharray="6 3" label={{ value: `Avg: ${avgControversy.toFixed(1)}%`, position: 'insideTopRight', fill: COLORS.DATA_6, fontSize: 9 }} />
             <Area yAxisId="left" type="monotone" dataKey="rate" name="Controversy %" stroke={COLORS.ACCENT_PRIMARY} fill="url(#controvGrad)" strokeWidth={2.5} dot={false} />
+            <Area yAxisId="left" type="monotone" dataKey="usersAvg" name="Users Avg" stroke={COLORS.DATA_6} fill="none" strokeWidth={2} strokeDasharray="5 3" dot={false} />
             <Line yAxisId="right" type="monotone" dataKey="avgScore" name="Avg Score" stroke={COLORS.DATA_2} strokeWidth={1.5} dot={false} opacity={0.6} />
           </ComposedChart>
         </ResponsiveContainer>

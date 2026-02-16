@@ -23,12 +23,15 @@ export default function KarmaOverTime({ userData, globalStats, style }) {
     if (sorted.length < 2) return {};
 
     let userCum = 0;
-    const chartData = sorted.map(([month, data]) => {
+    const avgMonthly = globalStats.karma_per_item;
+    const chartData = sorted.map(([month, data], idx) => {
       userCum += data.karma;
+      const avgCum = avgMonthly * (idx + 1);
       return {
         label: new Date(month + '-01').toLocaleDateString('en', { month: 'short', year: '2-digit' }),
         monthly: data.karma,
         cumulative: userCum,
+        usersAvg: avgCum,
       };
     });
 
@@ -38,7 +41,7 @@ export default function KarmaOverTime({ userData, globalStats, style }) {
   if (!chartData || !globalStats) return null;
 
   const avgRedditorTotal = monthCount * globalStats.karma_per_item;
-  const multiplier = avgRedditorTotal > 0 ? Math.round(totalKarma / avgRedditorTotal) : 0;
+  const multiplier = avgRedditorTotal > 0 ? Math.round((totalKarma / avgRedditorTotal) * 10) / 10 : 0;
 
   const CustomTooltip = ({ active, payload }) => {
     if (!active || !payload?.length) return null;
@@ -70,9 +73,9 @@ export default function KarmaOverTime({ userData, globalStats, style }) {
             <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 8 }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1000000 ? `${(v/1000000).toFixed(1)}M` : v >= 1000 ? `${(v/1000).toFixed(0)}k` : v} />
             <Tooltip content={<CustomTooltip />} />
             <Legend iconType="line" wrapperStyle={{ fontSize: 10, opacity: 0.7 }} />
-            <ReferenceLine y={avgRedditorTotal} stroke={COLORS.DATA_6} strokeWidth={2} strokeDasharray="6 3" label={{ value: `Avg Redditor: ${avgRedditorTotal.toLocaleString()}`, position: 'insideTopRight', fill: COLORS.DATA_6, fontSize: 9 }} />
             <Bar dataKey="monthly" name="Monthly ±" fill={COLORS.ACCENT_PRIMARY} opacity={0.25} barSize={4} />
             <Area type="monotone" dataKey="cumulative" name="You" stroke={COLORS.DATA_2} fill="url(#karmaGradU)" strokeWidth={2.5} dot={false} />
+            <Area type="monotone" dataKey="usersAvg" name="Avg User" stroke={COLORS.DATA_6} fill="none" strokeWidth={2} strokeDasharray="5 3" dot={false} />
           </ComposedChart>
         </ResponsiveContainer>
       </div>

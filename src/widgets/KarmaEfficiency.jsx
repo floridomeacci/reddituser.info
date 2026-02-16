@@ -33,7 +33,7 @@ export default function KarmaEfficiency({ userData, globalStats, style }) {
   if (!chartData || !globalStats) return null;
 
   const userAvg = chartData.reduce((s, d) => s + d.efficiency, 0) / chartData.length;
-  const avgEfficiency = globalStats.karma_efficiency;
+  const avgEfficiency = globalStats.karma_per_item;
 
   const CustomTooltip = ({ active, payload }) => {
     if (!active || !payload?.length) return null;
@@ -42,7 +42,7 @@ export default function KarmaEfficiency({ userData, globalStats, style }) {
       <div style={{ background: '#1a1a1a', border: '1px solid rgba(255,107,107,0.3)', borderRadius: 6, padding: '8px 12px', fontSize: 11 }}>
         <div style={{ color: '#fff', fontWeight: 600, marginBottom: 4 }}>{d.label}</div>
         <div style={{ color: COLORS.ACCENT_PRIMARY }}>Your avg: {d.efficiency} karma/post</div>
-        <div style={{ color: COLORS.DATA_6 }}>Reddit avg: {d.redditAvg}</div>
+        <div style={{ color: COLORS.DATA_6 }}>Users avg: {avgEfficiency.toFixed(1)}</div>
         <div style={{ color: 'rgba(255,255,255,0.4)' }}>{d.count} items</div>
       </div>
     );
