@@ -1,14 +1,8 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { ComposedChart, Bar, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend, ReferenceLine, Cell } from 'recharts';
 import { COLORS } from '../design-tokens';
-import { getGlobalStats } from '../lib/globalStats';
 
-export default function KarmaEfficiency({ userData, style }) {
-  const [globalStats, setGlobalStats] = useState(null);
-  
-  useEffect(() => {
-    getGlobalStats().then(setGlobalStats).catch(() => setGlobalStats({ karma_efficiency: 8.5 }));
-  }, []);
+export default function KarmaEfficiency({ userData, globalStats, style }) {
 
   const chartData = useMemo(() => {
     if (!userData || !globalStats) return null;

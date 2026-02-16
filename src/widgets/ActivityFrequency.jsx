@@ -1,14 +1,8 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { ComposedChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend, ReferenceLine } from 'recharts';
 import { COLORS } from '../design-tokens';
-import { getGlobalStats } from '../lib/globalStats';
 
-export default function ActivityFrequency({ userData, style }) {
-  const [globalStats, setGlobalStats] = useState(null);
-  
-  useEffect(() => {
-    getGlobalStats().then(setGlobalStats).catch(() => setGlobalStats({ activity_per_day: 0.5 }));
-  }, []);
+export default function ActivityFrequency({ userData, globalStats, style }) {
 
   const chartData = useMemo(() => {
     if (!userData || !globalStats) return null;

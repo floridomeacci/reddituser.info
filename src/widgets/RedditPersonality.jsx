@@ -1,7 +1,6 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { COLORS } from '../design-tokens';
-import { getGlobalStats } from '../lib/globalStats';
 
 function norm(val, avg) {
   if (avg === 0) return 50;
@@ -12,15 +11,7 @@ function norm(val, avg) {
   return Math.max(5, Math.min(Math.round(score), 98));
 }
 
-export default function RedditPersonality({ userData, style }) {
-  const [globalStats, setGlobalStats] = useState(null);
-  
-  useEffect(() => {
-    getGlobalStats().then(setGlobalStats).catch(() => setGlobalStats({
-      karma_per_item: 11, activity_per_day: 0.5, comment_length: 75,
-      subreddit_count: 6, night_pct: 15, weekend_pct: 30, controversy_pct: 8, ttr: 40,
-    }));
-  }, []);
+export default function RedditPersonality({ userData, globalStats, style }) {
 
   const metrics = useMemo(() => {
     if (!userData || !globalStats) return null;

@@ -4,6 +4,7 @@ import './design-system.css';
 import './App.css';
 import { COLORS, CHART_CONFIG, getDesignTokens } from './design-tokens';
 import { apiPost, resolveApiBase } from './lib/apiClient';
+import { getGlobalStats } from './lib/globalStats';
 import { franc } from 'franc-min';
 import SupportModal from './components/SupportModal';
 import TermsModal from './components/TermsModal';
@@ -174,6 +175,7 @@ const getSize = (name) => {
 
 function App() {
   const [userData, setUserData] = useState(null);
+  const [globalStats, setGlobalStats] = useState(null);
   const [selectedTrait, setSelectedTrait] = useState('Openness');
   const [isLoading, setIsLoading] = useState(false);
   const [highlightedSubIndex, setHighlightedSubIndex] = useState(null);
@@ -198,6 +200,27 @@ function App() {
     if (typeof window === 'undefined') return null;
     const params = new URLSearchParams(window.location.search);
     return params.get('username') || null;
+  }, []);
+
+  // Fetch global stats once on app load
+  useEffect(() => {
+    getGlobalStats()
+      .then(setGlobalStats)
+      .catch(err => {
+        console.error('Failed to load global stats:', err);
+        // Set fallback defaults
+        setGlobalStats({
+          karma_per_item: 10,
+          activity_per_day: 0.5,
+          comment_length: 75,
+          subreddit_count: 50,
+          night_pct: 15,
+          weekend_pct: 30,
+          controversy_pct: 8,
+          ttr: 40,
+          karma_efficiency: 10
+        });
+      });
   }, []);
 
   // Check if user has any removed content
@@ -1071,18 +1094,18 @@ function App() {
         </div>
 
         {/* Comparison Widgets */}
-        <RedditPersonality userData={userData} style={getSize('RedditPersonality')} />
-        <KarmaEfficiency userData={userData} style={getSize('KarmaEfficiency')} />
-        <ActivityFrequency userData={userData} style={getSize('ActivityFrequency')} />
-        <VocabularyLevel userData={userData} style={getSize('VocabularyLevel')} />
-        <NightOwlScore userData={userData} style={getSize('NightOwlScore')} />
+        <RedditPersonality userData={userData} globalStats={globalStats} style={getSize('RedditPersonality')} />
+        <KarmaEfficiency userData={userData} globalStats={globalStats} style={getSize('KarmaEfficiency')} />
+        <ActivityFrequency userData={userData} globalStats={globalStats} style={getSize('ActivityFrequency')} />
+        <VocabularyLevel userData={userData} globalStats={globalStats} style={getSize('VocabularyLevel')} />
+        <NightOwlScore userData={userData} globalStats={globalStats} style={getSize('NightOwlScore')} />
         <PostCommentRatio userData={userData} style={getSize('PostCommentRatio')} />
-        <WeekendWarrior userData={userData} style={getSize('WeekendWarrior')} />
-        <SubredditDiversity userData={userData} style={getSize('SubredditDiversity')} />
-        <ControversyIndex userData={userData} style={getSize('ControversyIndex')} />
-        <CommentLengthComparison userData={userData} style={getSize('CommentLengthComparison')} />
-        <KarmaOverTime userData={userData} style={getSize('KarmaOverTime')} />
-        <HourlyActivityComparison userData={userData} style={getSize('HourlyActivityComparison')} />
+        <WeekendWarrior userData={userData} globalStats={globalStats} style={getSize('WeekendWarrior')} />
+        <SubredditDiversity userData={userData} globalStats={globalStats} style={getSize('SubredditDiversity')} />
+        <ControversyIndex userData={userData} globalStats={globalStats} style={getSize('ControversyIndex')} />
+        <CommentLengthComparison userData={userData} globalStats={globalStats} style={getSize('CommentLengthComparison')} />
+        <KarmaOverTime userData={userData} globalStats={globalStats} style={getSize('KarmaOverTime')} />
+        <HourlyActivityComparison userData={userData} globalStats={globalStats} style={getSize('HourlyActivityComparison')} />
         
         </div>
       </div>

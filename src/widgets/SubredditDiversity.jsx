@@ -1,14 +1,8 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { COLORS } from '../design-tokens';
-import { getGlobalStats } from '../lib/globalStats';
 
-export default function SubredditDiversity({ userData, style }) {
-  const [globalStats, setGlobalStats] = useState(null);
-  
-  useEffect(() => {
-    getGlobalStats().then(setGlobalStats).catch(() => setGlobalStats({ subreddit_count: 50 }));
-  }, []);
+export default function SubredditDiversity({ userData, globalStats, style }) {
 
   const chartData = useMemo(() => {
     if (!userData || !globalStats) return null;

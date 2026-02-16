@@ -1,14 +1,8 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend, Line } from 'recharts';
 import { COLORS } from '../design-tokens';
-import { getGlobalStats } from '../lib/globalStats';
 
-export default function NightOwlScore({ userData, style }) {
-  const [globalStats, setGlobalStats] = useState(null);
-  
-  useEffect(() => {
-    getGlobalStats().then(setGlobalStats).catch(() => setGlobalStats({ night_pct: 15 }));
-  }, []);
+export default function NightOwlScore({ userData, globalStats, style }) {
 
   const chartData = useMemo(() => {
     if (!userData || !globalStats) return null;

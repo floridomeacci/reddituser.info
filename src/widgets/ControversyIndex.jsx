@@ -1,14 +1,8 @@
-import { useMemo, useState, useEffect } from 'react';
-import { ComposedChart, Area, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend, ReferenceLine } from 'recharts';
+import { useMemo } from 'react';
+import { ComposedChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend, ReferenceLine } from 'recharts';
 import { COLORS } from '../design-tokens';
-import { getGlobalStats } from '../lib/globalStats';
 
-export default function ControversyIndex({ userData, style }) {
-  const [globalStats, setGlobalStats] = useState(null);
-  
-  useEffect(() => {
-    getGlobalStats().then(setGlobalStats).catch(() => setGlobalStats({ controversy_pct: 8 }));
-  }, []);
+export default function ControversyIndex({ userData, globalStats, style }) {
 
   const chartData = useMemo(() => {
     if (!userData || !globalStats) return null;

@@ -1,7 +1,6 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { COLORS } from '../design-tokens';
-import { getGlobalStats } from '../lib/globalStats';
 
 const BUCKETS = [
   { label: '0-20', min: 0, max: 20 },
@@ -13,12 +12,7 @@ const BUCKETS = [
   { label: '800+', min: 801, max: Infinity },
 ];
 
-export default function CommentLengthComparison({ userData, style }) {
-  const [globalStats, setGlobalStats] = useState(null);
-  
-  useEffect(() => {
-    getGlobalStats().then(setGlobalStats).catch(() => setGlobalStats({ comment_length: 75 }));
-  }, []);
+export default function CommentLengthComparison({ userData, globalStats, style }) {
 
   const chartData = useMemo(() => {
     if (!userData || !globalStats) return null;

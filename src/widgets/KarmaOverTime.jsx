@@ -1,14 +1,8 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { ComposedChart, Area, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend, ReferenceLine } from 'recharts';
 import { COLORS } from '../design-tokens';
-import { getGlobalStats } from '../lib/globalStats';
 
-export default function KarmaOverTime({ userData, style }) {
-  const [globalStats, setGlobalStats] = useState(null);
-  
-  useEffect(() => {
-    getGlobalStats().then(setGlobalStats).catch(() => setGlobalStats({ karma_per_item: 10 }));
-  }, []);
+export default function KarmaOverTime({ userData, globalStats, style }) {
 
   const { chartData, totalKarma, monthCount } = useMemo(() => {
     if (!userData || !globalStats) return {};
