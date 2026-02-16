@@ -28,7 +28,17 @@ export async function getGlobalStats() {
       weekend_pct: 30,
       subreddit_count: 6,
       karma_efficiency: 8.5,
-      total_users: 0
+      total_users: 0,
+      interests: {
+        gaming: 15,
+        technology: 12,
+        humor: 18,
+        sports: 8,
+        science: 6,
+        movies: 7,
+        music: 5,
+        lifestyle: 10
+      }
     };
   }
 }

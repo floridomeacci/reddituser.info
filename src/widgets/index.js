@@ -80,3 +80,4 @@ export { default as ControversyIndex } from './ControversyIndex';
 export { default as CommentLengthComparison } from './CommentLengthComparison';
 export { default as KarmaOverTime } from './KarmaOverTime';
 export { default as HourlyActivityComparison } from './HourlyActivityComparison';
+export { default as InterestComparison } from './InterestComparison';
