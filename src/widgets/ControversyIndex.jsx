@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { ComposedChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend, ReferenceLine } from 'recharts';
+import { ComposedChart, Area, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend, ReferenceLine } from 'recharts';
 import { COLORS } from '../design-tokens';
 
 export default function ControversyIndex({ userData, globalStats, style }) {
