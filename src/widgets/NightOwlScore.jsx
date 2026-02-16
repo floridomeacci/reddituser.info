@@ -51,7 +51,7 @@ export default function NightOwlScore({ userData, globalStats, style }) {
       <div style={{ background: '#1a1a1a', border: '1px solid rgba(255,107,107,0.3)', borderRadius: 6, padding: '8px 12px', fontSize: 11 }}>
         <div style={{ color: '#fff', fontWeight: 600, marginBottom: 4 }}>{d.hour} {d.isNight ? '🌙' : '☀️'}</div>
         <div style={{ color: COLORS.ACCENT_PRIMARY }}>You: {d.you}%</div>
-        <div style={{ color: COLORS.DATA_4 }}>Users: {d.avg}%</div>
+        <div style={{ color: COLORS.DATA_6 }}>Users: {d.avg}%</div>
       </div>
     );
   };
@@ -69,8 +69,8 @@ export default function NightOwlScore({ userData, globalStats, style }) {
                 <stop offset="100%" stopColor={COLORS.ACCENT_PRIMARY} stopOpacity={0.02} />
               </linearGradient>
               <linearGradient id="nightRedditGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={COLORS.DATA_4} stopOpacity={0.3} />
-                <stop offset="100%" stopColor={COLORS.DATA_4} stopOpacity={0.02} />
+                <stop offset="0%" stopColor={COLORS.DATA_6} stopOpacity={0.3} />
+                <stop offset="100%" stopColor={COLORS.DATA_6} stopOpacity={0.02} />
               </linearGradient>
             </defs>
             <XAxis dataKey="hour" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 8 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} tickLine={false} interval={2} />
@@ -78,7 +78,7 @@ export default function NightOwlScore({ userData, globalStats, style }) {
             <Tooltip content={<CustomTooltip />} />
             <Legend iconType="line" wrapperStyle={{ fontSize: 10, opacity: 0.7 }} />
             <Area type="monotone" dataKey="you" name="You" stroke={COLORS.ACCENT_PRIMARY} fill="url(#nightYouGrad)" strokeWidth={2.5} dot={false} />
-            <Area type="monotone" dataKey="avg" name="Avg Users" stroke={COLORS.DATA_4} fill="url(#nightRedditGrad)" strokeWidth={2} strokeDasharray="5 3" dot={false} />
+            <Area type="monotone" dataKey="avg" name="Avg Users" stroke={COLORS.DATA_6} fill="url(#nightRedditGrad)" strokeWidth={2} strokeDasharray="5 3" dot={false} />
           </AreaChart>
         </ResponsiveContainer>
       </div>

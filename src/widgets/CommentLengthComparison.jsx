@@ -60,7 +60,7 @@ export default function CommentLengthComparison({ userData, globalStats, style }
       <div style={{ background: '#1a1a1a', border: '1px solid rgba(255,107,107,0.3)', borderRadius: 6, padding: '8px 12px', fontSize: 11 }}>
         <div style={{ color: '#fff', fontWeight: 600, marginBottom: 4 }}>{d.range} chars</div>
         <div style={{ color: COLORS.ACCENT_PRIMARY }}>You: {d.you}%</div>
-        <div style={{ color: COLORS.DATA_3 }}>Users: {d.avg}%</div>
+        <div style={{ color: COLORS.DATA_6 }}>Users: {d.avg}%</div>
       </div>
     );
   };
@@ -78,8 +78,8 @@ export default function CommentLengthComparison({ userData, globalStats, style }
                 <stop offset="100%" stopColor={COLORS.ACCENT_PRIMARY} stopOpacity={0.02} />
               </linearGradient>
               <linearGradient id="clcRedditGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={COLORS.DATA_3} stopOpacity={0.3} />
-                <stop offset="100%" stopColor={COLORS.DATA_3} stopOpacity={0.02} />
+                <stop offset="0%" stopColor={COLORS.DATA_6} stopOpacity={0.3} />
+                <stop offset="100%" stopColor={COLORS.DATA_6} stopOpacity={0.02} />
               </linearGradient>
             </defs>
             <XAxis dataKey="range" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 9 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} tickLine={false} />
@@ -87,7 +87,7 @@ export default function CommentLengthComparison({ userData, globalStats, style }
             <Tooltip content={<CustomTooltip />} />
             <Legend iconType="line" wrapperStyle={{ fontSize: 10, opacity: 0.7 }} />
             <Area type="monotone" dataKey="you" name="You" stroke={COLORS.ACCENT_PRIMARY} fill="url(#clcYouGrad)" strokeWidth={2.5} dot={{ r: 3, fill: COLORS.ACCENT_PRIMARY }} />
-            <Area type="monotone" dataKey="avg" name="Users Avg" stroke={COLORS.DATA_3} fill="url(#clcRedditGrad)" strokeWidth={2} strokeDasharray="5 3" dot={{ r: 2, fill: COLORS.DATA_3 }} />
+            <Area type="monotone" dataKey="avg" name="Users Avg" stroke={COLORS.DATA_6} fill="url(#clcRedditGrad)" strokeWidth={2} strokeDasharray="5 3" dot={{ r: 2, fill: COLORS.DATA_6 }} />
           </AreaChart>
         </ResponsiveContainer>
       </div>

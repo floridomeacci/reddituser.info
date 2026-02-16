@@ -50,7 +50,7 @@ export default function KarmaOverTime({ userData, globalStats, style }) {
       <div style={{ background: '#1a1a1a', border: '1px solid rgba(255,107,107,0.3)', borderRadius: 6, padding: '8px 12px', fontSize: 11 }}>
         <div style={{ color: '#fff', fontWeight: 600, marginBottom: 4 }}>{d.label}</div>
         <div style={{ color: COLORS.ACCENT_PRIMARY }}>Monthly: {d.monthly > 0 ? '+' : ''}{d.monthly.toLocaleString()}</div>
-        <div style={{ color: COLORS.DATA_2 }}>Your Total: {d.cumulative.toLocaleString()}</div>
+        <div style={{ color: COLORS.ACCENT_PRIMARY }}>Your Total: {d.cumulative.toLocaleString()}</div>
         <div style={{ color: COLORS.DATA_6 }}>Avg user would have: ~{Math.round(globalStats.karma_per_item)}/mo</div>
       </div>
     );
@@ -65,8 +65,8 @@ export default function KarmaOverTime({ userData, globalStats, style }) {
           <ComposedChart data={chartData} margin={{ left: -5, right: 5, top: 5, bottom: 0 }}>
             <defs>
               <linearGradient id="karmaGradU" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={COLORS.DATA_2} stopOpacity={0.35} />
-                <stop offset="100%" stopColor={COLORS.DATA_2} stopOpacity={0.02} />
+                <stop offset="0%" stopColor={COLORS.ACCENT_PRIMARY} stopOpacity={0.35} />
+                <stop offset="100%" stopColor={COLORS.ACCENT_PRIMARY} stopOpacity={0.02} />
               </linearGradient>
             </defs>
             <XAxis dataKey="label" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 8 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} tickLine={false} interval={Math.max(Math.floor(chartData.length / 8), 0)} />
@@ -74,7 +74,7 @@ export default function KarmaOverTime({ userData, globalStats, style }) {
             <Tooltip content={<CustomTooltip />} />
             <Legend iconType="line" wrapperStyle={{ fontSize: 10, opacity: 0.7 }} />
             <Bar dataKey="monthly" name="Monthly ±" fill={COLORS.ACCENT_PRIMARY} opacity={0.25} barSize={4} />
-            <Area type="monotone" dataKey="cumulative" name="You" stroke={COLORS.DATA_2} fill="url(#karmaGradU)" strokeWidth={2.5} dot={false} />
+            <Area type="monotone" dataKey="cumulative" name="You" stroke={COLORS.ACCENT_PRIMARY} fill="url(#karmaGradU)" strokeWidth={2.5} dot={false} />
             <Area type="monotone" dataKey="usersAvg" name="Avg User" stroke={COLORS.DATA_6} fill="none" strokeWidth={2} strokeDasharray="5 3" dot={false} />
           </ComposedChart>
         </ResponsiveContainer>
