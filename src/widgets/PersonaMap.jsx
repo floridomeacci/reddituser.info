@@ -186,7 +186,7 @@ export default function PersonaMap({ userData, style = {} }) {
         const sparkW = 272, sparkH = 18;
         const sparkPath = hist.map((v, i) =>
           `${(i / (hist.length - 1) * sparkW).toFixed(1)},${(sparkH - ((v - minL) / range) * sparkH).toFixed(1)}`
-        ).join(' L ');
+        ).join(' ');
         const accTrain = accHist.train;
         const accTest = accHist.test;
         const accW = sparkW, accH = sparkH;
