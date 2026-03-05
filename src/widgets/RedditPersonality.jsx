@@ -2,13 +2,14 @@ import { useMemo } from 'react';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { COLORS } from '../design-tokens';
 
-function norm(val, avg) {
-  if (avg === 0) return 50;
-  const ratio = val / avg;
-  if (ratio <= 0) return 5;
-  // sqrt-based: 1x avg = 50, 2x avg = 71, 4x avg = 100, 0.5x avg = 35, 0.25x = 25
-  const score = 50 * Math.sqrt(ratio);
-  return Math.max(5, Math.min(Math.round(score), 100));
+/* Scale both user & global values to 0-100 using their combined peak.
+   This gives BOTH lines a distinct shape instead of a flat circle for avg. */
+function normPair(userVal, globalVal) {
+  const peak = Math.max(Math.abs(userVal), Math.abs(globalVal), 0.001) * 1.3;
+  return {
+    you: Math.max(5, Math.min(Math.round((Math.abs(userVal) / peak) * 100), 100)),
+    avg: Math.max(5, Math.min(Math.round((Math.abs(globalVal) / peak) * 100), 100)),
+  };
 }
 
 export default function RedditPersonality({ userData, globalStats, style }) {
@@ -42,16 +43,21 @@ export default function RedditPersonality({ userData, globalStats, style }) {
     const words = all.map(i => i.comment || i.body || i.title || '').join(' ').toLowerCase().split(/\s+/).filter(w => w.length > 2);
     const ttr = words.length > 0 ? (new Set(words.slice(0, 2000)).size / Math.min(words.length, 2000)) * 100 : 0;
 
-    return [
-      { metric: 'Karma', you: norm(karmaPerItem, globalStats.karma_per_item), avg: 50 },
-      { metric: 'Activity', you: norm(perDay, globalStats.activity_per_day), avg: 50 },
-      { metric: 'Verbosity', you: norm(avgLen, globalStats.comment_length), avg: 50 },
-      { metric: 'Diversity', you: norm(uniqueSubs, globalStats.subreddit_count), avg: 50 },
-      { metric: 'Night Owl', you: norm(nightPct, globalStats.night_pct), avg: 50 },
-      { metric: 'Weekend', you: norm(weekendPct, globalStats.weekend_pct), avg: 50 },
-      { metric: 'Controversy', you: norm(controvPct, globalStats.controversy_pct), avg: 50 },
-      { metric: 'Vocabulary', you: norm(ttr, globalStats.ttr), avg: 50 },
+    const raw = [
+      { metric: 'Karma',       user: karmaPerItem, global: globalStats.karma_per_item },
+      { metric: 'Activity',    user: perDay,        global: globalStats.activity_per_day },
+      { metric: 'Verbosity',   user: avgLen,        global: globalStats.comment_length },
+      { metric: 'Diversity',   user: uniqueSubs,    global: globalStats.subreddit_count },
+      { metric: 'Night Owl',   user: nightPct,      global: globalStats.night_pct },
+      { metric: 'Weekend',     user: weekendPct,    global: globalStats.weekend_pct },
+      { metric: 'Controversy', user: controvPct,    global: globalStats.controversy_pct },
+      { metric: 'Vocabulary',  user: ttr,           global: globalStats.ttr },
     ];
+
+    return raw.map(r => {
+      const { you, avg } = normPair(r.user, r.global);
+      return { metric: r.metric, you, avg };
+    });
   }, [userData, globalStats]);
 
   if (!metrics || !globalStats) return null;
@@ -59,7 +65,7 @@ export default function RedditPersonality({ userData, globalStats, style }) {
   return (
     <div className="cell" style={{ ...style }}>
       <h3>Reddit Personality</h3>
-      <p className="stat-meta">Your profile shape vs average user (50 = average)</p>
+      <p className="stat-meta">Your profile shape vs the median Redditor</p>
       <div style={{ width: '100%', height: 'calc(100% - 50px)' }}>
         <ResponsiveContainer>
           <RadarChart data={metrics} cx="50%" cy="50%" outerRadius="68%">
