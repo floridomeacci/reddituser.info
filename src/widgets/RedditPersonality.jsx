@@ -5,10 +5,10 @@ import { COLORS } from '../design-tokens';
 function norm(val, avg) {
   if (avg === 0) return 50;
   const ratio = val / avg;
-  // Log-based normalization: 1x avg = 50, 10x = 80, 100x = 95, 0.1x = 20
   if (ratio <= 0) return 5;
-  const score = 50 + (Math.log10(ratio) * 25);
-  return Math.max(5, Math.min(Math.round(score), 98));
+  // sqrt-based: 1x avg = 50, 2x avg = 71, 4x avg = 100, 0.5x avg = 35, 0.25x = 25
+  const score = 50 * Math.sqrt(ratio);
+  return Math.max(5, Math.min(Math.round(score), 100));
 }
 
 export default function RedditPersonality({ userData, globalStats, style }) {

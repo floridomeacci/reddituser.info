@@ -47,8 +47,15 @@ export default function ConversationStarter({ userData, globalStats, style }) {
       : 0;
     const globalAvgScore = globalStats.karma_per_item || 10;
 
-    // Normalize all to 0-100 scale relative to global
-    const normalize = (user, global) => Math.min(Math.round((user / Math.max(global, 0.01)) * 50), 100);
+    // Normalize: 50 = exactly average, scale linearly with amplification
+    // so small differences are visible (2x avg = 85, 0.5x avg = 25)
+    const normalize = (user, global) => {
+      if (global <= 0) return 50;
+      const ratio = user / global;
+      // Amplify differences: use sqrt-based scaling centered at 50
+      const score = 50 * Math.sqrt(ratio);
+      return Math.max(5, Math.min(Math.round(score), 100));
+    };
 
     return [
       { metric: 'Verbosity', user: normalize(avgWordsUser, avgWordsGlobal), global: 50, rawUser: avgWordsUser.toFixed(0) + ' wds', rawGlobal: avgWordsGlobal.toFixed(0) + ' wds' },
