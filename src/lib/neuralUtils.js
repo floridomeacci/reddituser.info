@@ -364,13 +364,20 @@ export async function trainGRU(sequence, {
   const gpu = await initWebGPU();
 
   resetSeed(42);
+
+  // Sanity-check and filter sequence rows
+  const usable = (Array.isArray(sequence) ? sequence : []).filter(v => Array.isArray(v) && v.length === inputSize && v.every(x => Number.isFinite(x)));
+  if (usable.length < 4) {
+    throw new Error('Not enough usable months to train (need ≥ 4)');
+  }
+
   const gru = new TrainableGRU(inputSize, hiddenSize);
   const proj = new Linear(hiddenSize, inputSize);
 
   const lossHistory = [];
 
   // Train/test split (contiguous to respect temporal order)
-  const n = sequence.length;
+  const n = usable.length;
   const testSize = Math.max(1, Math.floor(n * testFrac));
   const trainEnd = Math.max(2, n - testSize);
 
@@ -402,8 +409,8 @@ export async function trainGRU(sequence, {
     return { mse, acc };
   }
 
-  const trainSeq = sequence.slice(0, trainEnd);
-  const testSeq = sequence.slice(trainEnd - 1); // provide a bit of history into test
+  const trainSeq = usable.slice(0, trainEnd);
+  const testSeq = usable.slice(trainEnd - 1); // provide a bit of history into test
 
   for (let epoch = 0; epoch < epochs; epoch++) {
     // Forward pass: collect all hidden states + caches
@@ -411,8 +418,8 @@ export async function trainGRU(sequence, {
     const caches = [];
     const hiddens = [h];
 
-    for (let t = 0; t < sequence.length; t++) {
-      const x = new Float64Array(sequence[t]);
+    for (let t = 0; t < usable.length; t++) {
+      const x = new Float64Array(usable[t]);
       const cache = gru.forward(x, h);
       h = cache.h;
       caches.push(cache);
@@ -423,14 +430,14 @@ export async function trainGRU(sequence, {
     let totalLoss = 0;
     const predictions = [];
     const projCaches = [];
-    for (let t = 0; t < sequence.length - 1; t++) {
+    for (let t = 0; t < usable.length - 1; t++) {
       const pred = proj.forward(hiddens[t + 1]);
       predictions.push(pred);
       projCaches.push(hiddens[t + 1]);
-      const target = sequence[t + 1];
+      const target = usable[t + 1];
       for (let i = 0; i < inputSize; i++) totalLoss += (pred[i] - target[i]) ** 2;
     }
-    const nPairs = Math.max(sequence.length - 1, 1);
+    const nPairs = Math.max(usable.length - 1, 1);
     totalLoss /= (nPairs * inputSize);
     lossHistory.push(totalLoss);
 
@@ -462,7 +469,7 @@ export async function trainGRU(sequence, {
       dbz: zeros(hiddenSize), dbr: zeros(hiddenSize), dbh: zeros(hiddenSize),
     };
 
-    for (let t = sequence.length - 1; t >= 0; t--) {
+    for (let t = usable.length - 1; t >= 0; t--) {
       for (let i = 0; i < hiddenSize; i++) dh[i] += dhFromProj[t + 1][i];
       const bg = gru.backward(caches[t], dh);
       dh = bg.dhPrev;
@@ -488,7 +495,7 @@ export async function trainGRU(sequence, {
     proj.applyGrads(acc_dW, acc_db, lr);
 
     // Yield to UI every 10 epochs
-    if (onEpoch && epoch % 5 === 0) {
+    if (onEpoch) {
       const tr = evalAccuracy(trainSeq);
       const te = evalAccuracy(testSeq);
       onEpoch({ epoch, loss: totalLoss, lossHistory: [...lossHistory], gpu: !!gpu, trainAcc: tr.acc, testAcc: te.acc, trainMSE: tr.mse, testMSE: te.mse });
@@ -499,7 +506,7 @@ export async function trainGRU(sequence, {
   // Final forward pass to get trained hidden states
   let h = zeros(hiddenSize);
   const trainedStates = [];
-  for (const x of sequence) {
+  for (const x of usable) {
     const cache = gru.forward(new Float64Array(x), h);
     h = cache.h;
     trainedStates.push(Array.from(h));

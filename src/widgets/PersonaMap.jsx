@@ -39,7 +39,8 @@ export default function PersonaMap({ userData, style = {} }) {
   // Training state
   const [training, setTraining] = useState(false);
   const [trainResult, setTrainResult] = useState(null); // { states, lossHistory, gpu, epochs }
-  const [trainProgress, setTrainProgress] = useState(null); // { epoch, loss }
+  const [trainProgress, setTrainProgress] = useState(null); // { epoch, loss, trainAcc, testAcc, history }
+  const [accHist, setAccHist] = useState({ train: [], test: [] });
   const abortRef = useRef(false);
 
   // 1. Extract features
@@ -65,8 +66,10 @@ export default function PersonaMap({ userData, style = {} }) {
   // 2. Untrained baseline (reservoir GRU — instant)
   const baseline = useMemo(() => {
     if (!monthlyData) return null;
-    const normalized = monthlyData.map(m => m.normalized);
-    const states = gruEncode(normalized, normalized[0].length, 8);
+    const normalized = monthlyData.map(m => m.normalized).filter(v => Array.isArray(v) && v.every(n => Number.isFinite(n)));
+    if (normalized.length < 4) return null;
+    const inputSize = normalized[0]?.length || 12;
+    const states = gruEncode(normalized, inputSize, 8);
     return projectPoints(states, monthlyData, method);
   }, [monthlyData, method]);
 
@@ -86,17 +89,23 @@ export default function PersonaMap({ userData, style = {} }) {
     setTraining(true);
     setTrainProgress(null);
     setTrainResult(null);
+    setAccHist({ train: [], test: [] });
 
-    const normalized = monthlyData.map(m => m.normalized);
+    const normalized = monthlyData.map(m => m.normalized).filter(v => Array.isArray(v) && v.every(n => Number.isFinite(n)));
+    if (!normalized.length) return;
     try {
       const result = await trainGRU(normalized, {
-        inputSize: normalized[0].length,
+        inputSize: (normalized[0]?.length) || 12,
         hiddenSize: 8,
         epochs: 120,
         lr: 0.003,
         onEpoch: (info) => {
           if (abortRef.current) throw new Error('aborted');
           setTrainProgress({ epoch: info.epoch, loss: info.loss, gpu: info.gpu, history: info.lossHistory, trainAcc: info.trainAcc, testAcc: info.testAcc });
+          setAccHist(prev => ({
+            train: [...prev.train, (info.trainAcc ?? 0)],
+            test: [...prev.test, (info.testAcc ?? 0)],
+          }));
         },
       });
       setTrainResult(result);
@@ -178,8 +187,12 @@ export default function PersonaMap({ userData, style = {} }) {
         const sparkPath = hist.map((v, i) =>
           `${(i / (hist.length - 1) * sparkW).toFixed(1)},${(sparkH - ((v - minL) / range) * sparkH).toFixed(1)}`
         ).join(' L ');
-        const accTrain = (trainProgress?.trainAcc != null) ? (trainProgress.history.map((_,i)=>i).map(()=>trainProgress.trainAcc)) : [];
-        const accTest = (trainProgress?.testAcc != null) ? (trainProgress.history.map((_,i)=>i).map(()=>trainProgress.testAcc)) : [];
+        const accTrain = accHist.train;
+        const accTest = accHist.test;
+        const accW = sparkW, accH = sparkH;
+        const accToY = v => accH - (Math.max(0, Math.min(1, v)) * accH);
+        const accTPts = accTrain.map((v,i)=>`${(i/(Math.max(1,accTrain.length-1))*accW).toFixed(1)},${accToY(v).toFixed(1)}`).join(' ');
+        const accEPts = accTest.map((v,i)=>`${(i/(Math.max(1,accTest.length-1))*accW).toFixed(1)},${accToY(v).toFixed(1)}`).join(' ');
         // If final result, we don't have per-epoch accuracies; keep sparkline to loss only
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -189,17 +202,12 @@ export default function PersonaMap({ userData, style = {} }) {
                 <polyline points={sparkPath} fill="none" stroke={COLORS.ACCENT_PRIMARY} strokeWidth="1.2" strokeOpacity="0.7" />
               </svg>
             </div>
-            {training && (
+            {(training && (accTrain.length > 1 || accTest.length > 1)) && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ fontSize: 10, color: COLORS.TEXT_MUTED, width: 52 }}>acc</span>
                 <svg width={sparkW} height={sparkH}>
-                  {/* Simple last-known accuracy lines */}
-                  {accTrain.length > 0 && (
-                    <line x1={0} y1={sparkH - (trainProgress.trainAcc * sparkH)} x2={sparkW} y2={sparkH - (trainProgress.trainAcc * sparkH)} stroke={COLORS.DATA_2} strokeWidth="1" strokeDasharray="4 2" />
-                  )}
-                  {accTest.length > 0 && (
-                    <line x1={0} y1={sparkH - (trainProgress.testAcc * sparkH)} x2={sparkW} y2={sparkH - (trainProgress.testAcc * sparkH)} stroke={COLORS.DATA_6} strokeWidth="1" strokeDasharray="2 2" />
-                  )}
+                  {accTrain.length > 1 && (<polyline points={accTPts} fill="none" stroke={COLORS.DATA_2} strokeWidth="1.2" />)}
+                  {accTest.length > 1 && (<polyline points={accEPts} fill="none" stroke={COLORS.DATA_6} strokeWidth="1.2" strokeDasharray="3 2" />)}
                 </svg>
               </div>
             )}
