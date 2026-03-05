@@ -97,8 +97,8 @@ Fetches and analyzes a Reddit user's data.
 | `*.parent_id` | comments | Parent comment/post ID |
 
 ### Proxy Configuration
-- Proxy: `http://jokubelis:brancaleonas_country-us@geo.iproyal.com:11200`
-- Simple rotating proxy (no sessions)
+- Proxy credentials stored securely on server at `/opt/reddit-analyzer/.proxies`
+- Rotating backbone proxies (Webshare)
 
 ### Data Storage
 - **Permanent Data**: `/opt/reddit-analyzer/data/{username.lower()}.json`

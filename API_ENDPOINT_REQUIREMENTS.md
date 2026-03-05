@@ -7,8 +7,7 @@ The admin dashboard at `/admin` requires a new API endpoint to be implemented on
 **URL:** `GET /admin/cached-users`
 
 **Authentication:** Basic Auth
-- Username: `admin`
-- Password: `P@sw0rd!1441`
+- Credentials stored in server environment variables
 
 **Response Format:**
 ```json
