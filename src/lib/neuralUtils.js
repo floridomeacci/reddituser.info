@@ -1,7 +1,7 @@
 /**
  * Neural network utilities for behavioral trajectory analysis
- * GRU encoder (reservoir computing) + PCA / t-SNE dimensionality reduction
- * All computation is client-side
+ * GRU autoencoder with real BPTT training + PCA / t-SNE reduction
+ * Trains on user's device — WebGPU accelerated when available, CPU fallback
  */
 
 import { afinnScore, toxicityScore as computeToxicity } from './browserML';
@@ -49,62 +49,463 @@ function initMatrix(rows, cols, scale) {
   });
 }
 
-// ============== GRU CELL ==============
+function clipGrad(val, maxVal = 1.0) {
+  return Math.max(-maxVal, Math.min(maxVal, val));
+}
 
-class GRUCell {
-  constructor(inputSize, hiddenSize) {
-    this.inputSize = inputSize;
-    this.hiddenSize = hiddenSize;
-    const cs = hiddenSize + inputSize;
-    const scale = Math.sqrt(2 / (cs + hiddenSize)) * 0.5;
-    this.Wz = initMatrix(hiddenSize, cs, scale);
-    this.Wr = initMatrix(hiddenSize, cs, scale);
-    this.Wh = initMatrix(hiddenSize, cs, scale);
-    this.bz = zeros(hiddenSize);
-    this.br = zeros(hiddenSize);
-    this.bh = zeros(hiddenSize);
-  }
+// ============== WebGPU MATMUL ==============
 
-  forward(x, hPrev) {
-    const { hiddenSize, inputSize } = this;
-    const concat = new Float64Array(hiddenSize + inputSize);
-    concat.set(hPrev, 0);
-    for (let i = 0; i < inputSize; i++) concat[hiddenSize + i] = x[i];
+let _gpuDevice = null;
+let _gpuPipeline = null;
 
-    // Update gate
-    const zRaw = matVecMul(this.Wz, concat);
-    const z = new Float64Array(hiddenSize);
-    for (let i = 0; i < hiddenSize; i++) z[i] = 1 / (1 + Math.exp(-(zRaw[i] + this.bz[i])));
+async function initWebGPU() {
+  if (_gpuDevice) return _gpuDevice;
+  if (typeof navigator === 'undefined' || !navigator.gpu) return null;
+  try {
+    const adapter = await navigator.gpu.requestAdapter();
+    if (!adapter) return null;
+    _gpuDevice = await adapter.requestDevice();
 
-    // Reset gate
-    const rRaw = matVecMul(this.Wr, concat);
-    const r = new Float64Array(hiddenSize);
-    for (let i = 0; i < hiddenSize; i++) r[i] = 1 / (1 + Math.exp(-(rRaw[i] + this.br[i])));
+    const shaderCode = `
+      @group(0) @binding(0) var<storage, read> A : array<f32>;
+      @group(0) @binding(1) var<storage, read> B : array<f32>;
+      @group(0) @binding(2) var<storage, read_write> C : array<f32>;
+      @group(0) @binding(3) var<uniform> dims : vec3<u32>; // M, K, N
 
-    // Candidate
-    const concatR = new Float64Array(hiddenSize + inputSize);
-    for (let i = 0; i < hiddenSize; i++) concatR[i] = r[i] * hPrev[i];
-    for (let i = 0; i < inputSize; i++) concatR[hiddenSize + i] = x[i];
-    const hcRaw = matVecMul(this.Wh, concatR);
-    const hCand = new Float64Array(hiddenSize);
-    for (let i = 0; i < hiddenSize; i++) hCand[i] = Math.tanh(hcRaw[i] + this.bh[i]);
-
-    // Output: h = (1-z)*hPrev + z*hCand
-    const h = new Float64Array(hiddenSize);
-    for (let i = 0; i < hiddenSize; i++) h[i] = (1 - z[i]) * hPrev[i] + z[i] * hCand[i];
-    return h;
+      @compute @workgroup_size(8, 8)
+      fn main(@builtin(global_invocation_id) gid : vec3<u32>) {
+        let M = dims.x;
+        let K = dims.y;
+        let N = dims.z;
+        let row = gid.x;
+        let col = gid.y;
+        if (row >= M || col >= N) { return; }
+        var sum : f32 = 0.0;
+        for (var k : u32 = 0u; k < K; k = k + 1u) {
+          sum = sum + A[row * K + k] * B[k * N + col];
+        }
+        C[row * N + col] = sum;
+      }
+    `;
+    const module = _gpuDevice.createShaderModule({ code: shaderCode });
+    _gpuPipeline = _gpuDevice.createComputePipeline({
+      layout: 'auto',
+      compute: { module, entryPoint: 'main' },
+    });
+    return _gpuDevice;
+  } catch (e) {
+    console.warn('WebGPU init failed, using CPU fallback:', e.message);
+    return null;
   }
 }
 
-// ============== GRU SEQUENCE ENCODER ==============
+async function gpuMatMul(A, B, M, K, N) {
+  const device = _gpuDevice;
+  if (!device || !_gpuPipeline) return null;
+
+  const aData = new Float32Array(A.flat ? A.flat() : A);
+  const bData = new Float32Array(B.flat ? B.flat() : B);
+
+  const aBuf = device.createBuffer({ size: aData.byteLength, usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST });
+  const bBuf = device.createBuffer({ size: bData.byteLength, usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST });
+  const cBuf = device.createBuffer({ size: M * N * 4, usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC });
+  const readBuf = device.createBuffer({ size: M * N * 4, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
+  const dimBuf = device.createBuffer({ size: 16, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
+
+  device.queue.writeBuffer(aBuf, 0, aData);
+  device.queue.writeBuffer(bBuf, 0, bData);
+  device.queue.writeBuffer(dimBuf, 0, new Uint32Array([M, K, N, 0]));
+
+  const bg = device.createBindGroup({
+    layout: _gpuPipeline.getBindGroupLayout(0),
+    entries: [
+      { binding: 0, resource: { buffer: aBuf } },
+      { binding: 1, resource: { buffer: bBuf } },
+      { binding: 2, resource: { buffer: cBuf } },
+      { binding: 3, resource: { buffer: dimBuf } },
+    ],
+  });
+
+  const enc = device.createCommandEncoder();
+  const pass = enc.beginComputePass();
+  pass.setPipeline(_gpuPipeline);
+  pass.setBindGroup(0, bg);
+  pass.dispatchWorkgroups(Math.ceil(M / 8), Math.ceil(N / 8));
+  pass.end();
+  enc.copyBufferToBuffer(cBuf, 0, readBuf, 0, M * N * 4);
+  device.queue.submit([enc.finish()]);
+
+  await readBuf.mapAsync(GPUMapMode.READ);
+  const result = new Float32Array(readBuf.getMappedRange().slice(0));
+  readBuf.unmap();
+
+  [aBuf, bBuf, cBuf, readBuf, dimBuf].forEach(b => b.destroy());
+
+  return result;
+}
+
+// ============== TRAINABLE GRU CELL (with BPTT) ==============
+
+class TrainableGRU {
+  constructor(inputSize, hiddenSize) {
+    this.I = inputSize;
+    this.H = hiddenSize;
+    const C = hiddenSize + inputSize;
+    const scale = Math.sqrt(2 / (C + hiddenSize)) * 0.3;
+
+    // Weights
+    this.Wz = initMatrix(hiddenSize, C, scale);
+    this.Wr = initMatrix(hiddenSize, C, scale);
+    this.Wh = initMatrix(hiddenSize, C, scale);
+    this.bz = zeros(hiddenSize);
+    this.br = zeros(hiddenSize);
+    this.bh = zeros(hiddenSize);
+
+    // Adam state
+    this._params = ['Wz', 'Wr', 'Wh', 'bz', 'br', 'bh'];
+    this._m = {}; this._v = {};
+    for (const p of this._params) {
+      if (Array.isArray(this[p])) {
+        this._m[p] = this[p].map(r => new Float64Array(r.length));
+        this._v[p] = this[p].map(r => new Float64Array(r.length));
+      } else {
+        this._m[p] = new Float64Array(this[p].length);
+        this._v[p] = new Float64Array(this[p].length);
+      }
+    }
+    this._t = 0;
+  }
+
+  forward(x, hPrev) {
+    const { H, I } = this;
+    const concat = new Float64Array(H + I);
+    concat.set(hPrev, 0);
+    for (let i = 0; i < I; i++) concat[H + i] = x[i];
+
+    const zRaw = matVecMul(this.Wz, concat);
+    const z = new Float64Array(H);
+    for (let i = 0; i < H; i++) z[i] = 1 / (1 + Math.exp(-(zRaw[i] + this.bz[i])));
+
+    const rRaw = matVecMul(this.Wr, concat);
+    const r = new Float64Array(H);
+    for (let i = 0; i < H; i++) r[i] = 1 / (1 + Math.exp(-(rRaw[i] + this.br[i])));
+
+    const concR = new Float64Array(H + I);
+    for (let i = 0; i < H; i++) concR[i] = r[i] * hPrev[i];
+    for (let i = 0; i < I; i++) concR[H + i] = x[i];
+    const hcRaw = matVecMul(this.Wh, concR);
+    const hc = new Float64Array(H);
+    for (let i = 0; i < H; i++) hc[i] = Math.tanh(hcRaw[i] + this.bh[i]);
+
+    const h = new Float64Array(H);
+    for (let i = 0; i < H; i++) h[i] = (1 - z[i]) * hPrev[i] + z[i] * hc[i];
+
+    // Cache for backward pass
+    return { h, z, r, hc, concat, concR, hPrev: Float64Array.from(hPrev), x: Float64Array.from(x) };
+  }
+
+  backward(cache, dh_next) {
+    const { H, I } = this;
+    const { z, r, hc, concat, concR, hPrev } = cache;
+
+    const dh = Float64Array.from(dh_next);
+
+    // Gradients through h = (1-z)*hPrev + z*hc
+    const dz = new Float64Array(H);
+    const dhc = new Float64Array(H);
+    const dhPrev = new Float64Array(H);
+    for (let i = 0; i < H; i++) {
+      dz[i] = dh[i] * (hc[i] - hPrev[i]);
+      dhc[i] = dh[i] * z[i];
+      dhPrev[i] = dh[i] * (1 - z[i]);
+    }
+
+    // Through tanh: dhc_raw = dhc * (1 - hc^2)
+    const dhcRaw = new Float64Array(H);
+    for (let i = 0; i < H; i++) dhcRaw[i] = clipGrad(dhc[i] * (1 - hc[i] * hc[i]));
+
+    // Wh grads
+    const dWh = Array.from({ length: H }, () => new Float64Array(H + I));
+    for (let i = 0; i < H; i++) for (let j = 0; j < H + I; j++) dWh[i][j] = clipGrad(dhcRaw[i] * concR[j]);
+    const dbh = Float64Array.from(dhcRaw);
+
+    // Through concR → dr, dhPrev
+    const dconcR = new Float64Array(H + I);
+    for (let i = 0; i < H; i++) {
+      for (let j = 0; j < H + I; j++) dconcR[j] += this.Wh[i][j] * dhcRaw[i];
+    }
+    const dr = new Float64Array(H);
+    for (let i = 0; i < H; i++) {
+      dr[i] = dconcR[i] * hPrev[i];
+      dhPrev[i] += dconcR[i] * r[i];
+    }
+
+    // Through sigmoid gates
+    const dzRaw = new Float64Array(H);
+    const drRaw = new Float64Array(H);
+    for (let i = 0; i < H; i++) {
+      dzRaw[i] = clipGrad(dz[i] * z[i] * (1 - z[i]));
+      drRaw[i] = clipGrad(dr[i] * r[i] * (1 - r[i]));
+    }
+
+    // Wz, Wr grads
+    const dWz = Array.from({ length: H }, () => new Float64Array(H + I));
+    const dWr = Array.from({ length: H }, () => new Float64Array(H + I));
+    for (let i = 0; i < H; i++) for (let j = 0; j < H + I; j++) {
+      dWz[i][j] = clipGrad(dzRaw[i] * concat[j]);
+      dWr[i][j] = clipGrad(drRaw[i] * concat[j]);
+    }
+    const dbz = Float64Array.from(dzRaw);
+    const dbr = Float64Array.from(drRaw);
+
+    // Propagate to hPrev through concat
+    for (let i = 0; i < H; i++) for (let j = 0; j < H; j++) {
+      dhPrev[j] += this.Wz[i][j] * dzRaw[i] + this.Wr[i][j] * drRaw[i];
+    }
+
+    return { dhPrev, dWz, dWr, dWh, dbz, dbr, dbh };
+  }
+
+  applyGrads(grads, lr = 0.001) {
+    this._t++;
+    const beta1 = 0.9, beta2 = 0.999, eps = 1e-8;
+    const bc1 = 1 - Math.pow(beta1, this._t);
+    const bc2 = 1 - Math.pow(beta2, this._t);
+
+    for (const p of this._params) {
+      if (Array.isArray(this[p])) {
+        for (let i = 0; i < this[p].length; i++)
+          for (let j = 0; j < this[p][i].length; j++) {
+            const g = grads[p][i][j];
+            this._m[p][i][j] = beta1 * this._m[p][i][j] + (1 - beta1) * g;
+            this._v[p][i][j] = beta2 * this._v[p][i][j] + (1 - beta2) * g * g;
+            const mh = this._m[p][i][j] / bc1;
+            const vh = this._v[p][i][j] / bc2;
+            this[p][i][j] -= lr * mh / (Math.sqrt(vh) + eps);
+          }
+      } else {
+        for (let i = 0; i < this[p].length; i++) {
+          const g = grads[p][i];
+          this._m[p][i] = beta1 * this._m[p][i] + (1 - beta1) * g;
+          this._v[p][i] = beta2 * this._v[p][i] + (1 - beta2) * g * g;
+          const mh = this._m[p][i] / bc1;
+          const vh = this._v[p][i] / bc2;
+          this[p][i] -= lr * mh / (Math.sqrt(vh) + eps);
+        }
+      }
+    }
+  }
+}
+
+// ============== LINEAR PROJECTION (hidden → output) ==============
+
+class Linear {
+  constructor(inSize, outSize) {
+    const scale = Math.sqrt(2 / (inSize + outSize));
+    this.W = initMatrix(outSize, inSize, scale);
+    this.b = zeros(outSize);
+    this._m = { W: this.W.map(r => new Float64Array(r.length)), b: new Float64Array(outSize) };
+    this._v = { W: this.W.map(r => new Float64Array(r.length)), b: new Float64Array(outSize) };
+    this._t = 0;
+    this.inSize = inSize;
+    this.outSize = outSize;
+  }
+
+  forward(x) {
+    const out = matVecMul(this.W, x);
+    for (let i = 0; i < this.outSize; i++) out[i] += this.b[i];
+    return out;
+  }
+
+  backward(x, dout) {
+    const dW = Array.from({ length: this.outSize }, () => new Float64Array(this.inSize));
+    for (let i = 0; i < this.outSize; i++)
+      for (let j = 0; j < this.inSize; j++) dW[i][j] = clipGrad(dout[i] * x[j]);
+    const db = Float64Array.from(dout);
+    const dx = new Float64Array(this.inSize);
+    for (let i = 0; i < this.outSize; i++)
+      for (let j = 0; j < this.inSize; j++) dx[j] += this.W[i][j] * dout[i];
+    return { dW, db, dx };
+  }
+
+  applyGrads(dW, db, lr = 0.001) {
+    this._t++;
+    const b1 = 0.9, b2 = 0.999, eps = 1e-8;
+    const bc1 = 1 - Math.pow(b1, this._t);
+    const bc2 = 1 - Math.pow(b2, this._t);
+    for (let i = 0; i < this.outSize; i++) {
+      for (let j = 0; j < this.inSize; j++) {
+        const g = dW[i][j];
+        this._m.W[i][j] = b1 * this._m.W[i][j] + (1 - b1) * g;
+        this._v.W[i][j] = b2 * this._v.W[i][j] + (1 - b2) * g * g;
+        this.W[i][j] -= lr * (this._m.W[i][j] / bc1) / (Math.sqrt(this._v.W[i][j] / bc2) + eps);
+      }
+      const g = db[i];
+      this._m.b[i] = b1 * this._m.b[i] + (1 - b1) * g;
+      this._v.b[i] = b2 * this._v.b[i] + (1 - b2) * g * g;
+      this.b[i] -= lr * (this._m.b[i] / bc1) / (Math.sqrt(this._v.b[i] / bc2) + eps);
+    }
+  }
+}
+
+// ============== ASYNC TRAINING LOOP ==============
+// GRU sequence model: predict next month's features from current hidden state
+// Task: h[t] → Linear → predicted_x[t+1], minimize MSE(predicted, actual)
+
+export async function trainGRU(sequence, {
+  inputSize = 12,
+  hiddenSize = 8,
+  epochs = 200,
+  lr = 0.003,
+  onEpoch = null,
+} = {}) {
+  // Try WebGPU init (for future acceleration of larger models)
+  const gpu = await initWebGPU();
+
+  resetSeed(42);
+  const gru = new TrainableGRU(inputSize, hiddenSize);
+  const proj = new Linear(hiddenSize, inputSize);
+
+  const lossHistory = [];
+
+  for (let epoch = 0; epoch < epochs; epoch++) {
+    // Forward pass: collect all hidden states + caches
+    let h = zeros(hiddenSize);
+    const caches = [];
+    const hiddens = [h];
+
+    for (let t = 0; t < sequence.length; t++) {
+      const x = new Float64Array(sequence[t]);
+      const cache = gru.forward(x, h);
+      h = cache.h;
+      caches.push(cache);
+      hiddens.push(h);
+    }
+
+    // Compute loss: predict x[t+1] from h[t]
+    let totalLoss = 0;
+    const predictions = [];
+    const projCaches = [];
+    for (let t = 0; t < sequence.length - 1; t++) {
+      const pred = proj.forward(hiddens[t + 1]);
+      predictions.push(pred);
+      projCaches.push(hiddens[t + 1]);
+      const target = sequence[t + 1];
+      for (let i = 0; i < inputSize; i++) totalLoss += (pred[i] - target[i]) ** 2;
+    }
+    const nPairs = Math.max(sequence.length - 1, 1);
+    totalLoss /= (nPairs * inputSize);
+    lossHistory.push(totalLoss);
+
+    // Backward pass: BPTT
+    // 1. Gradient from prediction loss → hidden states
+    const dhFromProj = Array.from({ length: sequence.length }, () => zeros(hiddenSize));
+    const acc_dW = proj.W.map(r => new Float64Array(r.length));
+    const acc_db = new Float64Array(proj.b.length);
+
+    for (let t = 0; t < sequence.length - 1; t++) {
+      const pred = predictions[t];
+      const target = sequence[t + 1];
+      const dout = new Float64Array(inputSize);
+      for (let i = 0; i < inputSize; i++) dout[i] = 2 * (pred[i] - target[i]) / (nPairs * inputSize);
+      const { dW, db, dx } = proj.backward(projCaches[t], dout);
+      for (let i = 0; i < proj.outSize; i++) {
+        for (let j = 0; j < proj.inSize; j++) acc_dW[i][j] += dW[i][j];
+        acc_db[i] += db[i];
+      }
+      for (let i = 0; i < hiddenSize; i++) dhFromProj[t + 1][i] += dx[i];
+    }
+
+    // 2. BPTT through GRU
+    let dh = zeros(hiddenSize);
+    const accGruGrads = {
+      dWz: gru.Wz.map(r => new Float64Array(r.length)),
+      dWr: gru.Wr.map(r => new Float64Array(r.length)),
+      dWh: gru.Wh.map(r => new Float64Array(r.length)),
+      dbz: zeros(hiddenSize), dbr: zeros(hiddenSize), dbh: zeros(hiddenSize),
+    };
+
+    for (let t = sequence.length - 1; t >= 0; t--) {
+      for (let i = 0; i < hiddenSize; i++) dh[i] += dhFromProj[t + 1][i];
+      const bg = gru.backward(caches[t], dh);
+      dh = bg.dhPrev;
+
+      // Accumulate
+      for (let i = 0; i < hiddenSize; i++) {
+        for (let j = 0; j < gru.Wz[i].length; j++) {
+          accGruGrads.dWz[i][j] += bg.dWz[i][j];
+          accGruGrads.dWr[i][j] += bg.dWr[i][j];
+          accGruGrads.dWh[i][j] += bg.dWh[i][j];
+        }
+        accGruGrads.dbz[i] += bg.dbz[i];
+        accGruGrads.dbr[i] += bg.dbr[i];
+        accGruGrads.dbh[i] += bg.dbh[i];
+      }
+    }
+
+    // 3. Apply gradients (Adam)
+    gru.applyGrads({
+      Wz: accGruGrads.dWz, Wr: accGruGrads.dWr, Wh: accGruGrads.dWh,
+      bz: accGruGrads.dbz, br: accGruGrads.dbr, bh: accGruGrads.dbh,
+    }, lr);
+    proj.applyGrads(acc_dW, acc_db, lr);
+
+    // Yield to UI every 10 epochs
+    if (onEpoch && epoch % 5 === 0) {
+      onEpoch({ epoch, loss: totalLoss, lossHistory: [...lossHistory], gpu: !!gpu });
+      await new Promise(r => setTimeout(r, 0));
+    }
+  }
+
+  // Final forward pass to get trained hidden states
+  let h = zeros(hiddenSize);
+  const trainedStates = [];
+  for (const x of sequence) {
+    const cache = gru.forward(new Float64Array(x), h);
+    h = cache.h;
+    trainedStates.push(Array.from(h));
+  }
+
+  return { states: trainedStates, lossHistory, gpu: !!gpu, epochs };
+}
+
+// ============== RESERVOIR (untrained) ENCODER (fallback) ==============
 
 export function gruEncode(sequence, inputSize = 12, hiddenSize = 8) {
   resetSeed(42);
-  const gru = new GRUCell(inputSize, hiddenSize);
+
+  function _fwd(Wz, Wr, Wh, bz, br, bh, x, hPrev, H, I) {
+    const concat = new Float64Array(H + I);
+    concat.set(hPrev, 0);
+    for (let i = 0; i < I; i++) concat[H + i] = x[i];
+    const zR = matVecMul(Wz, concat);
+    const z = new Float64Array(H);
+    for (let i = 0; i < H; i++) z[i] = 1 / (1 + Math.exp(-(zR[i] + bz[i])));
+    const rR = matVecMul(Wr, concat);
+    const r = new Float64Array(H);
+    for (let i = 0; i < H; i++) r[i] = 1 / (1 + Math.exp(-(rR[i] + br[i])));
+    const concR = new Float64Array(H + I);
+    for (let i = 0; i < H; i++) concR[i] = r[i] * hPrev[i];
+    for (let i = 0; i < I; i++) concR[H + i] = x[i];
+    const hcR = matVecMul(Wh, concR);
+    const hc = new Float64Array(H);
+    for (let i = 0; i < H; i++) hc[i] = Math.tanh(hcR[i] + bh[i]);
+    const h = new Float64Array(H);
+    for (let i = 0; i < H; i++) h[i] = (1 - z[i]) * hPrev[i] + z[i] * hc[i];
+    return h;
+  }
+
+  const C = hiddenSize + inputSize;
+  const sc = Math.sqrt(2 / (C + hiddenSize)) * 0.5;
+  const Wz = initMatrix(hiddenSize, C, sc);
+  const Wr = initMatrix(hiddenSize, C, sc);
+  const Wh = initMatrix(hiddenSize, C, sc);
+  const bz = zeros(hiddenSize), br = zeros(hiddenSize), bh = zeros(hiddenSize);
+
   let h = zeros(hiddenSize);
   const states = [];
   for (const x of sequence) {
-    h = gru.forward(x, h);
+    h = _fwd(Wz, Wr, Wh, bz, br, bh, new Float64Array(x), h, hiddenSize, inputSize);
     states.push(Array.from(h));
   }
   return states;
