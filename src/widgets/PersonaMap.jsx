@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback, useRef } from 'react';
 import { COLORS } from '../design-tokens';
 import { extractMonthlyFeatures, gruEncode, trainGRU, pca, tsne } from '../lib/neuralUtils';
+import { detectLanguage, getLanguageName } from '../lib/languageUtils';
 
 function projectPoints(hiddenStates, monthlyData, method) {
   let projected;
@@ -42,10 +43,23 @@ export default function PersonaMap({ userData, style = {} }) {
   const abortRef = useRef(false);
 
   // 1. Extract features
-  const monthlyData = useMemo(() => {
-    if (!userData?.comments?.length) return null;
-    const features = extractMonthlyFeatures(userData);
-    return features.length >= 4 ? features : null;
+  const { monthlyData, mainLang } = useMemo(() => {
+    if (!userData?.comments?.length) return { monthlyData: null, mainLang: null };
+    // Determine dominant language among comments only
+    const langCounts = {};
+    for (const c of userData.comments) {
+      const t = c.body || c.comment || '';
+      const code = detectLanguage(t);
+      if (code && code !== 'und') langCounts[code] = (langCounts[code] || 0) + 1;
+    }
+    const main = Object.entries(langCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || 'eng';
+    // Enrich comments with detected language to help the extractor filter
+    const ud = {
+      ...userData,
+      comments: (userData.comments||[]).map(c => ({...c, _detectedLanguage: c._detectedLanguage || detectLanguage(c.body || c.comment || '')}))
+    };
+    const features = extractMonthlyFeatures(ud, { commentsOnly: true, languageFilter: main });
+    return { monthlyData: features.length >= 4 ? features : null, mainLang: main };
   }, [userData]);
 
   // 2. Untrained baseline (reservoir GRU — instant)
@@ -78,11 +92,11 @@ export default function PersonaMap({ userData, style = {} }) {
       const result = await trainGRU(normalized, {
         inputSize: normalized[0].length,
         hiddenSize: 8,
-        epochs: 150,
+        epochs: 120,
         lr: 0.003,
         onEpoch: (info) => {
           if (abortRef.current) throw new Error('aborted');
-          setTrainProgress({ epoch: info.epoch, loss: info.loss, gpu: info.gpu, history: info.lossHistory });
+          setTrainProgress({ epoch: info.epoch, loss: info.loss, gpu: info.gpu, history: info.lossHistory, trainAcc: info.trainAcc, testAcc: info.testAcc });
         },
       });
       setTrainResult(result);
@@ -126,9 +140,10 @@ export default function PersonaMap({ userData, style = {} }) {
           onClick={() => setMethod(m => (m === 'PCA' ? 't-SNE' : 'PCA'))}
           title="Toggle projection"
         >{method}</span>
+        <span style={{ color: COLORS.TEXT_MUTED, fontSize: '10px' }}> · language: {getLanguageName(mainLang)} ({mainLang}) · comments only</span>
         {isTrained ? (
           <span style={{ color: COLORS.DATA_2, fontSize: '9px', fontWeight: 600 }}>
-            TRAINED · loss {trainResult.lossHistory[trainResult.lossHistory.length - 1].toFixed(4)}
+            TRAINED · loss {trainResult.lossHistory[trainResult.lossHistory.length - 1].toFixed(4)} · acc {((trainResult.finalTest?.acc||trainResult.finalTrain?.acc||0)*100).toFixed(1)}%
             {trainResult.gpu ? ' · WebGPU' : ''}
           </span>
         ) : !training ? (
@@ -152,7 +167,7 @@ export default function PersonaMap({ userData, style = {} }) {
         )}
       </p>
 
-      {/* Training loss sparkline */}
+      {/* Training metrics: loss + accuracy sparklines and terminal log */}
       {(training || isTrained) && (trainProgress?.history?.length > 1 || trainResult?.lossHistory?.length > 1) && (() => {
         const hist = trainResult?.lossHistory || trainProgress?.history || [];
         if (hist.length < 2) return null;
@@ -163,12 +178,61 @@ export default function PersonaMap({ userData, style = {} }) {
         const sparkPath = hist.map((v, i) =>
           `${(i / (hist.length - 1) * sparkW).toFixed(1)},${(sparkH - ((v - minL) / range) * sparkH).toFixed(1)}`
         ).join(' L ');
+        const accTrain = (trainProgress?.trainAcc != null) ? (trainProgress.history.map((_,i)=>i).map(()=>trainProgress.trainAcc)) : [];
+        const accTest = (trainProgress?.testAcc != null) ? (trainProgress.history.map((_,i)=>i).map(()=>trainProgress.testAcc)) : [];
+        // If final result, we don't have per-epoch accuracies; keep sparkline to loss only
         return (
-          <svg width={sparkW} height={sparkH} style={{ display: 'block', margin: '0 auto 4px' }}>
-            <polyline points={sparkPath} fill="none" stroke={COLORS.ACCENT_PRIMARY} strokeWidth="1.2" strokeOpacity="0.6" />
-          </svg>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: 10, color: COLORS.TEXT_MUTED, width: 52 }}>loss</span>
+              <svg width={sparkW} height={sparkH}>
+                <polyline points={sparkPath} fill="none" stroke={COLORS.ACCENT_PRIMARY} strokeWidth="1.2" strokeOpacity="0.7" />
+              </svg>
+            </div>
+            {training && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 10, color: COLORS.TEXT_MUTED, width: 52 }}>acc</span>
+                <svg width={sparkW} height={sparkH}>
+                  {/* Simple last-known accuracy lines */}
+                  {accTrain.length > 0 && (
+                    <line x1={0} y1={sparkH - (trainProgress.trainAcc * sparkH)} x2={sparkW} y2={sparkH - (trainProgress.trainAcc * sparkH)} stroke={COLORS.DATA_2} strokeWidth="1" strokeDasharray="4 2" />
+                  )}
+                  {accTest.length > 0 && (
+                    <line x1={0} y1={sparkH - (trainProgress.testAcc * sparkH)} x2={sparkW} y2={sparkH - (trainProgress.testAcc * sparkH)} stroke={COLORS.DATA_6} strokeWidth="1" strokeDasharray="2 2" />
+                  )}
+                </svg>
+              </div>
+            )}
+          </div>
         );
       })()}
+
+      {(training || isTrained) && (
+        <div style={{
+          marginTop: 6,
+          background: 'rgba(0,0,0,0.25)',
+          border: `1px solid ${COLORS.BORDER_DEFAULT}`,
+          borderRadius: 6,
+          padding: '6px 8px',
+          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+          fontSize: 10,
+          color: COLORS.TEXT_LIGHT_GREY,
+          maxHeight: 100,
+          overflowY: 'auto'
+        }}>
+          <div>$ init trainer {trainProgress?.gpu ? '(WebGPU enabled)' : '(CPU fallback)'}</div>
+          {trainProgress && (
+            <div>
+              $ epoch {String(trainProgress.epoch).padStart(3,' ')} loss={trainProgress.loss?.toFixed(6)} acc_train={(trainProgress.trainAcc*100||0).toFixed(2)}% acc_test={(trainProgress.testAcc*100||0).toFixed(2)}%
+            </div>
+          )}
+          {isTrained && (
+            <div>
+              $ done epochs={trainResult.epochs} loss={trainResult.lossHistory[trainResult.lossHistory.length-1]?.toFixed(6)} acc_train={(trainResult.finalTrain?.acc*100||0).toFixed(2)}% acc_test={(trainResult.finalTest?.acc*100||0).toFixed(2)}%
+            </div>
+          )}
+        </div>
+      )}
 
       <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
         <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: '100%' }} preserveAspectRatio="xMidYMid meet">

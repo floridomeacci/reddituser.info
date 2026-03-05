@@ -357,6 +357,7 @@ export async function trainGRU(sequence, {
   hiddenSize = 8,
   epochs = 200,
   lr = 0.003,
+  testFrac = 0.2,
   onEpoch = null,
 } = {}) {
   // Try WebGPU init (for future acceleration of larger models)
@@ -367,6 +368,42 @@ export async function trainGRU(sequence, {
   const proj = new Linear(hiddenSize, inputSize);
 
   const lossHistory = [];
+
+  // Train/test split (contiguous to respect temporal order)
+  const n = sequence.length;
+  const testSize = Math.max(1, Math.floor(n * testFrac));
+  const trainEnd = Math.max(2, n - testSize);
+
+  function evalAccuracy(seq) {
+    // Forward pass to compute predictions and cosine-accuracy
+    let h = zeros(hiddenSize);
+    let mse = 0, pairs = 0, cosSum = 0;
+    for (let t = 0; t < seq.length; t++) {
+      const cache = gru.forward(new Float64Array(seq[t]), h);
+      h = cache.h;
+      if (t < seq.length - 1) {
+        const pred = proj.forward(h);
+        const target = seq[t + 1];
+        let dp = 0, na = 0, nb = 0;
+        for (let i = 0; i < inputSize; i++) {
+          const e = pred[i] - target[i];
+          mse += e * e;
+          dp += pred[i] * target[i];
+          na += pred[i] * pred[i];
+          nb += target[i] * target[i];
+        }
+        const cos = dp / (Math.sqrt(na) * Math.sqrt(nb) + 1e-9);
+        cosSum += (cos + 1) / 2; // map [-1,1] → [0,1]
+        pairs++;
+      }
+    }
+    mse = mse / Math.max(1, pairs * inputSize);
+    const acc = cosSum / Math.max(1, pairs);
+    return { mse, acc };
+  }
+
+  const trainSeq = sequence.slice(0, trainEnd);
+  const testSeq = sequence.slice(trainEnd - 1); // provide a bit of history into test
 
   for (let epoch = 0; epoch < epochs; epoch++) {
     // Forward pass: collect all hidden states + caches
@@ -452,7 +489,9 @@ export async function trainGRU(sequence, {
 
     // Yield to UI every 10 epochs
     if (onEpoch && epoch % 5 === 0) {
-      onEpoch({ epoch, loss: totalLoss, lossHistory: [...lossHistory], gpu: !!gpu });
+      const tr = evalAccuracy(trainSeq);
+      const te = evalAccuracy(testSeq);
+      onEpoch({ epoch, loss: totalLoss, lossHistory: [...lossHistory], gpu: !!gpu, trainAcc: tr.acc, testAcc: te.acc, trainMSE: tr.mse, testMSE: te.mse });
       await new Promise(r => setTimeout(r, 0));
     }
   }
@@ -466,7 +505,11 @@ export async function trainGRU(sequence, {
     trainedStates.push(Array.from(h));
   }
 
-  return { states: trainedStates, lossHistory, gpu: !!gpu, epochs };
+  // Final metrics
+  const finalTrain = evalAccuracy(trainSeq);
+  const finalTest = evalAccuracy(testSeq);
+
+  return { states: trainedStates, lossHistory, gpu: !!gpu, epochs, finalTrain, finalTest };
 }
 
 // ============== RESERVOIR (untrained) ENCODER (fallback) ==============
@@ -676,7 +719,11 @@ export function tsne(data, nDims = 2, perplexity = 10, nIter = 300, lr = 50) {
 
 // ============== FEATURE EXTRACTION ==============
 
-export function extractMonthlyFeatures(userData) {
+export function extractMonthlyFeatures(userData, options = {}) {
+  const {
+    commentsOnly = false,
+    languageFilter = null, // e.g., 'eng' → only include comments/posts matching this detected language
+  } = options;
   const comments = userData.comments || [];
   const posts = userData.posts || [];
 
@@ -684,6 +731,10 @@ export function extractMonthlyFeatures(userData) {
   const months = {};
 
   for (const c of comments) {
+    if (languageFilter) {
+      const lang = c._detectedLanguage || c.lang || c.language;
+      if (lang && lang !== 'und' && lang !== languageFilter) continue;
+    }
     if (!c.created_utc) continue;
     const d = new Date(c.created_utc * 1000);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
@@ -691,12 +742,18 @@ export function extractMonthlyFeatures(userData) {
     months[key].comments.push(c);
   }
 
-  for (const p of posts) {
+  if (!commentsOnly) {
+    for (const p of posts) {
+      if (languageFilter) {
+        const lang = p._detectedLanguage || p.lang || p.language;
+        if (lang && lang !== 'und' && lang !== languageFilter) continue;
+      }
     if (!p.created_utc) continue;
     const d = new Date(p.created_utc * 1000);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
     if (!months[key]) months[key] = { month: key, comments: [], posts: [] };
     months[key].posts.push(p);
+    }
   }
 
   const sorted = Object.values(months).sort((a, b) => a.month.localeCompare(b.month));

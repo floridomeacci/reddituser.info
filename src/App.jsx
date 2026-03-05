@@ -165,7 +165,7 @@ const WIDGET_SIZES = {
   ConversationStarter: { cols: 2, rows: 2 },
   EmotionTimeline: { cols: 2, rows: 2 },
   ToxicityScore: { cols: 2, rows: 2 },
-  PersonaMap: { cols: 2, rows: 2 },
+  PersonaMap: { cols: 4, rows: 2 },
 };
 
 // Helper to get grid style for a widget
