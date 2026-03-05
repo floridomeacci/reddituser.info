@@ -78,7 +78,7 @@ import {
   VocabularyLevel,
   NightOwlScore,
   WeekendWarrior,
-  PostCommentRatio,
+  ReplyRate,
   ControversyIndex,
   CommentLengthComparison,
   KarmaOverTime,
@@ -156,7 +156,7 @@ const WIDGET_SIZES = {
   VocabularyLevel: { cols: 2, rows: 2 },
   NightOwlScore: { cols: 2, rows: 2 },
   WeekendWarrior: { cols: 2, rows: 2 },
-  PostCommentRatio: { cols: 2, rows: 2 },
+  ReplyRate: { cols: 2, rows: 2 },
   ControversyIndex: { cols: 2, rows: 2 },
   CommentLengthComparison: { cols: 2, rows: 2 },
   KarmaOverTime: { cols: 2, rows: 2 },
@@ -755,7 +755,8 @@ function App() {
           }}>
             {(() => {
               const about = userData?.about || userData?.account_info || {};
-              const avatarUrl = about.icon_img || about.snoovatar_img || 'https://www.redditstatic.com/avatars/defaults/v2/avatar_default_0.png';
+              const rawAvatar = about.icon_img || about.snoovatar_img || 'https://www.redditstatic.com/avatars/defaults/v2/avatar_default_0.png';
+              const avatarUrl = rawAvatar.replace(/&amp;/g, '&');
               const displayName = userData?.username || about.name || '';
               return displayName ? (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', paddingBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
@@ -1099,7 +1100,7 @@ function App() {
         <ActivityFrequency userData={userData} globalStats={globalStats} style={getSize('ActivityFrequency')} />
         <VocabularyLevel userData={userData} globalStats={globalStats} style={getSize('VocabularyLevel')} />
         <NightOwlScore userData={userData} globalStats={globalStats} style={getSize('NightOwlScore')} />
-        <PostCommentRatio userData={userData} style={getSize('PostCommentRatio')} />
+        <ReplyRate userData={userData} globalStats={globalStats} style={getSize('ReplyRate')} />
         <WeekendWarrior userData={userData} globalStats={globalStats} style={getSize('WeekendWarrior')} />
         <ControversyIndex userData={userData} globalStats={globalStats} style={getSize('ControversyIndex')} />
         <CommentLengthComparison userData={userData} globalStats={globalStats} style={getSize('CommentLengthComparison')} />

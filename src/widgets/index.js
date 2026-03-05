@@ -75,7 +75,7 @@ export { default as VocabularyLevel } from './VocabularyLevel';
 export { default as NightOwlScore } from './NightOwlScore';
 export { default as WeekendWarrior } from './WeekendWarrior';
 export { default as SubredditDiversity } from './SubredditDiversity';
-export { default as PostCommentRatio } from './PostCommentRatio';
+export { default as ReplyRate } from './ReplyRate';
 export { default as ControversyIndex } from './ControversyIndex';
 export { default as CommentLengthComparison } from './CommentLengthComparison';
 export { default as KarmaOverTime } from './KarmaOverTime';

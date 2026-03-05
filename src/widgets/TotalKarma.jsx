@@ -32,7 +32,8 @@ export default function TotalKarma({ userData, style }) {
     return () => clearInterval(interval);
   }, [totalKarma]);
 
-  const avatarUrl = about.icon_img || about.snoovatar_img || `https://www.redditstatic.com/avatars/defaults/v2/avatar_default_0.png`;
+  const rawAvatar = about.icon_img || about.snoovatar_img || `https://www.redditstatic.com/avatars/defaults/v2/avatar_default_0.png`;
+  const avatarUrl = rawAvatar.replace(/&amp;/g, '&');
   
   return (
     <div className="cell stat-cell" style={{ gridColumn: 'span 1', gridRow: 'span 1', ...style, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '16px', textAlign: 'center' }}>

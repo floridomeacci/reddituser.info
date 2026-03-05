@@ -36,7 +36,8 @@ export default function Contributions({ userData, style }) {
   }, [totalComments, totalPosts]);
 
   const aboutInfo = userData?.about || userData?.account_info || {};
-  const avatarUrl = aboutInfo.icon_img || aboutInfo.snoovatar_img || `https://www.redditstatic.com/avatars/defaults/v2/avatar_default_0.png`;
+  const rawAvatar = aboutInfo.icon_img || aboutInfo.snoovatar_img || `https://www.redditstatic.com/avatars/defaults/v2/avatar_default_0.png`;
+  const avatarUrl = rawAvatar.replace(/&amp;/g, '&');
   
   return (
     <div className="cell stat-cell" style={{ gridColumn: 'span 1', gridRow: 'span 1', ...style, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '16px', textAlign: 'center' }}>
