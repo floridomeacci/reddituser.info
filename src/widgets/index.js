@@ -68,8 +68,6 @@ export { default as LocationAnalysis } from './LocationAnalysis';
 export { default as IdentifiableImages } from './IdentifiableImages';
 
 // Comparison widgets
-export { default as RedditPersonality } from './RedditPersonality';
-export { default as KarmaEfficiency } from './KarmaEfficiency';
 export { default as ActivityFrequency } from './ActivityFrequency';
 export { default as VocabularyLevel } from './VocabularyLevel';
 export { default as NightOwlScore } from './NightOwlScore';

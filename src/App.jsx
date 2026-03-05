@@ -72,8 +72,6 @@ import {
   ProfessionAnalysis,
   LocationAnalysis,
   IdentifiableImages,
-  RedditPersonality,
-  KarmaEfficiency,
   ActivityFrequency,
   VocabularyLevel,
   NightOwlScore,
@@ -151,8 +149,6 @@ const WIDGET_SIZES = {
   IdentifiableImages: { cols: 2, rows: 2 },
 
   // Comparison widgets
-  RedditPersonality: { cols: 2, rows: 2 },
-  KarmaEfficiency: { cols: 2, rows: 2 },
   ActivityFrequency: { cols: 2, rows: 2 },
   VocabularyLevel: { cols: 2, rows: 2 },
   NightOwlScore: { cols: 2, rows: 2 },
@@ -1097,8 +1093,6 @@ function App() {
         </div>
 
         {/* Comparison Widgets */}
-        <RedditPersonality userData={userData} globalStats={globalStats} style={getSize('RedditPersonality')} />
-        <KarmaEfficiency userData={userData} globalStats={globalStats} style={getSize('KarmaEfficiency')} />
         <ActivityFrequency userData={userData} globalStats={globalStats} style={getSize('ActivityFrequency')} />
         <VocabularyLevel userData={userData} globalStats={globalStats} style={getSize('VocabularyLevel')} />
         <NightOwlScore userData={userData} globalStats={globalStats} style={getSize('NightOwlScore')} />
