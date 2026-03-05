@@ -100,7 +100,7 @@ export default function ReplyRate({ userData, globalStats, style }) {
     <div className="cell" style={{ ...style }}>
       <h3>Engagement Level</h3>
       <p className="stat-meta">
-        How your content performs vs average · <span style={{ color: COLORS.ACCENT_PRIMARY }}>{engagementLabel}</span>
+        How <span style={{ color: COLORS.ACCENT_PRIMARY }}>your content</span> performs vs <span style={{ color: COLORS.DATA_6 }}>average</span> · <span style={{ color: COLORS.ACCENT_PRIMARY }}>{engagementLabel}</span>
       </p>
       <div style={{ width: '100%', height: 'calc(100% - 50px)' }}>
         <ResponsiveContainer>
