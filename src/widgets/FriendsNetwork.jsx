@@ -98,11 +98,11 @@ export default function FriendsNetwork({ userData, style = {} }) {
       <div className="cell" style={style}>
         <h3>Friends & Network</h3>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: '12px', padding: '32px 16px' }}>
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke={COLORS.ACCENT_PRIMARY} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
             <path d="M9 12l2 2 4-4" />
           </svg>
-          <div style={{ color: '#4ade80', fontSize: '14px', fontWeight: 600, textAlign: 'center' }}>User keeps social circle private</div>
+          <div style={{ color: COLORS.ACCENT_PRIMARY, fontSize: '14px', fontWeight: 600, textAlign: 'center' }}>User keeps social circle private</div>
         </div>
       </div>
     );
@@ -149,7 +149,7 @@ export default function FriendsNetwork({ userData, style = {} }) {
                     key={idx}
                     style={{
                       padding: '8px',
-                      background: 'rgba(255, 255, 255, 0.03)',
+                      background: 'rgba(255, 107, 107, 0.03)',
                       borderLeft: `3px solid ${COLORS.ACCENT_PRIMARY}`,
                       borderRadius: '4px'
                     }}
@@ -168,11 +168,11 @@ export default function FriendsNetwork({ userData, style = {} }) {
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 16px', gap: '12px' }}>
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke={COLORS.ACCENT_PRIMARY} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                   <path d="M9 12l2 2 4-4" />
                 </svg>
-                <div style={{ color: '#4ade80', fontSize: '14px', fontWeight: 600, textAlign: 'center' }}>User keeps social circle private</div>
+                <div style={{ color: COLORS.ACCENT_PRIMARY, fontSize: '14px', fontWeight: 600, textAlign: 'center' }}>User keeps social circle private</div>
               </div>
             )}
           </>
