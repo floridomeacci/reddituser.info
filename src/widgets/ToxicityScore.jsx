@@ -51,7 +51,7 @@ export default function ToxicityScore({ userData, style = {} }) {
 
   if (!data.length) return null;
 
-  const toxColor = overall > 25 ? '#ef4444' : overall > 10 ? '#f59e0b' : '#22c55e';
+  const toxColor = overall > 25 ? COLORS.DATA_1 : overall > 10 ? COLORS.DATA_3 : COLORS.DATA_2;
 
   return (
     <div className="cell" style={style}>
@@ -66,8 +66,8 @@ export default function ToxicityScore({ userData, style = {} }) {
             <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="toxGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#ef4444" stopOpacity={0.4} />
-                  <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
+                  <stop offset="0%" stopColor={COLORS.ACCENT_PRIMARY} stopOpacity={0.4} />
+                  <stop offset="100%" stopColor={COLORS.ACCENT_PRIMARY} stopOpacity={0} />
                 </linearGradient>
               </defs>
               <XAxis dataKey="label" tick={{ fill: COLORS.TEXT_MUTED, fontSize: 10 }} tickLine={false} />
@@ -76,21 +76,21 @@ export default function ToxicityScore({ userData, style = {} }) {
                 contentStyle={{ background: '#1a1a2e', border: `1px solid ${COLORS.BORDER_DEFAULT}`, borderRadius: 8, fontSize: 11 }}
                 formatter={(v, name) => [v, name === 'toxicity' ? 'Avg Toxicity' : 'Peak Toxicity']}
               />
-              <ReferenceLine y={10} stroke="#22c55e" strokeDasharray="4 4" label={{ value: 'Clean', fill: '#22c55e', fontSize: 9, position: 'left' }} />
-              <Area type="monotone" dataKey="max" stroke="transparent" fill="rgba(239,68,68,0.1)" dot={false} />
-              <Area type="monotone" dataKey="toxicity" stroke="#ef4444" fill="url(#toxGrad)" strokeWidth={2} dot={false} />
+              <ReferenceLine y={10} stroke={COLORS.DATA_2} strokeDasharray="4 4" label={{ value: 'Clean', fill: COLORS.DATA_2, fontSize: 9, position: 'left' }} />
+              <Area type="monotone" dataKey="max" stroke="transparent" fill="rgba(255,107,107,0.1)" dot={false} />
+              <Area type="monotone" dataKey="toxicity" stroke={COLORS.ACCENT_PRIMARY} fill="url(#toxGrad)" strokeWidth={2} dot={false} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
 
         {worstComments.length > 0 && (
           <div style={{ marginTop: 8, fontSize: '10px', color: COLORS.TEXT_MUTED }}>
-            <div style={{ fontWeight: 600, marginBottom: 4, color: '#ef4444' }}>Spiciest moments:</div>
+            <div style={{ fontWeight: 600, marginBottom: 4, color: COLORS.ACCENT_PRIMARY }}>Spiciest moments:</div>
             {worstComments.map((c, i) => (
               <div key={i} style={{
                 padding: '4px 6px',
                 marginBottom: 2,
-                background: 'rgba(239,68,68,0.05)',
+                background: 'rgba(255,107,107,0.05)',
                 borderRadius: 4,
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',

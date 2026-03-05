@@ -3,12 +3,13 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } f
 import { COLORS } from '../design-tokens';
 import { emotionTimeline } from '../lib/browserML';
 
+// Must be after COLORS import
 const EMOTION_COLORS = {
-  joy: '#facc15',
-  anger: '#ef4444',
-  sadness: '#60a5fa',
-  fear: '#a855f7',
-  surprise: '#22d3ee'
+  joy: COLORS.DATA_4,     // Yellow
+  anger: COLORS.DATA_1,   // Red (primary)
+  sadness: COLORS.DATA_6, // Blue
+  fear: COLORS.DATA_5,    // Purple
+  surprise: COLORS.DATA_3 // Orange
 };
 
 const EMOTION_ICONS = {
