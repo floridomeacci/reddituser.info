@@ -84,6 +84,7 @@ import {
   KarmaOverTime,
   HourlyActivityComparison,
   InterestComparison,
+  ConversationStarter,
 } from './widgets';
 import TopWorstContent from './widgets/TopWorstContent';
 
@@ -162,6 +163,7 @@ const WIDGET_SIZES = {
   KarmaOverTime: { cols: 2, rows: 2 },
   HourlyActivityComparison: { cols: 2, rows: 2 },
   InterestComparison: { cols: 2, rows: 2 },
+  ConversationStarter: { cols: 2, rows: 2 },
 };
 
 // Helper to get grid style for a widget
@@ -1107,6 +1109,7 @@ function App() {
         <KarmaOverTime userData={userData} globalStats={globalStats} style={getSize('KarmaOverTime')} />
         <HourlyActivityComparison userData={userData} globalStats={globalStats} style={getSize('HourlyActivityComparison')} />
         <InterestComparison userData={userData} globalStats={globalStats} style={getSize('InterestComparison')} />
+        <ConversationStarter userData={userData} globalStats={globalStats} style={getSize('ConversationStarter')} />
         
         </div>
       </div>

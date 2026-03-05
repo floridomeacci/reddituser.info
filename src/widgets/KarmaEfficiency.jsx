@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { ComposedChart, Bar, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend, ReferenceLine, Cell } from 'recharts';
+import { ComposedChart, Bar, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend, Cell } from 'recharts';
 import { COLORS } from '../design-tokens';
 
 export default function KarmaEfficiency({ userData, globalStats, style }) {
@@ -26,9 +26,10 @@ export default function KarmaEfficiency({ userData, globalStats, style }) {
     return sorted.map(([month, data]) => ({
       label: new Date(month + '-01').toLocaleDateString('en', { month: 'short', year: '2-digit' }),
       efficiency: Math.round((data.totalKarma / data.count) * 10) / 10,
+      globalAvg: globalStats?.karma_per_item || 10,
       count: data.count,
     }));
-  }, [userData]);
+  }, [userData, globalStats]);
 
   if (!chartData || !globalStats) return null;
 
@@ -51,21 +52,15 @@ export default function KarmaEfficiency({ userData, globalStats, style }) {
   return (
     <div className="cell" style={{ ...style }}>
       <h3>Karma Efficiency</h3>
-      <p className="stat-meta">Avg karma per post over time · You: <span style={{ color: COLORS.ACCENT_PRIMARY }}>{userAvg.toFixed(1)}</span> vs Users: {avgEfficiency.toFixed(1)}</p>
+      <p className="stat-meta">Avg karma per post over time · <span style={{ color: COLORS.ACCENT_PRIMARY }}>You: {userAvg.toFixed(1)}</span> vs <span style={{ color: COLORS.DATA_6 }}>Users: {avgEfficiency.toFixed(1)}</span></p>
       <div style={{ width: '100%', height: 'calc(100% - 50px)' }}>
         <ResponsiveContainer>
           <ComposedChart data={chartData} margin={{ left: -10, right: 5, top: 5, bottom: 0 }}>
-            <defs>
-              <linearGradient id="effGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={COLORS.ACCENT_PRIMARY} stopOpacity={0.3} />
-                <stop offset="100%" stopColor={COLORS.ACCENT_PRIMARY} stopOpacity={0.02} />
-              </linearGradient>
-            </defs>
             <XAxis dataKey="label" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 8 }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} tickLine={false} interval={Math.max(Math.floor(chartData.length / 8), 0)} />
             <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 8 }} axisLine={false} tickLine={false} />
             <Tooltip content={<CustomTooltip />} />
             <Legend iconType="line" wrapperStyle={{ fontSize: 10, opacity: 0.7 }} />
-            <ReferenceLine y={avgEfficiency} stroke={COLORS.DATA_6} strokeWidth={2} strokeDasharray="6 3" label={{ value: `Avg: ${avgEfficiency.toFixed(1)}`, position: 'insideTopRight', fill: COLORS.DATA_6, fontSize: 9 }} />
+            <Line dataKey="globalAvg" name="Users Avg" stroke={COLORS.DATA_6} strokeWidth={2} dot={false} strokeDasharray="6 3" />
             <Bar dataKey="efficiency" name="You" fill={COLORS.ACCENT_PRIMARY} opacity={0.5} barSize={6} radius={[2, 2, 0, 0]}>
               {chartData.map((d, i) => (
                 <Cell key={i} fill={COLORS.ACCENT_PRIMARY} opacity={d.efficiency >= avgEfficiency ? 0.9 : 0.4} />
