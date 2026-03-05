@@ -55,7 +55,6 @@ export default function EmotionTimeline({ userData, style = {} }) {
         <span style={{ color: EMOTION_COLORS[dominant], fontWeight: 600 }}>
           {dominant} ({stats[dominant]}%)
         </span>
-        <span style={{ marginLeft: 8, fontSize: '9px', color: COLORS.TEXT_MUTED }}>⚡ Browser ML</span>
       </p>
 
       <div style={{ flex: 1, minHeight: 0 }}>

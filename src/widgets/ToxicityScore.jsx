@@ -58,7 +58,6 @@ export default function ToxicityScore({ userData, style = {} }) {
       <h3>TOXICITY SCORE</h3>
       <p className="stat-meta">
         Overall: <span style={{ color: toxColor, fontWeight: 700 }}>{overall}/100 · {grade}</span>
-        <span style={{ marginLeft: 8, fontSize: '9px', color: COLORS.TEXT_MUTED }}>⚡ Browser ML</span>
       </p>
 
       <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>

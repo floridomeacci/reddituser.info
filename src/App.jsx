@@ -85,9 +85,6 @@ import {
   ConversationStarter,
   EmotionTimeline,
   ToxicityScore,
-  SentimentFlow,
-  WritingDNA,
-  TopicExtractor,
 } from './widgets';
 import TopWorstContent from './widgets/TopWorstContent';
 
@@ -165,12 +162,8 @@ const WIDGET_SIZES = {
   HourlyActivityComparison: { cols: 2, rows: 2 },
   InterestComparison: { cols: 2, rows: 2 },
   ConversationStarter: { cols: 2, rows: 2 },
-  // Feed the Machine — Browser ML
   EmotionTimeline: { cols: 2, rows: 2 },
   ToxicityScore: { cols: 2, rows: 2 },
-  SentimentFlow: { cols: 2, rows: 2 },
-  WritingDNA: { cols: 2, rows: 2 },
-  TopicExtractor: { cols: 2, rows: 2 },
 };
 
 // Helper to get grid style for a widget
@@ -1088,6 +1081,8 @@ function App() {
         {/* Edit Behavior Analysis */}
         {shouldShowWidget('EditFrequency') && <EditFrequency userData={userData} style={getSize('EditFrequency')} />}
         {shouldShowWidget('EditTiming') && <EditTiming userData={userData} style={getSize('EditTiming')} />}
+        <EmotionTimeline userData={userData} style={getSize('EmotionTimeline')} />
+        <ToxicityScore userData={userData} style={getSize('ToxicityScore')} />
         
         {/* Divider: How You Compare */}
         <div style={{
@@ -1130,13 +1125,6 @@ function App() {
           <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, rgba(255,107,107,0.3), rgba(255,107,107,0.3), transparent)' }} />
         </div>
 
-        {/* Browser ML Widgets */}
-        <EmotionTimeline userData={userData} style={getSize('EmotionTimeline')} />
-        <ToxicityScore userData={userData} style={getSize('ToxicityScore')} />
-        <SentimentFlow userData={userData} style={getSize('SentimentFlow')} />
-        <WritingDNA userData={userData} style={getSize('WritingDNA')} />
-        <TopicExtractor userData={userData} style={getSize('TopicExtractor')} />
-        
         </div>
       </div>
       
