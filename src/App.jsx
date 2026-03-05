@@ -1104,6 +1104,20 @@ function App() {
         <HourlyActivityComparison userData={userData} globalStats={globalStats} style={getSize('HourlyActivityComparison')} />
         <InterestComparison userData={userData} globalStats={globalStats} style={getSize('InterestComparison')} />
         <ConversationStarter userData={userData} globalStats={globalStats} style={getSize('ConversationStarter')} />
+
+        {/* Feed the Machine Divider */}
+        <div style={{
+          gridColumn: '1 / -1',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '16px',
+          padding: '0 8px',
+          marginTop: '8px',
+        }}>
+          <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, transparent, rgba(255,107,107,0.3), rgba(255,107,107,0.3))' }} />
+          <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '2px', whiteSpace: 'nowrap' }}>Feed the Machine</span>
+          <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, rgba(255,107,107,0.3), rgba(255,107,107,0.3), transparent)' }} />
+        </div>
         
         </div>
       </div>
