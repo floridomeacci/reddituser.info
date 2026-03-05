@@ -80,3 +80,10 @@ export { default as KarmaOverTime } from './KarmaOverTime';
 export { default as HourlyActivityComparison } from './HourlyActivityComparison';
 export { default as InterestComparison } from './InterestComparison';
 export { default as ConversationStarter } from './ConversationStarter';
+
+// Feed the Machine — Browser ML widgets
+export { default as EmotionTimeline } from './EmotionTimeline';
+export { default as ToxicityScore } from './ToxicityScore';
+export { default as SentimentFlow } from './SentimentFlow';
+export { default as WritingDNA } from './WritingDNA';
+export { default as TopicExtractor } from './TopicExtractor';
