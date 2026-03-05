@@ -84,3 +84,6 @@ export { default as ConversationStarter } from './ConversationStarter';
 // Browser ML widgets
 export { default as EmotionTimeline } from './EmotionTimeline';
 export { default as ToxicityScore } from './ToxicityScore';
+
+// Neural / dimensionality reduction
+export { default as PersonaMap } from './PersonaMap';

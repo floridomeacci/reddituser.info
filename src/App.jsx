@@ -85,6 +85,7 @@ import {
   ConversationStarter,
   EmotionTimeline,
   ToxicityScore,
+  PersonaMap,
 } from './widgets';
 import TopWorstContent from './widgets/TopWorstContent';
 
@@ -164,6 +165,7 @@ const WIDGET_SIZES = {
   ConversationStarter: { cols: 2, rows: 2 },
   EmotionTimeline: { cols: 2, rows: 2 },
   ToxicityScore: { cols: 2, rows: 2 },
+  PersonaMap: { cols: 2, rows: 2 },
 };
 
 // Helper to get grid style for a widget
@@ -1124,6 +1126,8 @@ function App() {
           <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '2px', whiteSpace: 'nowrap' }}>Feed the Machine</span>
           <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, rgba(255,107,107,0.3), rgba(255,107,107,0.3), transparent)' }} />
         </div>
+
+        <PersonaMap userData={userData} style={getSize('PersonaMap')} />
 
         </div>
       </div>
