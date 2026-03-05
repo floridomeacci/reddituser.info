@@ -443,7 +443,8 @@ export async function trainGRU(sequence, {
 
     // Backward pass: BPTT
     // 1. Gradient from prediction loss → hidden states
-    const dhFromProj = Array.from({ length: usable.length }, () => zeros(hiddenSize));
+    // +1 because BPTT reads dhFromProj[t+1] with t up to usable.length-1
+    const dhFromProj = Array.from({ length: usable.length + 1 }, () => zeros(hiddenSize));
     const acc_dW = proj.W.map(r => new Float64Array(r.length));
     const acc_db = new Float64Array(proj.b.length);
 
