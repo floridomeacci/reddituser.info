@@ -59,14 +59,11 @@ export default function SearchBox({ userData, onUserDataChange, isLoading, setIs
         return;
       }
       
-      // Double-check on client side (in case of older server)
-      const hasComments = json?.comments?.length > 0;
-      const hasPosts = json?.posts?.length > 0;
-      const hasAbout = json?.about || json?.account_info;
-      
-      if (hasAbout && !hasComments && !hasPosts) {
-        alert('This account appears to be private or has no public activity. Cannot analyze.');
-        return; // Don't store or display private account data
+      // Only block if we explicitly know the account doesn't exist or has an error
+      // Don't block on empty activity - could be new account, rate limiting, etc.
+      if (!json || json.error) {
+        alert(json?.message || 'Unable to fetch account data. Please try again.');
+        return;
       }
       
       onUserDataChange(json);
