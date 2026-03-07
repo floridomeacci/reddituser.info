@@ -122,3 +122,33 @@ export async function analyzeWithQueue(payload, options = {}) {
     }
   }
 }
+
+// High-level helper for admin crawl/ingest workflows.
+// It reuses server-managed queue behavior and returns the final analysis payload.
+export async function analyzeForIngest(username, options = {}) {
+  if (!username || typeof username !== 'string') {
+    throw new Error('Username is required');
+  }
+
+  const {
+    forceRefresh = false,
+    top = 1000,
+    includeRaw = false,
+    onUpdate,
+    pollIntervalMs = 1500,
+    attempts = 3,
+    baseDelay = 600
+  } = options;
+
+  return analyzeWithQueue({
+    username: username.trim(),
+    force_refresh: forceRefresh,
+    top,
+    include_raw: includeRaw
+  }, {
+    onUpdate,
+    pollIntervalMs,
+    attempts,
+    baseDelay
+  });
+}
