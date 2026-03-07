@@ -21,6 +21,7 @@ export default function AdminPage() {
   const [fnScraping, setFnScraping] = useState(null); // username currently being scraped
   const [fnQuickFilter, setFnQuickFilter] = useState(''); // filter for quick-pick list
   const [fnAutoScrapeEnabled, setFnAutoScrapeEnabled] = useState(false); // auto scrape contacts one by one
+  const [fnAutoScrapeDelayMs, setFnAutoScrapeDelayMs] = useState(1000); // delay between auto scrapes
 
   useEffect(() => {
     // Check if already authenticated in session
@@ -165,8 +166,12 @@ export default function AdminPage() {
     const nextContact = fnContacts.find(c => !c.isCached);
     if (!nextContact) return;
 
-    handleScrapeContact(nextContact.name);
-  }, [fnAutoScrapeEnabled, activeTab, fnLoading, fnScraping, fnContacts]);
+    const timer = setTimeout(() => {
+      handleScrapeContact(nextContact.name);
+    }, Math.max(0, fnAutoScrapeDelayMs));
+
+    return () => clearTimeout(timer);
+  }, [fnAutoScrapeEnabled, activeTab, fnLoading, fnScraping, fnContacts, fnAutoScrapeDelayMs]);
 
   const fnSentences = useMemo(() => extractContacts(fnUserData), [fnUserData, users]);
 
@@ -432,8 +437,27 @@ export default function AdminPage() {
 
             {fnContacts.length > 0 && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '16px' }}>
-                <div style={{ color: 'rgba(255,255,255,0.65)', fontSize: '12px' }}>
-                  Pending auto-scrape: <span style={{ color: '#fff', fontWeight: '600' }}>{fnContacts.filter(c => !c.isCached).length}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ color: 'rgba(255,255,255,0.65)', fontSize: '12px' }}>
+                    Pending auto-scrape: <span style={{ color: '#fff', fontWeight: '600' }}>{fnContacts.filter(c => !c.isCached).length}</span>
+                  </div>
+                  <select
+                    value={fnAutoScrapeDelayMs}
+                    onChange={e => setFnAutoScrapeDelayMs(Number(e.target.value))}
+                    style={{
+                      background: '#1a1a1a',
+                      border: '1px solid rgba(255,255,255,0.18)',
+                      borderRadius: '6px',
+                      color: '#fff',
+                      fontSize: '12px',
+                      padding: '6px 8px'
+                    }}
+                  >
+                    <option value={0}>Delay: 0s</option>
+                    <option value={1000}>Delay: 1s</option>
+                    <option value={3000}>Delay: 3s</option>
+                    <option value={5000}>Delay: 5s</option>
+                  </select>
                 </div>
                 <button
                   onClick={() => setFnAutoScrapeEnabled(prev => !prev)}
@@ -451,7 +475,7 @@ export default function AdminPage() {
                   }}
                 >
                   {fnAutoScrapeEnabled
-                    ? (fnScraping ? `Auto Scraper ON • Scraping ${fnScraping}` : 'Auto Scraper ON')
+                    ? (fnScraping ? `Auto Scraper ON • Scraping ${fnScraping}` : `Auto Scraper ON • ${Math.round(fnAutoScrapeDelayMs / 1000)}s delay`)
                     : 'Auto Scraper OFF'}
                 </button>
               </div>
