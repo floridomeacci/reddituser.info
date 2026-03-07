@@ -19,6 +19,7 @@ export default function AdminPage() {
   const [fnError, setFnError] = useState('');
   const [fnContacts, setFnContacts] = useState([]); // extracted usernames from responding field
   const [fnScraping, setFnScraping] = useState(null); // username currently being scraped
+  const [fnQuickFilter, setFnQuickFilter] = useState(''); // filter for quick-pick list
 
   useEffect(() => {
     // Check if already authenticated in session
@@ -525,9 +526,25 @@ export default function AdminPage() {
             {/* Quick-pick from cached users */}
             {users.length > 0 && !fnLoading && fnContacts.length === 0 && (
               <div style={{ marginTop: '20px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '20px' }}>
-                <h3 style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 12px' }}>Quick pick from cached users</h3>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                  {users.slice(0, 50).map(u => (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                  <h3 style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', margin: 0 }}>Quick pick from cached users ({users.length})</h3>
+                  <input
+                    type="text"
+                    placeholder="Filter users..."
+                    value={fnQuickFilter}
+                    onChange={e => setFnQuickFilter(e.target.value)}
+                    style={{
+                      padding: '6px 12px', background: '#1a1a1a',
+                      border: '1px solid rgba(255,107,107,0.2)', borderRadius: '16px',
+                      color: '#fff', fontSize: '12px', width: '180px'
+                    }}
+                  />
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', maxHeight: '300px', overflowY: 'auto' }}>
+                  {users
+                    .filter(u => !fnQuickFilter || u.username.toLowerCase().includes(fnQuickFilter.toLowerCase()))
+                    .sort((a, b) => a.username.localeCompare(b.username))
+                    .map(u => (
                     <button
                       key={u.username}
                       onClick={() => handleFnLookup(u.username)}
