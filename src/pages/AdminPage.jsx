@@ -88,7 +88,8 @@ export default function AdminPage() {
     const counts = {};
     const subreddits = {};
     for (const c of userData.comments) {
-      const who = c.responding;
+      // Use responding (resolved parent author) if available, otherwise fall back to link_author (post OP)
+      const who = c.responding || c.link_author;
       if (!who || who === '[deleted]' || who === '[removed]' || who === userData.username) continue;
       counts[who] = (counts[who] || 0) + 1;
       if (c.subreddit) {
@@ -129,7 +130,7 @@ export default function AdminPage() {
       const contacts = extractContacts(userData);
       setFnContacts(contacts);
       if (contacts.length === 0) {
-        setFnError('No user interactions found in scraped data (no responding field)');
+        setFnError('No user interactions found in scraped data');
       }
       setFnLoading(false);
     } catch (err) {
