@@ -20,6 +20,7 @@ export default function AdminPage() {
   const [fnContacts, setFnContacts] = useState([]); // extracted usernames from responding field
   const [fnScraping, setFnScraping] = useState(null); // username currently being scraped
   const [fnQuickFilter, setFnQuickFilter] = useState(''); // filter for quick-pick list
+  const [fnAutoScrapeEnabled, setFnAutoScrapeEnabled] = useState(false); // auto scrape contacts one by one
 
   useEffect(() => {
     // Check if already authenticated in session
@@ -155,6 +156,17 @@ export default function AdminPage() {
       setFnScraping(null);
     }
   };
+
+  useEffect(() => {
+    if (!fnAutoScrapeEnabled) return;
+    if (activeTab !== 'friends') return;
+    if (fnLoading || fnScraping) return;
+
+    const nextContact = fnContacts.find(c => !c.isCached);
+    if (!nextContact) return;
+
+    handleScrapeContact(nextContact.name);
+  }, [fnAutoScrapeEnabled, activeTab, fnLoading, fnScraping, fnContacts]);
 
   const fnSentences = useMemo(() => extractContacts(fnUserData), [fnUserData, users]);
 
@@ -417,6 +429,33 @@ export default function AdminPage() {
                 {fnLoading ? 'Fetching...' : 'Load Contacts'}
               </button>
             </div>
+
+            {fnContacts.length > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '16px' }}>
+                <div style={{ color: 'rgba(255,255,255,0.65)', fontSize: '12px' }}>
+                  Pending auto-scrape: <span style={{ color: '#fff', fontWeight: '600' }}>{fnContacts.filter(c => !c.isCached).length}</span>
+                </div>
+                <button
+                  onClick={() => setFnAutoScrapeEnabled(prev => !prev)}
+                  disabled={fnContacts.filter(c => !c.isCached).length === 0}
+                  style={{
+                    padding: '8px 14px',
+                    background: fnAutoScrapeEnabled ? '#16a34a' : '#3b3b3b',
+                    border: '1px solid rgba(255,255,255,0.18)',
+                    borderRadius: '8px',
+                    color: '#fff',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    cursor: fnContacts.filter(c => !c.isCached).length === 0 ? 'not-allowed' : 'pointer',
+                    opacity: fnContacts.filter(c => !c.isCached).length === 0 ? 0.5 : 1
+                  }}
+                >
+                  {fnAutoScrapeEnabled
+                    ? (fnScraping ? `Auto Scraper ON • Scraping ${fnScraping}` : 'Auto Scraper ON')
+                    : 'Auto Scraper OFF'}
+                </button>
+              </div>
+            )}
 
             {/* Error */}
             {fnError && (
