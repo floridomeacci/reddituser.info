@@ -134,22 +134,8 @@ export default function AdminPage() {
     setFnLoading(true);
     setActiveTab('friends');
     try {
-      const apiBase = await resolveApiBase();
-      // Try to get cached data first
-      const cacheRes = await fetch(`${apiBase}/queue/result?username=${encodeURIComponent(uname)}`, {
-        headers: { 'Authorization': `Basic ${btoa(`${import.meta.env.VITE_ADMIN_USERNAME}:${import.meta.env.VITE_ADMIN_PASSWORD}`)}` }
-      });
-      let userData = null;
-      if (cacheRes.ok) {
-        const data = await cacheRes.json();
-        if (data && (data.comments?.length || data.posts?.length)) {
-          userData = data;
-        }
-      }
-      // If not cached, analyze
-      if (!userData) {
-        userData = await analyzeWithQueue(uname);
-      }
+      // Analyze (will use cache if server-side caching works)
+      let userData = await analyzeWithQueue({ username: uname });
       if (!userData || (!userData.comments?.length && !userData.posts?.length)) {
         setFnError('No comment/post data found for this user');
         setFnLoading(false);
