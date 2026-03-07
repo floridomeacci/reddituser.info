@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { resolveApiBase } from '../lib/apiClient';
+import { useState, useEffect, useMemo } from 'react';
+import { resolveApiBase, analyzeWithQueue } from '../lib/apiClient';
 import { COLORS } from '../design-tokens';
 
 export default function AdminPage() {
@@ -10,6 +10,15 @@ export default function AdminPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+  const [activeTab, setActiveTab] = useState('users');
+
+  // Friends Network state
+  const [fnUsername, setFnUsername] = useState('');
+  const [fnUserData, setFnUserData] = useState(null);
+  const [fnLoading, setFnLoading] = useState(false);
+  const [fnError, setFnError] = useState('');
+  const [fnResult, setFnResult] = useState(null);
+  const [fnAiLoading, setFnAiLoading] = useState(false);
 
   useEffect(() => {
     // Check if already authenticated in session
@@ -70,6 +79,98 @@ export default function AdminPage() {
       setLoading(false);
     }
   };
+
+  // ── Friends Network helpers ──────────────────────────────────
+  const extractFriendSentences = (userData) => {
+    if (!userData || (!userData.comments?.length && !userData.posts?.length)) return [];
+    const allContent = [
+      ...(userData.comments || []).map(c => c.body || ''),
+      ...(userData.posts || []).map(p => `${p.title || ''} ${p.selftext || ''}`)
+    ].join(' ');
+    const patterns = [
+      /\b(my|our|his|her)\s+(friend|buddy|pal|mate|bestie|best friend|colleague|coworker|roommate|neighbor|acquaintance)\b[^.!?]*[.!?]/gi,
+      /\b(friend|buddy|colleague|coworker|roommate)\s+(is|was|has|have|had|does|did|will|would|said|told|thinks?|believes?)[^.!?]*[.!?]/gi,
+      /\bwith (a )?friend\b[^.!?]*[.!?]/gi,
+      /\b(we|us|together)\s+(went|hang|hangout|met|meet|played|talked)[^.!?]*[.!?]/gi,
+      /\b(social circle|close friends|group of friends|friendship)\b[^.!?]*[.!?]/gi
+    ];
+    const sentences = new Set();
+    patterns.forEach(p => { const m = allContent.match(p); if (m) m.forEach(s => { const c = s.trim(); if (c.length > 20 && c.length < 300) sentences.add(c); }); });
+    return Array.from(sentences).slice(0, 50);
+  };
+
+  const queryFriendsAI = async (sentences, user) => {
+    setFnAiLoading(true);
+    setFnResult(null);
+    try {
+      const response = await fetch('https://n8nfjm.org/webhook/reddit-ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: `Based on these sentences, identify friends, colleagues, and acquaintances. Return JSON with this structure: {"friends": [{"type": "friend/colleague/roommate", "name": "unknown", "context": "brief description"}], "socialLevel": "introverted/moderate/extroverted", "summary": "brief social overview"}. Sentences: ${sentences.join(' ')}`,
+          sessionId: user || `admin_${Date.now()}`
+        })
+      });
+      if (!response.ok) throw new Error('AI query failed');
+      let raw = await response.json();
+      let parsed = raw;
+      if (Array.isArray(raw) && raw[0]?.output) { try { parsed = JSON.parse(raw[0].output); } catch { parsed = raw[0].output; } }
+      else if (typeof raw === 'string') { try { parsed = JSON.parse(raw); } catch { /* keep */ } }
+      setFnResult(parsed);
+    } catch (err) {
+      setFnError(err.message);
+    } finally {
+      setFnAiLoading(false);
+    }
+  };
+
+  const handleFnLookup = async (targetUsername) => {
+    const uname = (targetUsername || fnUsername).trim();
+    if (!uname) return;
+    setFnUsername(uname);
+    setFnError('');
+    setFnResult(null);
+    setFnUserData(null);
+    setFnLoading(true);
+    setActiveTab('friends');
+    try {
+      const apiBase = await resolveApiBase();
+      // Try to get cached data first
+      const cacheRes = await fetch(`${apiBase}/queue/result?username=${encodeURIComponent(uname)}`, {
+        headers: { 'Authorization': `Basic ${btoa(`${import.meta.env.VITE_ADMIN_USERNAME}:${import.meta.env.VITE_ADMIN_PASSWORD}`)}` }
+      });
+      let userData = null;
+      if (cacheRes.ok) {
+        const data = await cacheRes.json();
+        if (data && (data.comments?.length || data.posts?.length)) {
+          userData = data;
+        }
+      }
+      // If not cached, analyze
+      if (!userData) {
+        userData = await analyzeWithQueue(uname);
+      }
+      if (!userData || (!userData.comments?.length && !userData.posts?.length)) {
+        setFnError('No comment/post data found for this user');
+        setFnLoading(false);
+        return;
+      }
+      setFnUserData(userData);
+      const sentences = extractFriendSentences(userData);
+      if (sentences.length === 0) {
+        setFnError('No friend-related mentions found in this user\'s history');
+        setFnLoading(false);
+        return;
+      }
+      setFnLoading(false);
+      await queryFriendsAI(sentences, uname);
+    } catch (err) {
+      setFnError(err.message || 'Failed to fetch user data');
+      setFnLoading(false);
+    }
+  };
+
+  const fnSentences = useMemo(() => extractFriendSentences(fnUserData), [fnUserData]);
 
   const handleSort = (key) => {
     let direction = 'asc';
@@ -232,7 +333,7 @@ export default function AdminPage() {
             fontSize: '32px',
             fontWeight: '700'
           }}>
-            Cached Users Admin
+            Admin Panel
           </h1>
           <div style={{ display: 'flex', gap: '12px' }}>
             <button
@@ -270,7 +371,144 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {loading && users.length === 0 ? (
+        {/* ── Tab navigation ── */}
+        <div style={{ display: 'flex', gap: '4px', marginBottom: '24px' }}>
+          {[{ key: 'users', label: 'Cached Users' }, { key: 'friends', label: 'Friends Network' }].map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              style={{
+                padding: '10px 24px',
+                background: activeTab === tab.key ? COLORS.ACCENT_PRIMARY : '#2a2a2a',
+                border: activeTab === tab.key ? 'none' : '1px solid rgba(255,107,107,0.2)',
+                borderRadius: '8px 8px 0 0',
+                color: '#fff',
+                fontSize: '14px',
+                fontWeight: activeTab === tab.key ? '700' : '500',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* ════════ FRIENDS NETWORK TAB ════════ */}
+        {activeTab === 'friends' && (
+          <div style={{ background: '#2a2a2a', border: '1px solid rgba(255,107,107,0.3)', borderRadius: '12px', padding: '24px' }}>
+            <h2 style={{ color: '#fff', margin: '0 0 16px', fontSize: '20px' }}>Friends & Network Lookup</h2>
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', margin: '0 0 20px' }}>
+              Analyze a Reddit user's friend/colleague mentions. This feature is admin-only.
+            </p>
+
+            {/* Search bar */}
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
+              <input
+                type="text"
+                placeholder="Enter Reddit username..."
+                value={fnUsername}
+                onChange={e => setFnUsername(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleFnLookup()}
+                style={{
+                  flex: 1, padding: '12px 16px', background: '#1a1a1a',
+                  border: '1px solid rgba(255,107,107,0.3)', borderRadius: '8px',
+                  color: '#fff', fontSize: '14px'
+                }}
+              />
+              <button
+                onClick={() => handleFnLookup()}
+                disabled={fnLoading || fnAiLoading}
+                style={{
+                  padding: '12px 28px', background: COLORS.ACCENT_PRIMARY,
+                  border: 'none', borderRadius: '8px', color: '#fff',
+                  fontSize: '14px', fontWeight: '600',
+                  cursor: (fnLoading || fnAiLoading) ? 'not-allowed' : 'pointer',
+                  opacity: (fnLoading || fnAiLoading) ? 0.6 : 1
+                }}
+              >
+                {fnLoading ? 'Fetching data...' : fnAiLoading ? 'AI analyzing...' : 'Analyze'}
+              </button>
+            </div>
+
+            {/* Error */}
+            {fnError && (
+              <div style={{ padding: '12px', background: 'rgba(255,107,107,0.1)', border: '1px solid rgba(255,107,107,0.3)', borderRadius: '8px', color: COLORS.ACCENT_PRIMARY, fontSize: '14px', marginBottom: '16px' }}>
+                {fnError}
+              </div>
+            )}
+
+            {/* Sentences found indicator */}
+            {fnSentences.length > 0 && (
+              <div style={{ marginBottom: '16px', padding: '10px 14px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '8px', color: '#4ade80', fontSize: '13px' }}>
+                Found {fnSentences.length} friend-related mention{fnSentences.length !== 1 ? 's' : ''} in u/{fnUsername}'s history
+              </div>
+            )}
+
+            {/* AI Results */}
+            {fnResult && (
+              <div style={{ marginTop: '8px' }}>
+                <div style={{ display: 'flex', gap: '16px', marginBottom: '20px' }}>
+                  <div style={{ flex: 1, background: '#1a1a1a', border: '1px solid rgba(255,107,107,0.15)', borderRadius: '10px', padding: '16px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '28px', fontWeight: '700', color: COLORS.ACCENT_PRIMARY }}>{fnResult.friends?.length || 0}</div>
+                    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginTop: '4px' }}>Connections</div>
+                  </div>
+                  <div style={{ flex: 1, background: '#1a1a1a', border: '1px solid rgba(255,107,107,0.15)', borderRadius: '10px', padding: '16px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '28px', fontWeight: '700', color: '#4ade80', textTransform: 'capitalize' }}>{fnResult.socialLevel || '—'}</div>
+                    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginTop: '4px' }}>Social Level</div>
+                  </div>
+                  <div style={{ flex: 2, background: '#1a1a1a', border: '1px solid rgba(255,107,107,0.15)', borderRadius: '10px', padding: '16px' }}>
+                    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginBottom: '6px' }}>Summary</div>
+                    <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)', lineHeight: '1.5' }}>{fnResult.summary || 'No summary available'}</div>
+                  </div>
+                </div>
+
+                {fnResult.friends && fnResult.friends.length > 0 && (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
+                    {fnResult.friends.map((friend, idx) => (
+                      <div key={idx} style={{ padding: '14px', background: '#1a1a1a', borderLeft: `3px solid ${COLORS.ACCENT_PRIMARY}`, borderRadius: '6px' }}>
+                        <div style={{ fontWeight: '600', color: COLORS.ACCENT_PRIMARY, textTransform: 'capitalize', fontSize: '14px' }}>
+                          {friend.type}{friend.name && friend.name !== 'unknown' ? ` — ${friend.name}` : ''}
+                        </div>
+                        {friend.context && (
+                          <div style={{ marginTop: '6px', color: 'rgba(255,255,255,0.6)', fontSize: '12px', lineHeight: '1.4' }}>{friend.context}</div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Quick-pick from cached users */}
+            {users.length > 0 && !fnLoading && !fnAiLoading && (
+              <div style={{ marginTop: '28px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '20px' }}>
+                <h3 style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 12px' }}>Quick pick from cached users</h3>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {users.slice(0, 30).map(u => (
+                    <button
+                      key={u.username}
+                      onClick={() => handleFnLookup(u.username)}
+                      style={{
+                        padding: '6px 14px', background: 'rgba(255,107,107,0.08)',
+                        border: '1px solid rgba(255,107,107,0.2)', borderRadius: '20px',
+                        color: '#fff', fontSize: '12px', cursor: 'pointer',
+                        transition: 'all 0.15s'
+                      }}
+                      onMouseEnter={e => { e.target.style.background = COLORS.ACCENT_PRIMARY; e.target.style.borderColor = COLORS.ACCENT_PRIMARY; }}
+                      onMouseLeave={e => { e.target.style.background = 'rgba(255,107,107,0.08)'; e.target.style.borderColor = 'rgba(255,107,107,0.2)'; }}
+                    >
+                      {u.username}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ════════ CACHED USERS TAB ════════ */}
+        {activeTab === 'users' && (loading && users.length === 0 ? (
           <div style={{
             textAlign: 'center',
             padding: '60px',
@@ -353,6 +591,17 @@ export default function AdminPage() {
                       <a href={`/?u=${user.username}`} style={{ color: COLORS.ACCENT_PRIMARY, textDecoration: 'none' }}>
                         {user.username}
                       </a>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleFnLookup(user.username); }}
+                        title="Friends Network Lookup"
+                        style={{
+                          marginLeft: '6px', background: 'none', border: 'none',
+                          color: 'rgba(255,255,255,0.35)', cursor: 'pointer', fontSize: '13px',
+                          padding: '2px 4px', verticalAlign: 'middle'
+                        }}
+                        onMouseEnter={e => e.target.style.color = COLORS.ACCENT_PRIMARY}
+                        onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.35)'}
+                      >👥</button>
                     </td>
                     <td style={{ padding: '12px', color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px', whiteSpace: 'nowrap' }}>
                       {user.account_age || 'N/A'}
@@ -428,8 +677,9 @@ export default function AdminPage() {
               Total: {users.length} cached user{users.length !== 1 ? 's' : ''}
             </div>
           </div>
-        )}
+        ))}
       </div>
     </div>
   );
 }
+

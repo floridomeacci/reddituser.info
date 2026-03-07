@@ -67,7 +67,6 @@ import {
   EditTiming,
   LifetimeActivity,
   FamilyTree,
-  FriendsNetwork,
   RelationshipStatus,
   ProfessionAnalysis,
   LocationAnalysis,
@@ -145,7 +144,6 @@ const WIDGET_SIZES = {
   EditTiming: { cols: 2, rows: 2 },
   LifetimeActivity: { cols: 4, rows: 2 },
   FamilyTree: { cols: 1, rows: 2 },
-  FriendsNetwork: { cols: 1, rows: 2 },
   RelationshipStatus: { cols: 1, rows: 2 },
   ProfessionAnalysis: { cols: 1, rows: 2 },
   LocationAnalysis: { cols: 2, rows: 2 },
@@ -944,7 +942,6 @@ function App() {
         
         {/* AI-Powered Personal Insights */}
         <FamilyTree userData={userData} style={getSize('FamilyTree')} />
-        <FriendsNetwork userData={userData} style={getSize('FriendsNetwork')} />
         <RelationshipStatus userData={userData} style={getSize('RelationshipStatus')} />
         <ProfessionAnalysis userData={userData} style={getSize('ProfessionAnalysis')} />
         
