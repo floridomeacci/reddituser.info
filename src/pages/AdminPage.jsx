@@ -17,8 +17,8 @@ export default function AdminPage() {
   const [fnUserData, setFnUserData] = useState(null);
   const [fnLoading, setFnLoading] = useState(false);
   const [fnError, setFnError] = useState('');
-  const [fnResult, setFnResult] = useState(null);
-  const [fnAiLoading, setFnAiLoading] = useState(false);
+  const [fnContacts, setFnContacts] = useState([]); // extracted usernames from responding field
+  const [fnScraping, setFnScraping] = useState(null); // username currently being scraped
 
   useEffect(() => {
     // Check if already authenticated in session
@@ -81,47 +81,31 @@ export default function AdminPage() {
   };
 
   // ── Friends Network helpers ──────────────────────────────────
-  const extractFriendSentences = (userData) => {
-    if (!userData || (!userData.comments?.length && !userData.posts?.length)) return [];
-    const allContent = [
-      ...(userData.comments || []).map(c => c.body || ''),
-      ...(userData.posts || []).map(p => `${p.title || ''} ${p.selftext || ''}`)
-    ].join(' ');
-    const patterns = [
-      /\b(my|our|his|her)\s+(friend|buddy|pal|mate|bestie|best friend|colleague|coworker|roommate|neighbor|acquaintance)\b[^.!?]*[.!?]/gi,
-      /\b(friend|buddy|colleague|coworker|roommate)\s+(is|was|has|have|had|does|did|will|would|said|told|thinks?|believes?)[^.!?]*[.!?]/gi,
-      /\bwith (a )?friend\b[^.!?]*[.!?]/gi,
-      /\b(we|us|together)\s+(went|hang|hangout|met|meet|played|talked)[^.!?]*[.!?]/gi,
-      /\b(social circle|close friends|group of friends|friendship)\b[^.!?]*[.!?]/gi
-    ];
-    const sentences = new Set();
-    patterns.forEach(p => { const m = allContent.match(p); if (m) m.forEach(s => { const c = s.trim(); if (c.length > 20 && c.length < 300) sentences.add(c); }); });
-    return Array.from(sentences).slice(0, 50);
-  };
-
-  const queryFriendsAI = async (sentences, user) => {
-    setFnAiLoading(true);
-    setFnResult(null);
-    try {
-      const response = await fetch('https://n8nfjm.org/webhook/reddit-ask', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: `Based on these sentences, identify friends, colleagues, and acquaintances. Return JSON with this structure: {"friends": [{"type": "friend/colleague/roommate", "name": "unknown", "context": "brief description"}], "socialLevel": "introverted/moderate/extroverted", "summary": "brief social overview"}. Sentences: ${sentences.join(' ')}`,
-          sessionId: user || `admin_${Date.now()}`
-        })
-      });
-      if (!response.ok) throw new Error('AI query failed');
-      let raw = await response.json();
-      let parsed = raw;
-      if (Array.isArray(raw) && raw[0]?.output) { try { parsed = JSON.parse(raw[0].output); } catch { parsed = raw[0].output; } }
-      else if (typeof raw === 'string') { try { parsed = JSON.parse(raw); } catch { /* keep */ } }
-      setFnResult(parsed);
-    } catch (err) {
-      setFnError(err.message);
-    } finally {
-      setFnAiLoading(false);
+  // Extract unique usernames from comments[].responding field
+  const extractContacts = (userData) => {
+    if (!userData?.comments?.length) return [];
+    const counts = {};
+    const subreddits = {};
+    for (const c of userData.comments) {
+      const who = c.responding;
+      if (!who || who === '[deleted]' || who === '[removed]' || who === userData.username) continue;
+      counts[who] = (counts[who] || 0) + 1;
+      if (c.subreddit) {
+        if (!subreddits[who]) subreddits[who] = {};
+        subreddits[who][c.subreddit] = (subreddits[who][c.subreddit] || 0) + 1;
+      }
     }
+    return Object.entries(counts)
+      .map(([name, count]) => ({
+        name,
+        count,
+        subreddits: Object.entries(subreddits[name] || {})
+          .sort((a, b) => b[1] - a[1])
+          .map(([s, n]) => `${s} (${n})`)
+          .slice(0, 5),
+        isCached: users.some(u => u.username.toLowerCase() === name.toLowerCase())
+      }))
+      .sort((a, b) => b.count - a.count);
   };
 
   const handleFnLookup = async (targetUsername) => {
@@ -129,34 +113,49 @@ export default function AdminPage() {
     if (!uname) return;
     setFnUsername(uname);
     setFnError('');
-    setFnResult(null);
+    setFnContacts([]);
     setFnUserData(null);
     setFnLoading(true);
     setActiveTab('friends');
     try {
-      // Analyze (will use cache if server-side caching works)
-      let userData = await analyzeWithQueue({ username: uname });
+      const userData = await analyzeWithQueue({ username: uname });
       if (!userData || (!userData.comments?.length && !userData.posts?.length)) {
         setFnError('No comment/post data found for this user');
         setFnLoading(false);
         return;
       }
       setFnUserData(userData);
-      const sentences = extractFriendSentences(userData);
-      if (sentences.length === 0) {
-        setFnError('No friend-related mentions found in this user\'s history');
-        setFnLoading(false);
-        return;
+      const contacts = extractContacts(userData);
+      setFnContacts(contacts);
+      if (contacts.length === 0) {
+        setFnError('No user interactions found in scraped data (no responding field)');
       }
       setFnLoading(false);
-      await queryFriendsAI(sentences, uname);
     } catch (err) {
       setFnError(err.message || 'Failed to fetch user data');
       setFnLoading(false);
     }
   };
 
-  const fnSentences = useMemo(() => extractFriendSentences(fnUserData), [fnUserData]);
+  // Scrape a contact user (add to DB) then refresh cached users
+  const handleScrapeContact = async (contactUsername) => {
+    setFnScraping(contactUsername);
+    try {
+      await analyzeWithQueue({ username: contactUsername });
+      await fetchUsers(); // refresh cached users list
+      // update isCached on contacts
+      setFnContacts(prev => prev.map(c =>
+        c.name.toLowerCase() === contactUsername.toLowerCase() ? { ...c, isCached: true } : c
+      ));
+    } catch (err) {
+      console.error('Failed to scrape:', contactUsername, err);
+    } finally {
+      setFnScraping(null);
+    }
+  };
+
+  const fnSentences = useMemo(() => extractContacts(fnUserData), [fnUserData, users]);
+
 
   const handleSort = (key) => {
     let direction = 'asc';
@@ -383,9 +382,9 @@ export default function AdminPage() {
         {/* ════════ FRIENDS NETWORK TAB ════════ */}
         {activeTab === 'friends' && (
           <div style={{ background: '#2a2a2a', border: '1px solid rgba(255,107,107,0.3)', borderRadius: '12px', padding: '24px' }}>
-            <h2 style={{ color: '#fff', margin: '0 0 16px', fontSize: '20px' }}>Friends & Network Lookup</h2>
+            <h2 style={{ color: '#fff', margin: '0 0 16px', fontSize: '20px' }}>User Contacts &amp; Scrape Discovery</h2>
             <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', margin: '0 0 20px' }}>
-              Analyze a Reddit user's friend/colleague mentions. This feature is admin-only.
+              Select or search a user to see all Reddit usernames they've interacted with (from scraped data). Then scrape those contacts to grow the DB.
             </p>
 
             {/* Search bar */}
@@ -404,16 +403,16 @@ export default function AdminPage() {
               />
               <button
                 onClick={() => handleFnLookup()}
-                disabled={fnLoading || fnAiLoading}
+                disabled={fnLoading}
                 style={{
                   padding: '12px 28px', background: COLORS.ACCENT_PRIMARY,
                   border: 'none', borderRadius: '8px', color: '#fff',
                   fontSize: '14px', fontWeight: '600',
-                  cursor: (fnLoading || fnAiLoading) ? 'not-allowed' : 'pointer',
-                  opacity: (fnLoading || fnAiLoading) ? 0.6 : 1
+                  cursor: fnLoading ? 'not-allowed' : 'pointer',
+                  opacity: fnLoading ? 0.6 : 1
                 }}
               >
-                {fnLoading ? 'Fetching data...' : fnAiLoading ? 'AI analyzing...' : 'Analyze'}
+                {fnLoading ? 'Fetching...' : 'Load Contacts'}
               </button>
             </div>
 
@@ -424,54 +423,111 @@ export default function AdminPage() {
               </div>
             )}
 
-            {/* Sentences found indicator */}
-            {fnSentences.length > 0 && (
-              <div style={{ marginBottom: '16px', padding: '10px 14px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '8px', color: '#4ade80', fontSize: '13px' }}>
-                Found {fnSentences.length} friend-related mention{fnSentences.length !== 1 ? 's' : ''} in u/{fnUsername}'s history
-              </div>
-            )}
-
-            {/* AI Results */}
-            {fnResult && (
-              <div style={{ marginTop: '8px' }}>
+            {/* Results */}
+            {fnContacts.length > 0 && (
+              <div>
+                {/* Stats bar */}
                 <div style={{ display: 'flex', gap: '16px', marginBottom: '20px' }}>
                   <div style={{ flex: 1, background: '#1a1a1a', border: '1px solid rgba(255,107,107,0.15)', borderRadius: '10px', padding: '16px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '28px', fontWeight: '700', color: COLORS.ACCENT_PRIMARY }}>{fnResult.friends?.length || 0}</div>
-                    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginTop: '4px' }}>Connections</div>
+                    <div style={{ fontSize: '28px', fontWeight: '700', color: COLORS.ACCENT_PRIMARY }}>{fnContacts.length}</div>
+                    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginTop: '4px' }}>Unique Contacts</div>
                   </div>
                   <div style={{ flex: 1, background: '#1a1a1a', border: '1px solid rgba(255,107,107,0.15)', borderRadius: '10px', padding: '16px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '28px', fontWeight: '700', color: '#4ade80', textTransform: 'capitalize' }}>{fnResult.socialLevel || '—'}</div>
-                    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginTop: '4px' }}>Social Level</div>
+                    <div style={{ fontSize: '28px', fontWeight: '700', color: '#4ade80' }}>{fnContacts.filter(c => c.isCached).length}</div>
+                    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginTop: '4px' }}>Already Scraped</div>
                   </div>
-                  <div style={{ flex: 2, background: '#1a1a1a', border: '1px solid rgba(255,107,107,0.15)', borderRadius: '10px', padding: '16px' }}>
-                    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginBottom: '6px' }}>Summary</div>
-                    <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)', lineHeight: '1.5' }}>{fnResult.summary || 'No summary available'}</div>
+                  <div style={{ flex: 1, background: '#1a1a1a', border: '1px solid rgba(255,107,107,0.15)', borderRadius: '10px', padding: '16px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '28px', fontWeight: '700', color: '#fbbf24' }}>{fnContacts.filter(c => !c.isCached).length}</div>
+                    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginTop: '4px' }}>New (Not Scraped)</div>
+                  </div>
+                  <div style={{ flex: 1, background: '#1a1a1a', border: '1px solid rgba(255,107,107,0.15)', borderRadius: '10px', padding: '16px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '28px', fontWeight: '700', color: '#60a5fa' }}>{fnContacts.reduce((s, c) => s + c.count, 0)}</div>
+                    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginTop: '4px' }}>Total Interactions</div>
                   </div>
                 </div>
 
-                {fnResult.friends && fnResult.friends.length > 0 && (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
-                    {fnResult.friends.map((friend, idx) => (
-                      <div key={idx} style={{ padding: '14px', background: '#1a1a1a', borderLeft: `3px solid ${COLORS.ACCENT_PRIMARY}`, borderRadius: '6px' }}>
-                        <div style={{ fontWeight: '600', color: COLORS.ACCENT_PRIMARY, textTransform: 'capitalize', fontSize: '14px' }}>
-                          {friend.type}{friend.name && friend.name !== 'unknown' ? ` — ${friend.name}` : ''}
-                        </div>
-                        {friend.context && (
-                          <div style={{ marginTop: '6px', color: 'rgba(255,255,255,0.6)', fontSize: '12px', lineHeight: '1.4' }}>{friend.context}</div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
+                {/* Contacts table */}
+                <div style={{ overflowX: 'auto', maxHeight: '600px', overflowY: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', background: '#1a1a1a', borderRadius: '10px', overflow: 'hidden' }}>
+                    <thead>
+                      <tr style={{ background: '#111' }}>
+                        <th style={{ padding: '12px 16px', textAlign: 'left', color: COLORS.ACCENT_PRIMARY, fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Username</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'center', color: COLORS.ACCENT_PRIMARY, fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Replies</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'left', color: COLORS.ACCENT_PRIMARY, fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Subreddits</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'center', color: COLORS.ACCENT_PRIMARY, fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Status</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'center', color: COLORS.ACCENT_PRIMARY, fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {fnContacts.map((contact, idx) => (
+                        <tr key={contact.name} style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
+                          onMouseEnter={e => e.currentTarget.style.background = '#222'}
+                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                          <td style={{ padding: '10px 16px', color: '#fff', fontSize: '14px', fontWeight: '500' }}>
+                            u/{contact.name}
+                          </td>
+                          <td style={{ padding: '10px 16px', textAlign: 'center', color: 'rgba(255,255,255,0.7)', fontSize: '14px', fontWeight: '600' }}>
+                            {contact.count}
+                          </td>
+                          <td style={{ padding: '10px 16px' }}>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                              {contact.subreddits.map((s, i) => (
+                                <span key={i} style={{ padding: '2px 8px', background: 'rgba(255,255,255,0.06)', borderRadius: '10px', fontSize: '11px', color: 'rgba(255,255,255,0.6)' }}>{s}</span>
+                              ))}
+                            </div>
+                          </td>
+                          <td style={{ padding: '10px 16px', textAlign: 'center' }}>
+                            {contact.isCached ? (
+                              <span style={{ padding: '3px 10px', background: 'rgba(34,197,94,0.15)', color: '#4ade80', borderRadius: '10px', fontSize: '11px', fontWeight: '600' }}>In DB</span>
+                            ) : (
+                              <span style={{ padding: '3px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', borderRadius: '10px', fontSize: '11px', fontWeight: '600' }}>New</span>
+                            )}
+                          </td>
+                          <td style={{ padding: '10px 16px', textAlign: 'center' }}>
+                            <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                              {!contact.isCached && (
+                                <button
+                                  onClick={() => handleScrapeContact(contact.name)}
+                                  disabled={fnScraping !== null}
+                                  title="Scrape this user into DB"
+                                  style={{
+                                    padding: '4px 12px', background: COLORS.ACCENT_PRIMARY, border: 'none',
+                                    borderRadius: '6px', color: '#fff', fontSize: '12px', fontWeight: '600',
+                                    cursor: fnScraping ? 'not-allowed' : 'pointer',
+                                    opacity: fnScraping === contact.name ? 0.5 : 1
+                                  }}
+                                >
+                                  {fnScraping === contact.name ? '⏳ Scraping...' : 'Scrape'}
+                                </button>
+                              )}
+                              <button
+                                onClick={() => handleFnLookup(contact.name)}
+                                disabled={fnLoading}
+                                title="View this user's contacts"
+                                style={{
+                                  padding: '4px 12px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)',
+                                  borderRadius: '6px', color: '#fff', fontSize: '12px',
+                                  cursor: fnLoading ? 'not-allowed' : 'pointer'
+                                }}
+                              >
+                                👥 Contacts
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 
             {/* Quick-pick from cached users */}
-            {users.length > 0 && !fnLoading && !fnAiLoading && (
-              <div style={{ marginTop: '28px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '20px' }}>
+            {users.length > 0 && !fnLoading && fnContacts.length === 0 && (
+              <div style={{ marginTop: '20px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '20px' }}>
                 <h3 style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 12px' }}>Quick pick from cached users</h3>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                  {users.slice(0, 30).map(u => (
+                  {users.slice(0, 50).map(u => (
                     <button
                       key={u.username}
                       onClick={() => handleFnLookup(u.username)}
