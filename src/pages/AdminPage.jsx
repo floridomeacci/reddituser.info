@@ -22,6 +22,7 @@ export default function AdminPage() {
   const [fnQuickFilter, setFnQuickFilter] = useState(''); // filter for quick-pick list
   const [fnAutoScrapeEnabled, setFnAutoScrapeEnabled] = useState(false); // auto scrape contacts one by one
   const [fnAutoScrapeDelayMs, setFnAutoScrapeDelayMs] = useState(1000); // delay between auto scrapes
+  const [downloading, setDownloading] = useState(false); // ZIP download in progress
 
   useEffect(() => {
     // Check if already authenticated in session
@@ -174,6 +175,33 @@ export default function AdminPage() {
   }, [fnAutoScrapeEnabled, activeTab, fnLoading, fnScraping, fnContacts, fnAutoScrapeDelayMs]);
 
   const fnSentences = useMemo(() => extractContacts(fnUserData), [fnUserData, users]);
+
+  const handleDownloadZip = async () => {
+    setDownloading(true);
+    try {
+      const apiBase = await resolveApiBase();
+      const response = await fetch(`${apiBase}/admin/download-all-zip`, {
+        headers: {
+          'Authorization': `Basic ${btoa(`${import.meta.env.VITE_ADMIN_USERNAME}:${import.meta.env.VITE_ADMIN_PASSWORD}`)}`
+        }
+      });
+      if (!response.ok) throw new Error('Download failed');
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `reddit_users_${new Date().toISOString().slice(0,10)}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('ZIP download failed:', err);
+      setError('Failed to download ZIP');
+    } finally {
+      setDownloading(false);
+    }
+  };
 
 
   const handleSort = (key) => {
@@ -340,6 +368,23 @@ export default function AdminPage() {
             Admin Panel
           </h1>
           <div style={{ display: 'flex', gap: '12px' }}>
+            <button
+              onClick={handleDownloadZip}
+              disabled={downloading}
+              style={{
+                padding: '12px 24px',
+                background: '#2563eb',
+                border: 'none',
+                borderRadius: '8px',
+                color: '#ffffff',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: downloading ? 'not-allowed' : 'pointer',
+                opacity: downloading ? 0.5 : 1
+              }}
+            >
+              {downloading ? '⏳ Downloading...' : '📦 Download ZIP'}
+            </button>
             <button
               onClick={fetchUsers}
               disabled={loading}
