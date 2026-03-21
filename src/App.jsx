@@ -168,17 +168,25 @@ const WIDGET_SIZES = {
 
 // Responsive grid column limits based on screen width
 const getMaxColumns = (windowWidth) => {
-  if (windowWidth <= 640) return 1;
-  if (windowWidth <= 768) return 2;
-  if (windowWidth <= 1024) return 3;
-  if (windowWidth <= 1280) return 4;
-  return 5;
+  if (windowWidth <= 768) return 1;  // Mobile: single column
+  if (windowWidth <= 1024) return 2; // Tablet: 2 columns
+  if (windowWidth <= 1280) return 3; // Small desktop: 3 columns
+  return 4; // Large desktop: 4 columns
 };
 
 // Helper to get grid style for a widget (responsive)
 const getSize = (name, windowWidth = 1400) => {
   const size = WIDGET_SIZES[name] || { cols: 1, rows: 1 };
   const maxCols = getMaxColumns(windowWidth);
+  
+  // On mobile (single column), don't use spans at all
+  if (maxCols === 1) {
+    return {
+      gridColumn: '1 / -1',
+      gridRow: 'auto',
+    };
+  }
+  
   const cols = Math.min(size.cols, maxCols);
   return {
     gridColumn: `span ${cols}`,
@@ -946,14 +954,15 @@ function App() {
         {/* Columns 2-5: Main content grid */}
         <div className="dashboard-grid" style={{
           display: 'grid',
-          gridTemplateColumns: windowWidth <= 640 ? '1fr' : 
-                              windowWidth <= 768 ? 'repeat(2, minmax(0, 1fr))' :
-                              windowWidth <= 1024 ? 'repeat(3, minmax(0, 1fr))' :
+          gridTemplateColumns: windowWidth <= 768 ? '1fr' : 
+                              windowWidth <= 1024 ? 'repeat(2, minmax(0, 1fr))' :
+                              windowWidth <= 1280 ? 'repeat(3, minmax(0, 1fr))' :
                               'repeat(4, minmax(0, 1fr))',
-          gridAutoRows: windowWidth <= 640 ? '140px' : '175px',
+          gridAutoRows: windowWidth <= 768 ? 'auto' : '175px',
           gridAutoFlow: 'dense',
           gap: 'var(--grid-gap)',
           minWidth: 0,
+          width: '100%',
         }}>
 
         {/* Row 1: Stats */}

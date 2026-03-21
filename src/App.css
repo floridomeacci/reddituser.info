@@ -833,29 +833,33 @@ body {
    COMPREHENSIVE MOBILE RESPONSIVE STYLES
    ============================================ */
 
-/* Mobile - Single column layout (up to 640px) */
-@media (max-width: 640px) {
+/* Mobile - Single column layout (up to 768px) */
+@media (max-width: 768px) {
   .app-container {
-    padding: var(--spacing-sm);
-    align-items: flex-start;
+    padding: var(--spacing-sm) !important;
+    align-items: flex-start !important;
   }
   
   .dashboard-grid {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-sm);
-    width: 100%;
+    grid-template-columns: 1fr !important;
+    gap: var(--spacing-sm) !important;
+    width: 100% !important;
   }
   
-  /* Force all cells to single column on mobile */
-  .cell {
-    grid-column: span 1 !important;
-    padding: var(--spacing-sm);
-    min-height: auto;
+  /* Force ALL cells to single column on mobile - override inline styles */
+  .cell,
+  .cell[style] {
+    grid-column: 1 / -1 !important;
+    grid-row: auto !important;
+    padding: var(--spacing-md) !important;
+    min-height: 120px !important;
+    max-width: 100% !important;
+    width: 100% !important;
   }
   
-  /* Keep row spans for vertical widgets but limit them */
+  /* Remove row spans on mobile */
   .cell.span-row-2 {
-    grid-row: span 2;
+    grid-row: auto !important;
   }
   
   .cell h3 {
@@ -971,18 +975,18 @@ body {
   }
 }
 
-/* Small tablets - 2 column layout (641px to 768px) */
-@media (min-width: 641px) and (max-width: 768px) {
+/* Tablets - 2 column layout (769px to 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
   .app-container {
-    padding: var(--spacing-md);
+    padding: var(--spacing-lg);
   }
   
   .dashboard-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr) !important;
     width: 100%;
   }
   
-  /* Limit wide widgets to 2 columns max */
+  /* Limit 3+ column widgets to 2 */
   .cell[style*="grid-column: span 3"],
   .cell[style*="grid-column: span 4"],
   .cell[style*="grid-column: span 5"] {
@@ -990,28 +994,10 @@ body {
   }
 }
 
-/* Tablets - 3 column layout (769px to 1024px) */
-@media (min-width: 769px) and (max-width: 1024px) {
-  .app-container {
-    padding: var(--spacing-lg);
-  }
-  
-  .dashboard-grid {
-    grid-template-columns: repeat(3, 1fr);
-    width: 100%;
-  }
-  
-  /* Limit 4+ column widgets to 3 */
-  .cell[style*="grid-column: span 4"],
-  .cell[style*="grid-column: span 5"] {
-    grid-column: span 3 !important;
-  }
-}
-
-/* Small desktops - 4 column layout (1025px to 1280px) */
+/* Small desktops - 3 column layout (1025px to 1280px) */
 @media (min-width: 1025px) and (max-width: 1280px) {
   .dashboard-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr) !important;
     width: min(1200px, 100%);
   }
   
