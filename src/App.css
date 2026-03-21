@@ -851,10 +851,32 @@ body {
   .cell[style] {
     grid-column: 1 / -1 !important;
     grid-row: auto !important;
-    padding: var(--spacing-md) !important;
-    min-height: 120px !important;
+    padding: var(--spacing-sm) !important;
+    min-height: auto !important;
     max-width: 100% !important;
     width: 100% !important;
+  }
+  
+  /* Compact stat cells on mobile (Account Age, Karma, Posts, Comments) */
+  .cell.stat-cell,
+  .cell.stat-cell[style] {
+    min-height: 80px !important;
+    max-height: 100px !important;
+    padding: 10px 12px !important;
+  }
+  
+  .cell.stat-cell p[style*="font-size: 48px"],
+  .cell.stat-cell p[style*="font-size: 32px"] {
+    font-size: 24px !important;
+    line-height: 1.1 !important;
+  }
+  
+  .cell.stat-cell h3 {
+    font-size: 9px !important;
+  }
+  
+  .cell.stat-cell p[style*="font-size: 11px"] {
+    font-size: 10px !important;
   }
   
   /* Remove row spans on mobile */
@@ -967,6 +989,38 @@ body {
   .scatter-tooltip {
     font-size: 9px;
     padding: 3px;
+  }
+  
+  /* Content Search widget mobile - limit height and stack vertically */
+  .content-search-widget {
+    max-height: 320px !important;
+    min-height: 280px !important;
+  }
+  
+  .content-search-inner {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  
+  .content-search-controls {
+    width: 100% !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    align-items: center !important;
+  }
+  
+  .content-search-controls input {
+    flex: 1 !important;
+    min-width: 120px !important;
+  }
+  
+  .content-search-controls > div {
+    flex: 0 0 auto !important;
+  }
+  
+  .content-search-controls .stat-meta {
+    display: none !important;
   }
   
   /* Loading state mobile */

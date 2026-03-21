@@ -127,26 +127,25 @@ export default function ContentSearch({ comments = [], posts = [], style = {} })
   };
 
   return (
-    <div className="cell" style={{ ...style, display: 'flex', flexDirection: 'column', gap: '12px', overflow: 'hidden' }}>
+    <div className="cell content-search-widget" style={{ ...style, display: 'flex', flexDirection: 'column', gap: '12px', overflow: 'hidden', maxHeight: 'inherit' }}>
       <h3>Content Search</h3>
-      <div style={{ display: 'flex', gap: '16px', flex: 1, minHeight: 0 }}>
+      <div style={{ display: 'flex', gap: '16px', flex: 1, minHeight: 0, flexDirection: 'var(--content-search-direction, row)' }} className="content-search-inner">
         {/* Left column: Search controls (1/3) */}
-        <div style={{ width: '30%', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <p className="stat-meta" style={{ marginBottom: '8px' }}>Search through all posts and comments</p>
-          <div style={{ flex: 1 }} />
+        <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '8px' }} className="content-search-controls">
+          <p className="stat-meta" style={{ marginBottom: '4px', fontSize: '11px' }}>Search through all posts and comments</p>
           {/* Search input */}
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search posts and comments..."
+            placeholder="Search..."
             style={{
-              padding: '10px 12px',
+              padding: '8px 10px',
               background: 'rgba(255, 255, 255, 0.05)',
               border: '1px solid rgba(255, 255, 255, 0.1)',
               borderRadius: '6px',
               color: '#fff',
-              fontSize: '13px',
+              fontSize: '12px',
               outline: 'none',
               transition: 'border-color 0.2s'
             }}
