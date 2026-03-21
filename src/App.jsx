@@ -166,16 +166,43 @@ const WIDGET_SIZES = {
   PersonaMap: { cols: 4, rows: 2 },
 };
 
-// Helper to get grid style for a widget
-const getSize = (name) => {
+// Responsive grid column limits based on screen width
+const getMaxColumns = (windowWidth) => {
+  if (windowWidth <= 640) return 1;
+  if (windowWidth <= 768) return 2;
+  if (windowWidth <= 1024) return 3;
+  if (windowWidth <= 1280) return 4;
+  return 5;
+};
+
+// Helper to get grid style for a widget (responsive)
+const getSize = (name, windowWidth = 1400) => {
   const size = WIDGET_SIZES[name] || { cols: 1, rows: 1 };
+  const maxCols = getMaxColumns(windowWidth);
+  const cols = Math.min(size.cols, maxCols);
   return {
-    gridColumn: `span ${size.cols}`,
+    gridColumn: `span ${cols}`,
     gridRow: `span ${size.rows}`,
   };
 };
 
+// Custom hook for window size
+const useWindowSize = () => {
+  const [windowWidth, setWindowWidth] = useState(
+    typeof window !== 'undefined' ? window.innerWidth : 1400
+  );
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return windowWidth;
+};
+
 function App() {
+  const windowWidth = useWindowSize();
   const [userData, setUserData] = useState(null);
   const [globalStats, setGlobalStats] = useState(null);
   const [selectedTrait, setSelectedTrait] = useState('Openness');
@@ -592,6 +619,9 @@ function App() {
     }
   };
 
+  // Responsive getSize wrapper using current window width
+  const responsiveGetSize = (name) => getSize(name, windowWidth);
+
   if (!userData) {
     return (
       <div className="app-container" style={{ 
@@ -634,24 +664,24 @@ function App() {
           backdropFilter: 'blur(10px)',
           border: '1px solid rgba(255, 107, 107, 0.2)',
           borderRadius: '16px',
-          padding: '48px',
+          padding: windowWidth <= 640 ? '24px 16px' : '48px',
           maxWidth: '500px',
-          width: '90%',
+          width: windowWidth <= 640 ? '95%' : '90%',
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
         }}>
           <h1 style={{ 
             color: '#ffffff', 
             margin: '0 0 12px 0',
-            fontSize: '32px',
+            fontSize: windowWidth <= 640 ? '24px' : '32px',
             fontWeight: '700',
             textAlign: 'center',
             letterSpacing: '-0.5px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '12px'
+            gap: windowWidth <= 640 ? '8px' : '12px'
           }}>
-            <img src="/reddituser-logo.svg" alt="RedditUser.info Logo" style={{ width: '32px', height: '32px' }} />
+            <img src="/reddituser-logo.svg" alt="RedditUser.info Logo" style={{ width: windowWidth <= 640 ? '24px' : '32px', height: windowWidth <= 640 ? '24px' : '32px' }} />
             <HackerText text="REDDITUSER.INFO" duration={2000} style={{ fontFamily: 'monospace', letterSpacing: '0' }} />
           </h1>
           <p style={{ 
@@ -731,29 +761,35 @@ function App() {
       <div style={{
         position: 'relative',
         zIndex: 1,
-        display: 'grid',
-        gridTemplateColumns: '250px minmax(0, 1fr)',
+        display: windowWidth <= 768 ? 'flex' : 'grid',
+        flexDirection: 'column',
+        gridTemplateColumns: windowWidth <= 768 ? '1fr' : '250px minmax(0, 1fr)',
         gap: 'var(--grid-gap)',
         width: '100%',
         maxWidth: '1400px',
         margin: '0 auto',
-        paddingTop: '48px',
+        paddingTop: windowWidth <= 640 ? '24px' : '48px',
       }}>
         {/* Column 1: Sidebar */}
         <div style={{ 
           display: 'flex', 
-          flexDirection: 'column', 
+          flexDirection: windowWidth <= 768 ? 'row' : 'column', 
+          flexWrap: 'wrap',
           gap: 'var(--grid-gap)',
-          position: 'sticky',
-          top: '16px',
+          position: windowWidth <= 768 ? 'relative' : 'sticky',
+          top: windowWidth <= 768 ? 'auto' : '16px',
           alignSelf: 'start',
-          height: 'fit-content'
+          height: 'fit-content',
+          width: '100%'
         }}>
           {/* PFP + Support & Extension Widget */}
           <div className="cell no-enlarge" style={{ 
             display: 'flex', 
-            flexDirection: 'column', 
-            gap: '12px'
+            flexDirection: windowWidth <= 768 ? 'row' : 'column', 
+            gap: windowWidth <= 768 ? '16px' : '12px',
+            alignItems: windowWidth <= 768 ? 'center' : 'stretch',
+            flex: windowWidth <= 768 ? '1 1 100%' : 'none',
+            padding: windowWidth <= 640 ? '12px' : undefined
           }}>
             {(() => {
               const about = userData?.about || userData?.account_info || {};
@@ -761,13 +797,13 @@ function App() {
               const avatarUrl = rawAvatar.replace(/&amp;/g, '&');
               const displayName = userData?.username || about.name || '';
               return displayName ? (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', paddingBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                <div style={{ display: 'flex', flexDirection: windowWidth <= 768 ? 'row' : 'column', alignItems: 'center', gap: '8px', paddingBottom: windowWidth <= 768 ? '0' : '12px', paddingRight: windowWidth <= 768 ? '16px' : '0', borderBottom: windowWidth <= 768 ? 'none' : '1px solid rgba(255,255,255,0.1)', borderRight: windowWidth <= 768 ? '1px solid rgba(255,255,255,0.1)' : 'none' }}>
                   <img
                     src={avatarUrl}
                     alt="Profile"
                     style={{
-                      width: '100px',
-                      height: '100px',
+                      width: windowWidth <= 640 ? '50px' : windowWidth <= 768 ? '60px' : '100px',
+                      height: windowWidth <= 640 ? '50px' : windowWidth <= 768 ? '60px' : '100px',
                       borderRadius: '50%',
                       border: '3px solid rgba(255, 107, 107, 0.5)',
                       objectFit: 'cover',
@@ -910,87 +946,90 @@ function App() {
         {/* Columns 2-5: Main content grid */}
         <div className="dashboard-grid" style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
-          gridAutoRows: '175px',
+          gridTemplateColumns: windowWidth <= 640 ? '1fr' : 
+                              windowWidth <= 768 ? 'repeat(2, minmax(0, 1fr))' :
+                              windowWidth <= 1024 ? 'repeat(3, minmax(0, 1fr))' :
+                              'repeat(4, minmax(0, 1fr))',
+          gridAutoRows: windowWidth <= 640 ? '140px' : '175px',
           gridAutoFlow: 'dense',
           gap: 'var(--grid-gap)',
           minWidth: 0,
         }}>
 
         {/* Row 1: Stats */}
-        <AccountAge userData={userData} style={getSize('AccountAge')} className="no-enlarge" />
-        <TotalKarma userData={userData} style={getSize('TotalKarma')} className="no-enlarge" />
-        {shouldShowWidget('TotalComments') && <TotalComments userData={userData} style={getSize('TotalComments')} className="no-enlarge" />}
-        {shouldShowWidget('TotalPosts') && <TotalPosts userData={userData} style={getSize('TotalPosts')} className="no-enlarge" />}
+        <AccountAge userData={userData} style={responsiveGetSize('AccountAge')} className="no-enlarge" />
+        <TotalKarma userData={userData} style={responsiveGetSize('TotalKarma')} className="no-enlarge" />
+        {shouldShowWidget('TotalComments') && <TotalComments userData={userData} style={responsiveGetSize('TotalComments')} className="no-enlarge" />}
+        {shouldShowWidget('TotalPosts') && <TotalPosts userData={userData} style={responsiveGetSize('TotalPosts')} className="no-enlarge" />}
         
         {/* Row 2: Top Subreddits (1x2) | Content Search (2x2 starts here) | Media Gallery (1x2) */}
         <TopSubredditsTreemap 
           userData={userData}
           highlightedSubIndex={highlightedSubIndex}
           setHighlightedSubIndex={setHighlightedSubIndex}
-          style={getSize('TopSubredditsTreemap')}
+          style={responsiveGetSize('TopSubredditsTreemap')}
         />
         <ContentSearch 
           comments={userData?.comments || []}
           posts={userData?.posts || []}
-          style={getSize('ContentSearch')}
+          style={responsiveGetSize('ContentSearch')}
         />
-        <RecentActivity userData={userData} style={getSize('RecentActivity')} />
+        <RecentActivity userData={userData} style={responsiveGetSize('RecentActivity')} />
         {shouldShowWidget('LifetimeActivity') && (
-          <LifetimeActivity userData={userData} style={getSize('LifetimeActivity')} />
+          <LifetimeActivity userData={userData} style={responsiveGetSize('LifetimeActivity')} />
         )}
         
         {/* AI-Powered Personal Insights */}
-        <FamilyTree userData={userData} style={getSize('FamilyTree')} />
-        <RelationshipStatus userData={userData} style={getSize('RelationshipStatus')} />
-        <ProfessionAnalysis userData={userData} style={getSize('ProfessionAnalysis')} />
+        <FamilyTree userData={userData} style={responsiveGetSize('FamilyTree')} />
+        <RelationshipStatus userData={userData} style={responsiveGetSize('RelationshipStatus')} />
+        <ProfessionAnalysis userData={userData} style={responsiveGetSize('ProfessionAnalysis')} />
         
         {/* Row 3: Top Subreddits (1x1) | (Personality continues) | Removed Comments (1x1) */}
-        <ActivityByMonth userData={userData} style={getSize('ActivityByMonth')} />
-        <ActivityHeatmap userData={userData} style={getSize('ActivityHeatmap')} />
+        <ActivityByMonth userData={userData} style={responsiveGetSize('ActivityByMonth')} />
+        <ActivityHeatmap userData={userData} style={responsiveGetSize('ActivityHeatmap')} />
         
         {/* Activity Patterns */}
-        <EngagementLeaderboard userData={userData} style={getSize('EngagementLeaderboard')} />
-        <ActivityByDayOfMonth userData={userData} style={getSize('ActivityByDayOfMonth')} />
-        <ActivityByWeekday userData={userData} style={getSize('ActivityByWeekday')} />
-        <HourlyPulse userData={userData} style={getSize('HourlyPulse')} />
-        <KarmaMomentum userData={userData} style={getSize('KarmaMomentum')} />
+        <EngagementLeaderboard userData={userData} style={responsiveGetSize('EngagementLeaderboard')} />
+        <ActivityByDayOfMonth userData={userData} style={responsiveGetSize('ActivityByDayOfMonth')} />
+        <ActivityByWeekday userData={userData} style={responsiveGetSize('ActivityByWeekday')} />
+        <HourlyPulse userData={userData} style={responsiveGetSize('HourlyPulse')} />
+        <KarmaMomentum userData={userData} style={responsiveGetSize('KarmaMomentum')} />
         
         {/* Content Analysis */}
-        {shouldShowWidget('TopEmojis') && <TopEmojis userData={userData} style={getSize('TopEmojis')} />}
+        {shouldShowWidget('TopEmojis') && <TopEmojis userData={userData} style={responsiveGetSize('TopEmojis')} />}
         
         {/* Row: LengthVsKarma (2×2) + FavoriteNumber (1×2) + TopWords (2×2) + SubredditBreakdown (1×3 spanning 3 rows) */}
-        <LengthVsKarma userData={userData} style={getSize('LengthVsKarma')} />
-        <KarmaSplitByMonth userData={userData} style={getSize('KarmaSplitByMonth')} />
-        {shouldShowWidget('TopWords') && <TopWords userData={userData} style={getSize('TopWords')} />}
-        {shouldShowWidget('TopWordsOverTime') && <TopWordsOverTime userData={userData} style={getSize('TopWordsOverTime')} />}
+        <LengthVsKarma userData={userData} style={responsiveGetSize('LengthVsKarma')} />
+        <KarmaSplitByMonth userData={userData} style={responsiveGetSize('KarmaSplitByMonth')} />
+        {shouldShowWidget('TopWords') && <TopWords userData={userData} style={responsiveGetSize('TopWords')} />}
+        {shouldShowWidget('TopWordsOverTime') && <TopWordsOverTime userData={userData} style={responsiveGetSize('TopWordsOverTime')} />}
         <SubredditBreakdown 
           userData={userData}
           highlightedSubIndex={highlightedSubIndex}
           setHighlightedSubIndex={setHighlightedSubIndex}
-          style={getSize('SubredditBreakdown')}
+          style={responsiveGetSize('SubredditBreakdown')}
         />
         
         {/* Row: QuestionsVsCommentary (2×1) + LongestCapsSentence (1×1) */}
-        <QuestionsVsCommentary userData={userData} style={getSize('QuestionsVsCommentary')} />
-        {shouldShowWidget('LongestCapsSentence') && <LongestCapsSentence userData={userData} style={getSize('LongestCapsSentence')} />}
-        {shouldShowWidget('FavoriteNumber') && <FavoriteNumber userData={userData} style={getSize('FavoriteNumber')} />}
+        <QuestionsVsCommentary userData={userData} style={responsiveGetSize('QuestionsVsCommentary')} />
+        {shouldShowWidget('LongestCapsSentence') && <LongestCapsSentence userData={userData} style={responsiveGetSize('LongestCapsSentence')} />}
+        {shouldShowWidget('FavoriteNumber') && <FavoriteNumber userData={userData} style={responsiveGetSize('FavoriteNumber')} />}
         
         {/* Top/Worst Content - Combined full-width widget */}
-        <TopWorstContent userData={userData} style={getSize('TopWorstContent')} />
+        <TopWorstContent userData={userData} style={responsiveGetSize('TopWorstContent')} />
         
         {/* Distributions */}
-        <KarmaDistribution userData={userData} style={getSize('KarmaDistribution')} />
-        <CommentLengthDist userData={userData} style={getSize('CommentLengthDist')} />
+        <KarmaDistribution userData={userData} style={responsiveGetSize('KarmaDistribution')} />
+        <CommentLengthDist userData={userData} style={responsiveGetSize('CommentLengthDist')} />
         
         {/* Flow & Network */}
         {/* DISABLED: Sentiment ML model */}
-        {/* <WeeklySentiment userData={userData} style={getSize('WeeklySentiment')} /> */}
-        <CommentFlow userData={userData} style={getSize('CommentFlow')} />
-        <SubredditFlow userData={userData} style={getSize('SubredditFlow')} />
+        {/* <WeeklySentiment userData={userData} style={responsiveGetSize('WeeklySentiment')} /> */}
+        <CommentFlow userData={userData} style={responsiveGetSize('CommentFlow')} />
+        <SubredditFlow userData={userData} style={responsiveGetSize('SubredditFlow')} />
         
         {/* Large Visualizations */}
-        <SubredditActivityOverTime userData={userData} style={getSize('SubredditActivityOverTime')} />
+        <SubredditActivityOverTime userData={userData} style={responsiveGetSize('SubredditActivityOverTime')} />
         
         {/* Row: BotDetection (2x2) + TopLocationsWidget (2x2) */}
         <BotDetection 
@@ -1001,15 +1040,15 @@ function App() {
           activityByDayOfMonth={activityByDayOfMonth}
           activityByMonth={activityByMonth}
           locationConfidence={locationConfidence}
-          style={getSize('BotDetection')}
+          style={responsiveGetSize('BotDetection')}
         />
         <TopLocationsWidget 
           userData={userData} 
           highlightedCountries={highlightedCountries}
-          style={getSize('TopLocationsWidget')} 
+          style={responsiveGetSize('TopLocationsWidget')} 
         />
-        <LocationAnalysis userData={userData} onLocationData={setAiLocationData} style={getSize('LocationAnalysis')} />
-        <IdentifiableImages userData={userData} style={getSize('IdentifiableImages')} />
+        <LocationAnalysis userData={userData} onLocationData={setAiLocationData} style={responsiveGetSize('LocationAnalysis')} />
+        <IdentifiableImages userData={userData} style={responsiveGetSize('IdentifiableImages')} />
         
         {/* Row: WorldMap */}
         <WorldMapWidget 
@@ -1026,7 +1065,7 @@ function App() {
               return unchanged ? prev : confidence;
             });
           }}
-          style={getSize('WorldMapWidget')}
+          style={responsiveGetSize('WorldMapWidget')}
         />
         
         {/* DISABLED: Age/Gender ML model */}
@@ -1034,7 +1073,7 @@ function App() {
           userData={userData}
           ageGenderPredictions={ageGenderPredictions}
           ageGenderLoading={ageGenderLoading}
-          style={getSize('GenderTimeline')}
+          style={responsiveGetSize('GenderTimeline')}
         /> */}
         
         {/* DISABLED: Age/Gender ML model */}
@@ -1042,46 +1081,46 @@ function App() {
           userData={userData}
           ageGenderPredictions={ageGenderPredictions}
           ageGenderLoading={ageGenderLoading}
-          style={getSize('AgeTimeline')}
+          style={responsiveGetSize('AgeTimeline')}
         /> */}
         
         {/* Literacy at bottom */}
         {/* <GrammarMistakesWidget 
           grammarMistakes={grammarMistakes}
           grammarLoading={grammarLoading}
-          style={getSize('GrammarMistakesWidget')}
+          style={responsiveGetSize('GrammarMistakesWidget')}
         /> */}
-        <LongestStreak userData={userData} style={getSize('LongestStreak')} />
-        <VocabularyWidget userData={userData} style={getSize('VocabularyWidget')} />
+        <LongestStreak userData={userData} style={responsiveGetSize('LongestStreak')} />
+        <VocabularyWidget userData={userData} style={responsiveGetSize('VocabularyWidget')} />
         
         {/* Combined Subreddit Activity Widget */}
-        <SubredditActivityWidget userData={userData} style={getSize('InterestWidget')} />
+        <SubredditActivityWidget userData={userData} style={responsiveGetSize('InterestWidget')} />
         
         {/* Removed Comments Analysis - only show if user has removed content */}
         {hasRemovedContent && shouldShowWidget('RemovedCommentsOverTime') && (
           <>
-            <RemovedCommentsOverTime userData={userData} style={getSize('RemovedCommentsOverTime')} />
-            <RemovedCommentsBySubreddit userData={userData} style={getSize('RemovedCommentsBySubreddit')} />
+            <RemovedCommentsOverTime userData={userData} style={responsiveGetSize('RemovedCommentsOverTime')} />
+            <RemovedCommentsBySubreddit userData={userData} style={responsiveGetSize('RemovedCommentsBySubreddit')} />
           </>
         )}
         
         {/* Pronoun Usage Analysis */}
-        {shouldShowWidget('PronounUsage') && <PronounUsage userData={userData} style={getSize('PronounUsage')} />}
-        {shouldShowWidget('PronounPersonality') && <PronounPersonality userData={userData} style={getSize('PronounPersonality')} />}
+        {shouldShowWidget('PronounUsage') && <PronounUsage userData={userData} style={responsiveGetSize('PronounUsage')} />}
+        {shouldShowWidget('PronounPersonality') && <PronounPersonality userData={userData} style={responsiveGetSize('PronounPersonality')} />}
         
         {/* Reply Patterns */}
-        {shouldShowWidget('ReplyPatterns') && <ReplyPatterns userData={userData} style={getSize('ReplyPatterns')} />}
+        {shouldShowWidget('ReplyPatterns') && <ReplyPatterns userData={userData} style={responsiveGetSize('ReplyPatterns')} />}
         
         {/* Clustering Analysis - Bottom */}
-        {shouldShowWidget('TSNEClustering') && <TSNEClustering userData={userData} style={getSize('TSNEClustering')} />}
-        {shouldShowWidget('PCAAnalysis') && <PCAAnalysis userData={userData} style={getSize('PCAAnalysis')} />}
-        {shouldShowWidget('LanguageDetection') && <LanguageDetection userData={userData} style={getSize('LanguageDetection')} />}
+        {shouldShowWidget('TSNEClustering') && <TSNEClustering userData={userData} style={responsiveGetSize('TSNEClustering')} />}
+        {shouldShowWidget('PCAAnalysis') && <PCAAnalysis userData={userData} style={responsiveGetSize('PCAAnalysis')} />}
+        {shouldShowWidget('LanguageDetection') && <LanguageDetection userData={userData} style={responsiveGetSize('LanguageDetection')} />}
         
         {/* Edit Behavior Analysis */}
-        {shouldShowWidget('EditFrequency') && <EditFrequency userData={userData} style={getSize('EditFrequency')} />}
-        {shouldShowWidget('EditTiming') && <EditTiming userData={userData} style={getSize('EditTiming')} />}
-        <EmotionTimeline userData={userData} style={getSize('EmotionTimeline')} />
-        <ToxicityScore userData={userData} style={getSize('ToxicityScore')} />
+        {shouldShowWidget('EditFrequency') && <EditFrequency userData={userData} style={responsiveGetSize('EditFrequency')} />}
+        {shouldShowWidget('EditTiming') && <EditTiming userData={userData} style={responsiveGetSize('EditTiming')} />}
+        <EmotionTimeline userData={userData} style={responsiveGetSize('EmotionTimeline')} />
+        <ToxicityScore userData={userData} style={responsiveGetSize('ToxicityScore')} />
         
         {/* Divider: How You Compare */}
         <div style={{
@@ -1098,17 +1137,17 @@ function App() {
         </div>
 
         {/* Comparison Widgets */}
-        <ActivityFrequency userData={userData} globalStats={globalStats} style={getSize('ActivityFrequency')} />
-        <VocabularyLevel userData={userData} globalStats={globalStats} style={getSize('VocabularyLevel')} />
-        <NightOwlScore userData={userData} globalStats={globalStats} style={getSize('NightOwlScore')} />
-        <ReplyRate userData={userData} globalStats={globalStats} style={getSize('ReplyRate')} />
-        <WeekendWarrior userData={userData} globalStats={globalStats} style={getSize('WeekendWarrior')} />
-        <ControversyIndex userData={userData} globalStats={globalStats} style={getSize('ControversyIndex')} />
-        <CommentLengthComparison userData={userData} globalStats={globalStats} style={getSize('CommentLengthComparison')} />
-        <KarmaOverTime userData={userData} globalStats={globalStats} style={getSize('KarmaOverTime')} />
-        <HourlyActivityComparison userData={userData} globalStats={globalStats} style={getSize('HourlyActivityComparison')} />
-        <InterestComparison userData={userData} globalStats={globalStats} style={getSize('InterestComparison')} />
-        <ConversationStarter userData={userData} globalStats={globalStats} style={getSize('ConversationStarter')} />
+        <ActivityFrequency userData={userData} globalStats={globalStats} style={responsiveGetSize('ActivityFrequency')} />
+        <VocabularyLevel userData={userData} globalStats={globalStats} style={responsiveGetSize('VocabularyLevel')} />
+        <NightOwlScore userData={userData} globalStats={globalStats} style={responsiveGetSize('NightOwlScore')} />
+        <ReplyRate userData={userData} globalStats={globalStats} style={responsiveGetSize('ReplyRate')} />
+        <WeekendWarrior userData={userData} globalStats={globalStats} style={responsiveGetSize('WeekendWarrior')} />
+        <ControversyIndex userData={userData} globalStats={globalStats} style={responsiveGetSize('ControversyIndex')} />
+        <CommentLengthComparison userData={userData} globalStats={globalStats} style={responsiveGetSize('CommentLengthComparison')} />
+        <KarmaOverTime userData={userData} globalStats={globalStats} style={responsiveGetSize('KarmaOverTime')} />
+        <HourlyActivityComparison userData={userData} globalStats={globalStats} style={responsiveGetSize('HourlyActivityComparison')} />
+        <InterestComparison userData={userData} globalStats={globalStats} style={responsiveGetSize('InterestComparison')} />
+        <ConversationStarter userData={userData} globalStats={globalStats} style={responsiveGetSize('ConversationStarter')} />
 
         {/* Feed the Machine Divider */}
         <div style={{
@@ -1124,7 +1163,7 @@ function App() {
           <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, rgba(255,107,107,0.3), rgba(255,107,107,0.3), transparent)' }} />
         </div>
 
-        <PersonaMap userData={userData} style={getSize('PersonaMap')} />
+        <PersonaMap userData={userData} style={responsiveGetSize('PersonaMap')} />
 
         </div>
       </div>

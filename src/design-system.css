@@ -383,3 +383,69 @@ body, .body {
   --breakpoint-xl: 1280px;
   --breakpoint-2xl: 1536px;
 }
+
+/* ============================================
+   RESPONSIVE DESIGN - MOBILE FIRST
+   ============================================ */
+
+/* Mobile (up to 640px) */
+@media (max-width: 640px) {
+  :root {
+    /* Smaller typography on mobile */
+    --font-size-h1: 28px;
+    --font-size-h2: 24px;
+    --font-size-h3: 18px;
+    --font-size-h4: 16px;
+    --font-size-h5: 14px;
+    --font-size-h6: 12px;
+    --font-size-body: 13px;
+    --font-size-small: 11px;
+    --font-size-tiny: 9px;
+    
+    /* Tighter spacing on mobile */
+    --spacing-xs: 3px;
+    --spacing-sm: 6px;
+    --spacing-md: 10px;
+    --spacing-lg: 14px;
+    --spacing-xl: 18px;
+    --spacing-2xl: 24px;
+    --spacing-3xl: 32px;
+    
+    /* Single column grid on mobile */
+    --grid-columns: 1;
+    --grid-gap: var(--spacing-sm);
+    --grid-row-min-height: 120px;
+    
+    /* Chart adjustments */
+    --chart-text-size: 8px;
+    --chart-point-size: 3px;
+  }
+}
+
+/* Small tablets (641px to 768px) */
+@media (min-width: 641px) and (max-width: 768px) {
+  :root {
+    --grid-columns: 2;
+    --grid-gap: var(--spacing-sm);
+    --grid-row-min-height: 130px;
+    
+    --font-size-h1: 32px;
+    --font-size-h2: 28px;
+    --font-size-h3: 20px;
+  }
+}
+
+/* Tablets (769px to 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  :root {
+    --grid-columns: 3;
+    --grid-gap: var(--spacing-sm);
+  }
+}
+
+/* Small desktops (1025px to 1280px) */
+@media (min-width: 1025px) and (max-width: 1280px) {
+  :root {
+    --grid-columns: 4;
+  }
+}

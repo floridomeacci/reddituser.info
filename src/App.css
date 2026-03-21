@@ -335,10 +335,6 @@ body {
 }
 
 @media (max-width: 1024px) {
-  .dashboard-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
   .radar-cell {
     grid-template-columns: 1fr;
   }
@@ -832,3 +828,245 @@ body {
     grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
   }
 }
+
+/* ============================================
+   COMPREHENSIVE MOBILE RESPONSIVE STYLES
+   ============================================ */
+
+/* Mobile - Single column layout (up to 640px) */
+@media (max-width: 640px) {
+  .app-container {
+    padding: var(--spacing-sm);
+    align-items: flex-start;
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-sm);
+    width: 100%;
+  }
+  
+  /* Force all cells to single column on mobile */
+  .cell {
+    grid-column: span 1 !important;
+    padding: var(--spacing-sm);
+    min-height: auto;
+  }
+  
+  /* Keep row spans for vertical widgets but limit them */
+  .cell.span-row-2 {
+    grid-row: span 2;
+  }
+  
+  .cell h3 {
+    font-size: 10px;
+    letter-spacing: 1px;
+  }
+  
+  /* Radar cell mobile */
+  .radar-cell {
+    padding: var(--spacing-sm);
+  }
+  
+  .radar-canvas {
+    max-height: 200px;
+  }
+  
+  /* Pie chart mobile */
+  .pie-container {
+    flex-direction: column;
+    padding-left: 0;
+    gap: 12px;
+  }
+  
+  .pie-legend {
+    width: 100%;
+  }
+  
+  /* Stat cells mobile */
+  .stat-value {
+    font-size: 20px;
+  }
+  
+  .stat-value.small {
+    font-size: 16px;
+  }
+  
+  .stat-grid {
+    flex-wrap: wrap;
+  }
+  
+  /* Word cloud mobile */
+  .word-cloud {
+    padding: 8px 12px;
+  }
+  
+  .word-cloud-word {
+    padding: 2px 5px;
+    font-size: 90% !important;
+  }
+  
+  /* Heatmap mobile */
+  .heatmap-row {
+    grid-template-columns: repeat(12, 1fr);
+  }
+  
+  .heatmap-label {
+    font-size: 8px;
+  }
+  
+  .heatmap-xaxis {
+    font-size: 8px;
+  }
+  
+  /* Weekday chart mobile */
+  .weekday-chart {
+    padding: var(--spacing-sm) 0;
+  }
+  
+  .weekday-label {
+    font-size: 8px;
+  }
+  
+  /* Emoji grid mobile */
+  .emoji-compact-grid {
+    gap: 6px;
+  }
+  
+  .emoji-compact-item {
+    padding: 3px 6px;
+  }
+  
+  .emoji-compact-char {
+    font-size: 16px;
+  }
+  
+  .emoji-compact-count {
+    font-size: 11px;
+  }
+  
+  /* Content lists mobile */
+  .content-list-item {
+    padding: var(--spacing-xs);
+  }
+  
+  .content-text {
+    font-size: 11px;
+  }
+  
+  /* Distribution chart mobile */
+  .distribution-labels {
+    font-size: 8px;
+  }
+  
+  /* Scatter plot mobile */
+  .scatter-tooltip {
+    font-size: 9px;
+    padding: 3px;
+  }
+  
+  /* Loading state mobile */
+  .loading {
+    font-size: 18px;
+  }
+}
+
+/* Small tablets - 2 column layout (641px to 768px) */
+@media (min-width: 641px) and (max-width: 768px) {
+  .app-container {
+    padding: var(--spacing-md);
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+    width: 100%;
+  }
+  
+  /* Limit wide widgets to 2 columns max */
+  .cell[style*="grid-column: span 3"],
+  .cell[style*="grid-column: span 4"],
+  .cell[style*="grid-column: span 5"] {
+    grid-column: span 2 !important;
+  }
+}
+
+/* Tablets - 3 column layout (769px to 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .app-container {
+    padding: var(--spacing-lg);
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: repeat(3, 1fr);
+    width: 100%;
+  }
+  
+  /* Limit 4+ column widgets to 3 */
+  .cell[style*="grid-column: span 4"],
+  .cell[style*="grid-column: span 5"] {
+    grid-column: span 3 !important;
+  }
+}
+
+/* Small desktops - 4 column layout (1025px to 1280px) */
+@media (min-width: 1025px) and (max-width: 1280px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(4, 1fr);
+    width: min(1200px, 100%);
+  }
+  
+  /* Limit 5 column widgets to 4 */
+  .cell[style*="grid-column: span 5"] {
+    grid-column: span 4 !important;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .cell:hover {
+    transform: none;
+    border-color: var(--card-border-color);
+    box-shadow: none;
+  }
+  
+  .cell:active {
+    transform: scale(0.98);
+    border-color: var(--card-border-hover);
+  }
+  
+  .heatmap-cell:hover {
+    transform: none;
+  }
+  
+  .word-cloud-word:hover {
+    transform: none;
+  }
+  
+  .scatter-point {
+    r: 6;
+  }
+  
+  .content-list-item:hover {
+    transform: none;
+  }
+  
+  .emoji-compact-item:hover {
+    transform: none;
+  }
+}
+
+/* Landscape phone orientation */
+@media (max-width: 900px) and (orientation: landscape) {
+  .app-container {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .cell {
+    grid-column: span 1 !important;
+  }
+}
+
